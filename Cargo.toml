@@ -1,0 +1,25 @@
+[workspace]
+members = ["asn1-per", "ngap", "xxap"]
+resolver = "2"
+
+[workspace.package]
+name = "asn-models"
+version = "0.1.0"
+edition = "2021"
+authors = ["UnifyAir Maintainers <maintainers@unifyair.com>"]
+repository = "https://bitbucket.org/blocknet/open-api"
+homepage = "https://unifyair.com/"
+description = "5g models generated from asn files"
+publish = false
+
+[workspace.dependencies]
+tracing = "0.1.0"
+async-trait = "0.1.68"
+slog = "2.7.0"
+anyhow = "1.0.52"
+async-channel = "1.6.1"
+asn1-codecs = { git = "https://github.com/nplrkn/hampi" }
+thiserror = "1.0.36"
+num_enum = "0.5.11"
+bitvec = "1.0.1"
+nonempty = "0.8.1"
