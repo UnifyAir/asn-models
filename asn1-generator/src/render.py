@@ -577,6 +577,51 @@ def is_copy_type(t):
     return is_non_i128_int_type(t) or t in ["i128", "bool"]
 
 
+def is_ngap_pdu(name):
+    return name == "NgapPdu"
+
+
+def is_nonempty_type(t):
+    return t.startswith("NonEmpty")
+
+
+# Eq, Hash, Ord, PartialEq, PartialOrd,
+def is_additional_traits_type(t):
+    return is_non_i128_int_type(t) or t in ["BitString", "String", "i128", "bool"]
+
+
+def is_static_array(t):
+    return t.startswith("[") and t.endswith("]")
+
+
+def default_impl_for_static_array(name, t):
+    [array_type, index] = t.strip("[] ").split(";")
+    array_type = array_type.strip(" ")
+    index = index.strip(" ")
+    if not (is_nonempty_type(array_type) or array_type in ["i128", "bool"]):
+        default_code = """let init = std::mem::MaybeUninit::<{}>::zeroed();
+        // SAFETY: No pointers present for the assume init here
+        // TODO: Evaluate the performance issues: "https://users.rust-lang.org/t/unnecessary-performance-penalty-for-mem-maybeuninit/84063"
+        let default_value = unsafe {{ init.assume_init() }};""".format(
+            "[{}; {}]".format(array_type, index)
+        )
+    else:
+        default_code = "let default_value = [(); {}].map(|()| {}::default()),".format(
+            index, array_type
+        )
+
+    code = (
+        f"impl Default for {name} {{\n"
+        + f"    fn default() -> {name} {{\n"
+        + f"        {default_code}\n"
+        + f"        {name}(default_value)\n"
+        + f"    }}\n"
+        + f"}}"
+    )
+    print(code)
+    return code
+
+
 class StructFieldsTo(Interpreter):
     def __init__(self):
         self.fields_to = ""
@@ -879,16 +924,17 @@ impl Indication for {p.name} {{
 
     def enum_def(self, tree):
         orig_name = tree.children[0]
-        print(orig_name)
+        print("enum_def", orig_name)
         name = orig_name
         field_interpreter = EnumFields()
         field_interpreter.visit(tree.children[1])
 
         self.outfile += f"""
 // {orig_name}
-# [derive(Clone, Debug, Copy, TryFromPrimitive)]
+# [derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 # [repr(u8)]
 pub enum {name} {{
+#[default]
 {field_interpreter.enum_fields}\
 }}
 
@@ -912,7 +958,7 @@ impl {name} {{
 
     def choice_def(self, tree):
         orig_name = tree.children[0]
-        print(orig_name)
+        print("choice_def", orig_name)
         name = orig_name
         field_interpreter = ChoiceFields()
         field_interpreter.visit(tree.children[1])
@@ -923,11 +969,17 @@ impl {name} {{
             fields_from_interpreter.field_index - 1, field_interpreter.extensible
         )
         fields_to_interpreter.visit(tree.children[1])
+        [default_trait, default_key] = (
+            [", smart_default::SmartDefault", "#[default]"]
+            if not (is_ngap_pdu(orig_name))
+            else ["", ""]
+        )
 
         self.outfile += f"""
 // {orig_name}
-# [derive(Clone, Debug)]
+# [derive(Clone, Debug{default_trait})]
 pub enum {name} {{
+{default_key}
 {field_interpreter.choice_fields}\
 }}
 
@@ -960,11 +1012,25 @@ impl {name} {{
         inner = type_and_constraints(tree.children[1])
         assert inner.rust_type != "OctetString"
         clone_copy = "Copy, " if is_copy_type(inner.rust_type) else ""
+        additional_traits = (
+            "Eq, Hash, Ord, PartialEq, PartialOrd, "
+            if is_additional_traits_type(inner.rust_type)
+            else ""
+        )
+        [default_trait, default_impl] = (
+            [", smart_default::SmartDefault", ""]
+            if not (is_static_array(inner.rust_type))
+            else [
+                "",
+                default_impl_for_static_array(orig_name, inner.rust_type),
+            ]
+        )
+
         self.outfile += f"""
 // {orig_name}
-# [derive(Clone, {clone_copy}Debug)]
+# [derive(Clone, {clone_copy}{additional_traits}Debug{default_trait})]
 pub struct {name}(pub {inner.rust_type});
-
+{default_impl}
 impl {name} {{
     fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {{
         Ok(Self({decode_expression(tree.children[1])}))
@@ -1017,7 +1083,7 @@ impl {name} {{
 
         self.outfile += f"""
 // {orig_name}
-# [derive(Clone, Debug)]
+# [derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct {name} {{
 {fields.struct_fields}\
 }}
@@ -1101,7 +1167,7 @@ impl {orig_name} {{
 
         self.outfile += f"""
 // {orig_name}
-# [derive(Clone, Debug)]
+# [derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct {name} {{
 {field_interpreter.struct_fields}\
 }}

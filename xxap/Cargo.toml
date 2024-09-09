@@ -14,7 +14,7 @@ slog.workspace = true
 anyhow.workspace = true
 num_enum.workspace = true
 async-trait.workspace = true
-
+smart-default.workspace = true
 
 [lib]
 doctest = false
