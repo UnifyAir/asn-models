@@ -1,0 +1,19 @@
+[package]
+name = "asn1-per"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+slog.workspace = true
+anyhow.workspace = true
+async-channel.workspace = true
+asn1-codecs.workspace = true
+thiserror.workspace = true
+num_enum.workspace = true
+bitvec.workspace = true
+nonempty.workspace = true
+async-trait.workspace = true
+tracing.workspace = true
+
