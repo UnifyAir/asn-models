@@ -17,5 +17,6 @@ The asn generator is from fork of [5g-asn1-protos](https://github.com/nplrkn/5g-
 
 ### Done ✓
 
-- [x] Replace slog with tracing library.
-- [x] Python script for generating release ngap asn files from document TS 38.413 17.10.0.
+- [X] Replace slog with tracing library.
+- [X] Python script for generating release ngap asn files from document TS 38.413 17.10.0.
+- [X] Support for Default. Additional trait like Eq, PartialEq, Ord, PartialOrd, Hash on primitve newtypes

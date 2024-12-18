@@ -3,9 +3,10 @@
 use asn1_per::{aper::*, *};
 
 // Criticality
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum Criticality {
+	#[default]
 	Reject,
 	Ignore,
 	Notify,
@@ -46,7 +47,7 @@ impl PerCodec for Criticality {
 	}
 }
 // TransportLayerAddress
-#[derive(Clone, Debug)]
+#[derive(Clone, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct TransportLayerAddress(pub BitString);
 
 impl TransportLayerAddress {
@@ -87,7 +88,15 @@ impl PerCodec for TransportLayerAddress {
 // GtpTeid
 #[derive(Clone, Debug)]
 pub struct GtpTeid(pub [u8; 4]);
-
+impl Default for GtpTeid {
+	fn default() -> GtpTeid {
+		let init = std::mem::MaybeUninit::<[u8; 4]>::zeroed();
+		// SAFETY: No pointers present for the assume init here
+		// TODO: Evaluate the performance issues: "https://users.rust-lang.org/t/unnecessary-performance-penalty-for-mem-maybeuninit/84063"
+		let default_value = unsafe { init.assume_init() };
+		GtpTeid(default_value)
+	}
+}
 impl GtpTeid {
 	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
 		Ok(Self(
@@ -123,7 +132,7 @@ impl PerCodec for GtpTeid {
 	}
 }
 // GtpTunnel
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct GtpTunnel {
 	pub transport_layer_address: TransportLayerAddress,
 	pub gtp_teid: GtpTeid,
@@ -188,7 +197,7 @@ impl PerCodec for GtpTunnel {
 	}
 }
 // PduSessionId
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct PduSessionId(pub u8);
 
 impl PduSessionId {

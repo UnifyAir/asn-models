@@ -7,7 +7,7 @@ use xxap::{GtpTeid, GtpTunnel, PduSessionId, TransportLayerAddress};
 use super::{common::*, ies::*};
 
 // PduSessionResourceSetupRequest
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceSetupRequest {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -172,7 +172,7 @@ impl PerCodec for PduSessionResourceSetupRequest {
 	}
 }
 // PduSessionResourceSetupResponse
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceSetupResponse {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -323,7 +323,7 @@ impl PerCodec for PduSessionResourceSetupResponse {
 	}
 }
 // PduSessionResourceReleaseCommand
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceReleaseCommand {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -458,7 +458,7 @@ impl PerCodec for PduSessionResourceReleaseCommand {
 	}
 }
 // PduSessionResourceReleaseResponse
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceReleaseResponse {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -592,7 +592,7 @@ impl PerCodec for PduSessionResourceReleaseResponse {
 	}
 }
 // PduSessionResourceModifyRequest
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceModifyRequest {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -712,7 +712,7 @@ impl PerCodec for PduSessionResourceModifyRequest {
 	}
 }
 // PduSessionResourceModifyResponse
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceModifyResponse {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -864,7 +864,7 @@ impl PerCodec for PduSessionResourceModifyResponse {
 	}
 }
 // PduSessionResourceNotify
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceNotify {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -998,7 +998,7 @@ impl PerCodec for PduSessionResourceNotify {
 	}
 }
 // PduSessionResourceModifyIndication
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceModifyIndication {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -1118,7 +1118,7 @@ impl PerCodec for PduSessionResourceModifyIndication {
 	}
 }
 // PduSessionResourceModifyConfirm
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceModifyConfirm {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -1256,7 +1256,7 @@ impl PerCodec for PduSessionResourceModifyConfirm {
 	}
 }
 // InitialContextSetupRequest
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct InitialContextSetupRequest {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -1982,7 +1982,7 @@ impl PerCodec for InitialContextSetupRequest {
 	}
 }
 // InitialContextSetupResponse
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct InitialContextSetupResponse {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -2119,7 +2119,7 @@ impl PerCodec for InitialContextSetupResponse {
 	}
 }
 // InitialContextSetupFailure
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct InitialContextSetupFailure {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -2251,7 +2251,7 @@ impl PerCodec for InitialContextSetupFailure {
 	}
 }
 // UeContextReleaseRequest
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UeContextReleaseRequest {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -2367,7 +2367,7 @@ impl PerCodec for UeContextReleaseRequest {
 	}
 }
 // UeContextReleaseCommand
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UeContextReleaseCommand {
 	pub ue_ngap_i_ds: UeNgapIDs,
 	pub cause: Cause,
@@ -2450,7 +2450,7 @@ impl PerCodec for UeContextReleaseCommand {
 	}
 }
 // UeContextReleaseComplete
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UeContextReleaseComplete {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -2618,7 +2618,7 @@ impl PerCodec for UeContextReleaseComplete {
 	}
 }
 // UeContextResumeRequest
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UeContextResumeRequest {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -2808,7 +2808,7 @@ impl PerCodec for UeContextResumeRequest {
 	}
 }
 // UeContextResumeResponse
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UeContextResumeResponse {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -2988,7 +2988,7 @@ impl PerCodec for UeContextResumeResponse {
 	}
 }
 // UeContextResumeFailure
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UeContextResumeFailure {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -3100,7 +3100,7 @@ impl PerCodec for UeContextResumeFailure {
 	}
 }
 // UeContextSuspendRequest
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UeContextSuspendRequest {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -3241,7 +3241,7 @@ impl PerCodec for UeContextSuspendRequest {
 	}
 }
 // UeContextSuspendResponse
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UeContextSuspendResponse {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -3354,7 +3354,7 @@ impl PerCodec for UeContextSuspendResponse {
 	}
 }
 // UeContextSuspendFailure
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UeContextSuspendFailure {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -3466,7 +3466,7 @@ impl PerCodec for UeContextSuspendFailure {
 	}
 }
 // UeContextModificationRequest
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UeContextModificationRequest {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -3986,7 +3986,7 @@ impl PerCodec for UeContextModificationRequest {
 	}
 }
 // UeContextModificationResponse
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UeContextModificationResponse {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -4113,7 +4113,7 @@ impl PerCodec for UeContextModificationResponse {
 	}
 }
 // UeContextModificationFailure
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UeContextModificationFailure {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -4225,7 +4225,7 @@ impl PerCodec for UeContextModificationFailure {
 	}
 }
 // RrcInactiveTransitionReport
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct RrcInactiveTransitionReport {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -4340,7 +4340,7 @@ impl PerCodec for RrcInactiveTransitionReport {
 	}
 }
 // RetrieveUeInformation
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct RetrieveUeInformation {
 	pub five_g_s_tmsi: FiveGSTmsi,
 }
@@ -4408,7 +4408,7 @@ impl PerCodec for RetrieveUeInformation {
 	}
 }
 // UeInformationTransfer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UeInformationTransfer {
 	pub five_g_s_tmsi: FiveGSTmsi,
 	pub nb_iot_ue_priority: Option<NbIotUePriority>,
@@ -4562,7 +4562,7 @@ impl PerCodec for UeInformationTransfer {
 	}
 }
 // RancpRelocationIndication
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct RancpRelocationIndication {
 	pub ran_ue_ngap_id: RanUeNgapId,
 	pub five_g_s_tmsi: FiveGSTmsi,
@@ -4690,7 +4690,7 @@ impl PerCodec for RancpRelocationIndication {
 	}
 }
 // HandoverRequired
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct HandoverRequired {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -4875,7 +4875,7 @@ impl PerCodec for HandoverRequired {
 	}
 }
 // HandoverCommand
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct HandoverCommand {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -5062,7 +5062,7 @@ impl PerCodec for HandoverCommand {
 	}
 }
 // HandoverPreparationFailure
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct HandoverPreparationFailure {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -5194,7 +5194,7 @@ impl PerCodec for HandoverPreparationFailure {
 	}
 }
 // HandoverRequest
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct HandoverRequest {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub handover_type: HandoverType,
@@ -5850,7 +5850,7 @@ impl PerCodec for HandoverRequest {
 	}
 }
 // HandoverRequestAcknowledge
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct HandoverRequestAcknowledge {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -6036,7 +6036,7 @@ impl PerCodec for HandoverRequestAcknowledge {
 	}
 }
 // HandoverFailure
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct HandoverFailure {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub cause: Cause,
@@ -6153,7 +6153,7 @@ impl PerCodec for HandoverFailure {
 	}
 }
 // HandoverNotify
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct HandoverNotify {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -6267,7 +6267,7 @@ impl PerCodec for HandoverNotify {
 	}
 }
 // PathSwitchRequest
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PathSwitchRequest {
 	pub ran_ue_ngap_id: RanUeNgapId,
 	pub source_amf_ue_ngap_id: AmfUeNgapId,
@@ -6452,7 +6452,7 @@ impl PerCodec for PathSwitchRequest {
 	}
 }
 // PathSwitchRequestAcknowledge
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PathSwitchRequestAcknowledge {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -7003,7 +7003,7 @@ impl PerCodec for PathSwitchRequestAcknowledge {
 	}
 }
 // PathSwitchRequestFailure
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PathSwitchRequestFailure {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -7123,7 +7123,7 @@ impl PerCodec for PathSwitchRequestFailure {
 	}
 }
 // HandoverCancel
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct HandoverCancel {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -7221,7 +7221,7 @@ impl PerCodec for HandoverCancel {
 	}
 }
 // HandoverCancelAcknowledge
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct HandoverCancelAcknowledge {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -7320,7 +7320,7 @@ impl PerCodec for HandoverCancelAcknowledge {
 	}
 }
 // HandoverSuccess
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct HandoverSuccess {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -7405,7 +7405,7 @@ impl PerCodec for HandoverSuccess {
 	}
 }
 // UplinkRanEarlyStatusTransfer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UplinkRanEarlyStatusTransfer {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -7512,7 +7512,7 @@ impl PerCodec for UplinkRanEarlyStatusTransfer {
 	}
 }
 // DownlinkRanEarlyStatusTransfer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct DownlinkRanEarlyStatusTransfer {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -7619,7 +7619,7 @@ impl PerCodec for DownlinkRanEarlyStatusTransfer {
 	}
 }
 // UplinkRanStatusTransfer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UplinkRanStatusTransfer {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -7725,7 +7725,7 @@ impl PerCodec for UplinkRanStatusTransfer {
 	}
 }
 // DownlinkRanStatusTransfer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct DownlinkRanStatusTransfer {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -7831,7 +7831,7 @@ impl PerCodec for DownlinkRanStatusTransfer {
 	}
 }
 // Paging
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct Paging {
 	pub ue_paging_identity: UePagingIdentity,
 	pub paging_drx: Option<PagingDrx>,
@@ -8120,7 +8120,7 @@ impl PerCodec for Paging {
 	}
 }
 // InitialUeMessage
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct InitialUeMessage {
 	pub ran_ue_ngap_id: RanUeNgapId,
 	pub nas_pdu: NasPdu,
@@ -8420,7 +8420,7 @@ impl PerCodec for InitialUeMessage {
 	}
 }
 // DownlinkNasTransport
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct DownlinkNasTransport {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -8760,7 +8760,7 @@ impl PerCodec for DownlinkNasTransport {
 	}
 }
 // UplinkNasTransport
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UplinkNasTransport {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -8924,7 +8924,7 @@ impl PerCodec for UplinkNasTransport {
 	}
 }
 // NasNonDeliveryIndication
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct NasNonDeliveryIndication {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -9035,7 +9035,7 @@ impl PerCodec for NasNonDeliveryIndication {
 	}
 }
 // RerouteNasRequest
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct RerouteNasRequest {
 	pub ran_ue_ngap_id: RanUeNgapId,
 	pub amf_ue_ngap_id: Option<AmfUeNgapId>,
@@ -9182,7 +9182,7 @@ impl PerCodec for RerouteNasRequest {
 	}
 }
 // NgSetupRequest
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct NgSetupRequest {
 	pub global_ran_node_id: GlobalRanNodeId,
 	pub ran_node_name: Option<RanNodeName>,
@@ -9338,7 +9338,7 @@ impl PerCodec for NgSetupRequest {
 	}
 }
 // NgSetupResponse
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct NgSetupResponse {
 	pub amf_name: AmfName,
 	pub served_guami_list: ServedGuamiList,
@@ -9508,7 +9508,7 @@ impl PerCodec for NgSetupResponse {
 	}
 }
 // NgSetupFailure
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct NgSetupFailure {
 	pub cause: Cause,
 	pub time_to_wait: Option<TimeToWait>,
@@ -9604,7 +9604,7 @@ impl PerCodec for NgSetupFailure {
 	}
 }
 // RanConfigurationUpdate
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct RanConfigurationUpdate {
 	pub ran_node_name: Option<RanNodeName>,
 	pub supported_ta_list: Option<SupportedTaList>,
@@ -9761,7 +9761,7 @@ impl PerCodec for RanConfigurationUpdate {
 	}
 }
 // RanConfigurationUpdateAcknowledge
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct RanConfigurationUpdateAcknowledge {
 	pub criticality_diagnostics: Option<CriticalityDiagnostics>,
 }
@@ -9830,7 +9830,7 @@ impl PerCodec for RanConfigurationUpdateAcknowledge {
 	}
 }
 // RanConfigurationUpdateFailure
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct RanConfigurationUpdateFailure {
 	pub cause: Cause,
 	pub time_to_wait: Option<TimeToWait>,
@@ -9926,7 +9926,7 @@ impl PerCodec for RanConfigurationUpdateFailure {
 	}
 }
 // AmfConfigurationUpdate
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct AmfConfigurationUpdate {
 	pub amf_name: Option<AmfName>,
 	pub served_guami_list: Option<ServedGuamiList>,
@@ -10102,7 +10102,7 @@ impl PerCodec for AmfConfigurationUpdate {
 	}
 }
 // AmfConfigurationUpdateAcknowledge
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct AmfConfigurationUpdateAcknowledge {
 	pub amf_tnl_association_setup_list: Option<AmfTnlAssociationSetupList>,
 	pub amf_tnl_association_failed_to_setup_list: Option<TnlAssociationList>,
@@ -10204,7 +10204,7 @@ impl PerCodec for AmfConfigurationUpdateAcknowledge {
 	}
 }
 // AmfConfigurationUpdateFailure
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct AmfConfigurationUpdateFailure {
 	pub cause: Cause,
 	pub time_to_wait: Option<TimeToWait>,
@@ -10300,7 +10300,7 @@ impl PerCodec for AmfConfigurationUpdateFailure {
 	}
 }
 // AmfStatusIndication
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct AmfStatusIndication {
 	pub unavailable_guami_list: UnavailableGuamiList,
 }
@@ -10370,7 +10370,7 @@ impl PerCodec for AmfStatusIndication {
 	}
 }
 // NgReset
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct NgReset {
 	pub cause: Cause,
 	pub reset_type: ResetType,
@@ -10450,7 +10450,7 @@ impl PerCodec for NgReset {
 	}
 }
 // NgResetAcknowledge
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct NgResetAcknowledge {
 	pub ue_associated_logical_ng_connection_list: Option<UeAssociatedLogicalNgConnectionList>,
 	pub criticality_diagnostics: Option<CriticalityDiagnostics>,
@@ -10538,7 +10538,7 @@ impl PerCodec for NgResetAcknowledge {
 	}
 }
 // ErrorIndication
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct ErrorIndication {
 	pub amf_ue_ngap_id: Option<AmfUeNgapId>,
 	pub ran_ue_ngap_id: Option<RanUeNgapId>,
@@ -10663,7 +10663,7 @@ impl PerCodec for ErrorIndication {
 	}
 }
 // OverloadStart
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct OverloadStart {
 	pub amf_overload_response: Option<OverloadResponse>,
 	pub amf_traffic_load_reduction_indication: Option<TrafficLoadReductionIndication>,
@@ -10764,7 +10764,7 @@ impl PerCodec for OverloadStart {
 	}
 }
 // OverloadStop
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct OverloadStop {}
 
 impl OverloadStop {
@@ -10815,7 +10815,7 @@ impl PerCodec for OverloadStop {
 	}
 }
 // UplinkRanConfigurationTransfer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UplinkRanConfigurationTransfer {
 	pub son_configuration_transfer_ul: Option<SonConfigurationTransfer>,
 	pub endc_son_configuration_transfer_ul: Option<EnDcsonConfigurationTransfer>,
@@ -10920,7 +10920,7 @@ impl PerCodec for UplinkRanConfigurationTransfer {
 	}
 }
 // DownlinkRanConfigurationTransfer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct DownlinkRanConfigurationTransfer {
 	pub son_configuration_transfer_dl: Option<SonConfigurationTransfer>,
 	pub endc_son_configuration_transfer_dl: Option<EnDcsonConfigurationTransfer>,
@@ -11025,7 +11025,7 @@ impl PerCodec for DownlinkRanConfigurationTransfer {
 	}
 }
 // WriteReplaceWarningRequest
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct WriteReplaceWarningRequest {
 	pub message_identifier: MessageIdentifier,
 	pub serial_number: SerialNumber,
@@ -11245,7 +11245,7 @@ impl PerCodec for WriteReplaceWarningRequest {
 	}
 }
 // WriteReplaceWarningResponse
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct WriteReplaceWarningResponse {
 	pub message_identifier: MessageIdentifier,
 	pub serial_number: SerialNumber,
@@ -11360,7 +11360,7 @@ impl PerCodec for WriteReplaceWarningResponse {
 	}
 }
 // PwsCancelRequest
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PwsCancelRequest {
 	pub message_identifier: MessageIdentifier,
 	pub serial_number: SerialNumber,
@@ -11473,7 +11473,7 @@ impl PerCodec for PwsCancelRequest {
 	}
 }
 // PwsCancelResponse
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PwsCancelResponse {
 	pub message_identifier: MessageIdentifier,
 	pub serial_number: SerialNumber,
@@ -11588,7 +11588,7 @@ impl PerCodec for PwsCancelResponse {
 	}
 }
 // PwsRestartIndication
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PwsRestartIndication {
 	pub cell_id_list_for_restart: CellIdListForRestart,
 	pub global_ran_node_id: GlobalRanNodeId,
@@ -11705,7 +11705,7 @@ impl PerCodec for PwsRestartIndication {
 	}
 }
 // PwsFailureIndication
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PwsFailureIndication {
 	pub pws_failed_cell_id_list: PwsFailedCellIdList,
 	pub global_ran_node_id: GlobalRanNodeId,
@@ -11790,7 +11790,7 @@ impl PerCodec for PwsFailureIndication {
 	}
 }
 // DownlinkUeAssociatedNrPPaTransport
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct DownlinkUeAssociatedNrPPaTransport {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -11905,7 +11905,7 @@ impl PerCodec for DownlinkUeAssociatedNrPPaTransport {
 	}
 }
 // UplinkUeAssociatedNrPPaTransport
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UplinkUeAssociatedNrPPaTransport {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -12020,7 +12020,7 @@ impl PerCodec for UplinkUeAssociatedNrPPaTransport {
 	}
 }
 // DownlinkNonUeAssociatedNrPPaTransport
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct DownlinkNonUeAssociatedNrPPaTransport {
 	pub routing_id: RoutingId,
 	pub nr_p_pa_pdu: NrPPaPdu,
@@ -12105,7 +12105,7 @@ impl PerCodec for DownlinkNonUeAssociatedNrPPaTransport {
 	}
 }
 // UplinkNonUeAssociatedNrPPaTransport
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UplinkNonUeAssociatedNrPPaTransport {
 	pub routing_id: RoutingId,
 	pub nr_p_pa_pdu: NrPPaPdu,
@@ -12190,7 +12190,7 @@ impl PerCodec for UplinkNonUeAssociatedNrPPaTransport {
 	}
 }
 // TraceStart
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct TraceStart {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -12290,7 +12290,7 @@ impl PerCodec for TraceStart {
 	}
 }
 // TraceFailureIndication
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct TraceFailureIndication {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -12403,7 +12403,7 @@ impl PerCodec for TraceFailureIndication {
 	}
 }
 // DeactivateTrace
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct DeactivateTrace {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -12503,7 +12503,7 @@ impl PerCodec for DeactivateTrace {
 	}
 }
 // CellTrafficTrace
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct CellTrafficTrace {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -12664,7 +12664,7 @@ impl PerCodec for CellTrafficTrace {
 	}
 }
 // LocationReportingControl
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct LocationReportingControl {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -12768,7 +12768,7 @@ impl PerCodec for LocationReportingControl {
 	}
 }
 // LocationReportingFailureIndication
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct LocationReportingFailureIndication {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -12866,7 +12866,7 @@ impl PerCodec for LocationReportingFailureIndication {
 	}
 }
 // LocationReport
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct LocationReport {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -13002,7 +13002,7 @@ impl PerCodec for LocationReport {
 	}
 }
 // UeTnlaBindingReleaseRequest
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UeTnlaBindingReleaseRequest {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -13087,7 +13087,7 @@ impl PerCodec for UeTnlaBindingReleaseRequest {
 	}
 }
 // UeRadioCapabilityInfoIndication
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UeRadioCapabilityInfoIndication {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -13217,7 +13217,7 @@ impl PerCodec for UeRadioCapabilityInfoIndication {
 	}
 }
 // UeRadioCapabilityCheckRequest
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UeRadioCapabilityCheckRequest {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -13330,7 +13330,7 @@ impl PerCodec for UeRadioCapabilityCheckRequest {
 	}
 }
 // UeRadioCapabilityCheckResponse
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UeRadioCapabilityCheckResponse {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -13444,7 +13444,7 @@ impl PerCodec for UeRadioCapabilityCheckResponse {
 	}
 }
 // PrivateMessage
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PrivateMessage {}
 
 impl PrivateMessage {
@@ -13484,7 +13484,7 @@ impl PerCodec for PrivateMessage {
 	}
 }
 // SecondaryRatDataUsageReport
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct SecondaryRatDataUsageReport {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -13619,7 +13619,7 @@ impl PerCodec for SecondaryRatDataUsageReport {
 	}
 }
 // UplinkRimInformationTransfer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UplinkRimInformationTransfer {
 	pub rim_information_transfer: Option<RimInformationTransfer>,
 }
@@ -13688,7 +13688,7 @@ impl PerCodec for UplinkRimInformationTransfer {
 	}
 }
 // DownlinkRimInformationTransfer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct DownlinkRimInformationTransfer {
 	pub rim_information_transfer: Option<RimInformationTransfer>,
 }
@@ -13757,7 +13757,7 @@ impl PerCodec for DownlinkRimInformationTransfer {
 	}
 }
 // ConnectionEstablishmentIndication
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct ConnectionEstablishmentIndication {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -14012,7 +14012,7 @@ impl PerCodec for ConnectionEstablishmentIndication {
 	}
 }
 // UeRadioCapabilityIdMappingRequest
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UeRadioCapabilityIdMappingRequest {
 	pub ue_radio_capability_id: UeRadioCapabilityId,
 }
@@ -14082,7 +14082,7 @@ impl PerCodec for UeRadioCapabilityIdMappingRequest {
 	}
 }
 // UeRadioCapabilityIdMappingResponse
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UeRadioCapabilityIdMappingResponse {
 	pub ue_radio_capability_id: UeRadioCapabilityId,
 	pub ue_radio_capability: UeRadioCapability,
@@ -14181,7 +14181,7 @@ impl PerCodec for UeRadioCapabilityIdMappingResponse {
 	}
 }
 // AmfcpRelocationIndication
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct AmfcpRelocationIndication {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -14294,7 +14294,7 @@ impl PerCodec for AmfcpRelocationIndication {
 	}
 }
 // BroadcastSessionSetupRequest
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct BroadcastSessionSetupRequest {
 	pub mbs_session_id: MbsSessionId,
 	pub snssai: Snssai,
@@ -14418,7 +14418,7 @@ impl PerCodec for BroadcastSessionSetupRequest {
 	}
 }
 // BroadcastSessionSetupResponse
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct BroadcastSessionSetupResponse {
 	pub mbs_session_id: MbsSessionId,
 	pub mbs_session_setup_response_transfer: Option<Vec<u8>>,
@@ -14519,7 +14519,7 @@ impl PerCodec for BroadcastSessionSetupResponse {
 	}
 }
 // BroadcastSessionSetupFailure
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct BroadcastSessionSetupFailure {
 	pub mbs_session_id: MbsSessionId,
 	pub mbs_session_setup_failure_transfer: Option<Vec<u8>>,
@@ -14633,7 +14633,7 @@ impl PerCodec for BroadcastSessionSetupFailure {
 	}
 }
 // BroadcastSessionModificationRequest
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct BroadcastSessionModificationRequest {
 	pub mbs_session_id: MbsSessionId,
 	pub mbs_service_area: Option<MbsServiceArea>,
@@ -14734,7 +14734,7 @@ impl PerCodec for BroadcastSessionModificationRequest {
 	}
 }
 // BroadcastSessionModificationResponse
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct BroadcastSessionModificationResponse {
 	pub mbs_session_id: MbsSessionId,
 	pub mbs_session_modification_response_transfer: Option<Vec<u8>>,
@@ -14835,7 +14835,7 @@ impl PerCodec for BroadcastSessionModificationResponse {
 	}
 }
 // BroadcastSessionModificationFailure
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct BroadcastSessionModificationFailure {
 	pub mbs_session_id: MbsSessionId,
 	pub mbs_session_modification_failure_transfer: Option<Vec<u8>>,
@@ -14949,7 +14949,7 @@ impl PerCodec for BroadcastSessionModificationFailure {
 	}
 }
 // BroadcastSessionReleaseRequest
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct BroadcastSessionReleaseRequest {
 	pub mbs_session_id: MbsSessionId,
 	pub cause: Cause,
@@ -15032,7 +15032,7 @@ impl PerCodec for BroadcastSessionReleaseRequest {
 	}
 }
 // BroadcastSessionReleaseRequired
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct BroadcastSessionReleaseRequired {
 	pub mbs_session_id: MbsSessionId,
 	pub cause: Cause,
@@ -15115,7 +15115,7 @@ impl PerCodec for BroadcastSessionReleaseRequired {
 	}
 }
 // BroadcastSessionReleaseResponse
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct BroadcastSessionReleaseResponse {
 	pub mbs_session_id: MbsSessionId,
 	pub mbs_session_release_response_transfer: Option<Vec<u8>>,
@@ -15216,7 +15216,7 @@ impl PerCodec for BroadcastSessionReleaseResponse {
 	}
 }
 // DistributionSetupRequest
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct DistributionSetupRequest {
 	pub mbs_session_id: MbsSessionId,
 	pub mbs_area_session_id: Option<MbsAreaSessionId>,
@@ -15326,7 +15326,7 @@ impl PerCodec for DistributionSetupRequest {
 	}
 }
 // DistributionSetupResponse
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct DistributionSetupResponse {
 	pub mbs_session_id: MbsSessionId,
 	pub mbs_area_session_id: Option<MbsAreaSessionId>,
@@ -15450,7 +15450,7 @@ impl PerCodec for DistributionSetupResponse {
 	}
 }
 // DistributionSetupFailure
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct DistributionSetupFailure {
 	pub mbs_session_id: MbsSessionId,
 	pub mbs_area_session_id: Option<MbsAreaSessionId>,
@@ -15587,7 +15587,7 @@ impl PerCodec for DistributionSetupFailure {
 	}
 }
 // DistributionReleaseRequest
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct DistributionReleaseRequest {
 	pub mbs_session_id: MbsSessionId,
 	pub mbs_area_session_id: Option<MbsAreaSessionId>,
@@ -15710,7 +15710,7 @@ impl PerCodec for DistributionReleaseRequest {
 	}
 }
 // DistributionReleaseResponse
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct DistributionReleaseResponse {
 	pub mbs_session_id: MbsSessionId,
 	pub mbs_area_session_id: Option<MbsAreaSessionId>,
@@ -15808,7 +15808,7 @@ impl PerCodec for DistributionReleaseResponse {
 	}
 }
 // MulticastSessionActivationRequest
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MulticastSessionActivationRequest {
 	pub mbs_session_id: MbsSessionId,
 	pub multicast_session_activation_request_transfer: Vec<u8>,
@@ -15904,7 +15904,7 @@ impl PerCodec for MulticastSessionActivationRequest {
 	}
 }
 // MulticastSessionActivationResponse
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MulticastSessionActivationResponse {
 	pub mbs_session_id: MbsSessionId,
 	pub criticality_diagnostics: Option<CriticalityDiagnostics>,
@@ -15988,7 +15988,7 @@ impl PerCodec for MulticastSessionActivationResponse {
 	}
 }
 // MulticastSessionActivationFailure
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MulticastSessionActivationFailure {
 	pub mbs_session_id: MbsSessionId,
 	pub cause: Cause,
@@ -16085,7 +16085,7 @@ impl PerCodec for MulticastSessionActivationFailure {
 	}
 }
 // MulticastSessionDeactivationRequest
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MulticastSessionDeactivationRequest {
 	pub mbs_session_id: MbsSessionId,
 	pub multicast_session_deactivation_request_transfer: Vec<u8>,
@@ -16181,7 +16181,7 @@ impl PerCodec for MulticastSessionDeactivationRequest {
 	}
 }
 // MulticastSessionDeactivationResponse
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MulticastSessionDeactivationResponse {
 	pub mbs_session_id: MbsSessionId,
 	pub criticality_diagnostics: Option<CriticalityDiagnostics>,
@@ -16265,7 +16265,7 @@ impl PerCodec for MulticastSessionDeactivationResponse {
 	}
 }
 // MulticastSessionUpdateRequest
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MulticastSessionUpdateRequest {
 	pub mbs_session_id: MbsSessionId,
 	pub mbs_area_session_id: Option<MbsAreaSessionId>,
@@ -16375,7 +16375,7 @@ impl PerCodec for MulticastSessionUpdateRequest {
 	}
 }
 // MulticastSessionUpdateResponse
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MulticastSessionUpdateResponse {
 	pub mbs_session_id: MbsSessionId,
 	pub mbs_area_session_id: Option<MbsAreaSessionId>,
@@ -16473,7 +16473,7 @@ impl PerCodec for MulticastSessionUpdateResponse {
 	}
 }
 // MulticastSessionUpdateFailure
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MulticastSessionUpdateFailure {
 	pub mbs_session_id: MbsSessionId,
 	pub mbs_area_session_id: Option<MbsAreaSessionId>,
@@ -16584,7 +16584,7 @@ impl PerCodec for MulticastSessionUpdateFailure {
 	}
 }
 // MulticastGroupPaging
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MulticastGroupPaging {
 	pub mbs_session_id: MbsSessionId,
 	pub mbs_service_area: Option<MbsServiceArea>,

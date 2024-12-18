@@ -7,7 +7,7 @@ use xxap::{GtpTeid, GtpTunnel, PduSessionId, TransportLayerAddress};
 use super::common::*;
 
 // AdditionalDlUpTnlInformationForHoList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct AdditionalDlUpTnlInformationForHoList(
 	pub NonEmpty<AdditionalDlUpTnlInformationForHoItem>,
 );
@@ -54,7 +54,7 @@ impl PerCodec for AdditionalDlUpTnlInformationForHoList {
 	}
 }
 // AdditionalDlUpTnlInformationForHoItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct AdditionalDlUpTnlInformationForHoItem {
 	pub additional_dl_ngu_up_tnl_information: UpTransportLayerInformation,
 	pub additional_qos_flow_setup_response_list: QosFlowListWithDataForwarding,
@@ -154,9 +154,10 @@ impl PerCodec for AdditionalDlUpTnlInformationForHoItem {
 	}
 }
 // AdditionalQosFlowInformation
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum AdditionalQosFlowInformation {
+	#[default]
 	MoreLikely,
 }
 
@@ -195,7 +196,7 @@ impl PerCodec for AdditionalQosFlowInformation {
 	}
 }
 // AllocationAndRetentionPriority
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct AllocationAndRetentionPriority {
 	pub priority_level_arp: PriorityLevelArp,
 	pub pre_emption_capability: PreEmptionCapability,
@@ -264,7 +265,7 @@ impl PerCodec for AllocationAndRetentionPriority {
 	}
 }
 // AllowedCagListPerPlmn
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct AllowedCagListPerPlmn(pub NonEmpty<CagId>);
 
 impl AllowedCagListPerPlmn {
@@ -309,7 +310,7 @@ impl PerCodec for AllowedCagListPerPlmn {
 	}
 }
 // AllowedNssai
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct AllowedNssai(pub NonEmpty<AllowedNssaiItem>);
 
 impl AllowedNssai {
@@ -354,7 +355,7 @@ impl PerCodec for AllowedNssai {
 	}
 }
 // AllowedNssaiItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct AllowedNssaiItem {
 	pub snssai: Snssai,
 }
@@ -413,7 +414,7 @@ impl PerCodec for AllowedNssaiItem {
 	}
 }
 // AllowedPniNpnList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct AllowedPniNpnList(pub NonEmpty<AllowedPniNpnItem>);
 
 impl AllowedPniNpnList {
@@ -458,7 +459,7 @@ impl PerCodec for AllowedPniNpnList {
 	}
 }
 // AllowedPniNpnItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct AllowedPniNpnItem {
 	pub plmn_identity: PlmnIdentity,
 	pub pni_npn_restricted: PniNpnRestricted,
@@ -527,7 +528,7 @@ impl PerCodec for AllowedPniNpnItem {
 	}
 }
 // AllowedTaCs
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct AllowedTaCs(pub NonEmpty<Tac>);
 
 impl AllowedTaCs {
@@ -572,7 +573,7 @@ impl PerCodec for AllowedTaCs {
 	}
 }
 // AlternativeQosParaSetIndex
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct AlternativeQosParaSetIndex(pub u8);
 
 impl AlternativeQosParaSetIndex {
@@ -608,7 +609,7 @@ impl PerCodec for AlternativeQosParaSetIndex {
 	}
 }
 // AlternativeQosParaSetNotifyIndex
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct AlternativeQosParaSetNotifyIndex(pub u8);
 
 impl AlternativeQosParaSetNotifyIndex {
@@ -644,7 +645,7 @@ impl PerCodec for AlternativeQosParaSetNotifyIndex {
 	}
 }
 // AlternativeQosParaSetList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct AlternativeQosParaSetList(pub NonEmpty<AlternativeQosParaSetItem>);
 
 impl AlternativeQosParaSetList {
@@ -689,7 +690,7 @@ impl PerCodec for AlternativeQosParaSetList {
 	}
 }
 // AlternativeQosParaSetItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct AlternativeQosParaSetItem {
 	pub alternative_qos_para_set_index: AlternativeQosParaSetIndex,
 	pub guaranteed_flow_bit_rate_dl: Option<BitRate>,
@@ -794,7 +795,7 @@ impl PerCodec for AlternativeQosParaSetItem {
 	}
 }
 // AmfName
-#[derive(Clone, Debug)]
+#[derive(Clone, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct AmfName(pub String);
 
 impl AmfName {
@@ -833,7 +834,7 @@ impl PerCodec for AmfName {
 	}
 }
 // AmfNameVisibleString
-#[derive(Clone, Debug)]
+#[derive(Clone, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct AmfNameVisibleString(pub String);
 
 impl AmfNameVisibleString {
@@ -872,7 +873,7 @@ impl PerCodec for AmfNameVisibleString {
 	}
 }
 // AmfNameUtf8String
-#[derive(Clone, Debug)]
+#[derive(Clone, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct AmfNameUtf8String(pub String);
 
 impl AmfNameUtf8String {
@@ -911,8 +912,9 @@ impl PerCodec for AmfNameUtf8String {
 	}
 }
 // AmfPagingTarget
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum AmfPagingTarget {
+	#[default]
 	GlobalRanNodeId(GlobalRanNodeId),
 	Tai(Tai),
 }
@@ -975,7 +977,7 @@ impl PerCodec for AmfPagingTarget {
 	}
 }
 // AmfPointer
-#[derive(Clone, Debug)]
+#[derive(Clone, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct AmfPointer(pub BitString);
 
 impl AmfPointer {
@@ -1014,7 +1016,7 @@ impl PerCodec for AmfPointer {
 	}
 }
 // AmfRegionId
-#[derive(Clone, Debug)]
+#[derive(Clone, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct AmfRegionId(pub BitString);
 
 impl AmfRegionId {
@@ -1053,7 +1055,7 @@ impl PerCodec for AmfRegionId {
 	}
 }
 // AmfSetId
-#[derive(Clone, Debug)]
+#[derive(Clone, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct AmfSetId(pub BitString);
 
 impl AmfSetId {
@@ -1092,7 +1094,7 @@ impl PerCodec for AmfSetId {
 	}
 }
 // AmfTnlAssociationSetupList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct AmfTnlAssociationSetupList(pub NonEmpty<AmfTnlAssociationSetupItem>);
 
 impl AmfTnlAssociationSetupList {
@@ -1137,7 +1139,7 @@ impl PerCodec for AmfTnlAssociationSetupList {
 	}
 }
 // AmfTnlAssociationSetupItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct AmfTnlAssociationSetupItem {
 	pub amf_tnl_association_address: CpTransportLayerInformation,
 }
@@ -1198,7 +1200,7 @@ impl PerCodec for AmfTnlAssociationSetupItem {
 	}
 }
 // AmfTnlAssociationToAddList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct AmfTnlAssociationToAddList(pub NonEmpty<AmfTnlAssociationToAddItem>);
 
 impl AmfTnlAssociationToAddList {
@@ -1243,7 +1245,7 @@ impl PerCodec for AmfTnlAssociationToAddList {
 	}
 }
 // AmfTnlAssociationToAddItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct AmfTnlAssociationToAddItem {
 	pub amf_tnl_association_address: CpTransportLayerInformation,
 	pub tnl_association_usage: Option<TnlAssociationUsage>,
@@ -1319,7 +1321,7 @@ impl PerCodec for AmfTnlAssociationToAddItem {
 	}
 }
 // AmfTnlAssociationToRemoveList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct AmfTnlAssociationToRemoveList(pub NonEmpty<AmfTnlAssociationToRemoveItem>);
 
 impl AmfTnlAssociationToRemoveList {
@@ -1364,7 +1366,7 @@ impl PerCodec for AmfTnlAssociationToRemoveList {
 	}
 }
 // AmfTnlAssociationToRemoveItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct AmfTnlAssociationToRemoveItem {
 	pub amf_tnl_association_address: CpTransportLayerInformation,
 	pub tnl_association_transport_layer_address_ngran: Option<CpTransportLayerInformation>,
@@ -1448,7 +1450,7 @@ impl PerCodec for AmfTnlAssociationToRemoveItem {
 	}
 }
 // AmfTnlAssociationToUpdateList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct AmfTnlAssociationToUpdateList(pub NonEmpty<AmfTnlAssociationToUpdateItem>);
 
 impl AmfTnlAssociationToUpdateList {
@@ -1493,7 +1495,7 @@ impl PerCodec for AmfTnlAssociationToUpdateList {
 	}
 }
 // AmfTnlAssociationToUpdateItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct AmfTnlAssociationToUpdateItem {
 	pub amf_tnl_association_address: CpTransportLayerInformation,
 	pub tnl_association_usage: Option<TnlAssociationUsage>,
@@ -1576,7 +1578,7 @@ impl PerCodec for AmfTnlAssociationToUpdateItem {
 	}
 }
 // AmfUeNgapId
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct AmfUeNgapId(pub u64);
 
 impl AmfUeNgapId {
@@ -1619,7 +1621,7 @@ impl PerCodec for AmfUeNgapId {
 	}
 }
 // AreaOfInterest
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct AreaOfInterest {
 	pub area_of_interest_tai_list: Option<AreaOfInterestTaiList>,
 	pub area_of_interest_cell_list: Option<AreaOfInterestCellList>,
@@ -1709,7 +1711,7 @@ impl PerCodec for AreaOfInterest {
 	}
 }
 // AreaOfInterestCellList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct AreaOfInterestCellList(pub NonEmpty<AreaOfInterestCellItem>);
 
 impl AreaOfInterestCellList {
@@ -1754,7 +1756,7 @@ impl PerCodec for AreaOfInterestCellList {
 	}
 }
 // AreaOfInterestCellItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct AreaOfInterestCellItem {
 	pub ngran_cgi: NgranCgi,
 }
@@ -1813,7 +1815,7 @@ impl PerCodec for AreaOfInterestCellItem {
 	}
 }
 // AreaOfInterestList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct AreaOfInterestList(pub NonEmpty<AreaOfInterestItem>);
 
 impl AreaOfInterestList {
@@ -1858,7 +1860,7 @@ impl PerCodec for AreaOfInterestList {
 	}
 }
 // AreaOfInterestItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct AreaOfInterestItem {
 	pub area_of_interest: AreaOfInterest,
 	pub location_reporting_reference_id: LocationReportingReferenceId,
@@ -1923,7 +1925,7 @@ impl PerCodec for AreaOfInterestItem {
 	}
 }
 // AreaOfInterestRanNodeList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct AreaOfInterestRanNodeList(pub NonEmpty<AreaOfInterestRanNodeItem>);
 
 impl AreaOfInterestRanNodeList {
@@ -1968,7 +1970,7 @@ impl PerCodec for AreaOfInterestRanNodeList {
 	}
 }
 // AreaOfInterestRanNodeItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct AreaOfInterestRanNodeItem {
 	pub global_ran_node_id: GlobalRanNodeId,
 }
@@ -2027,7 +2029,7 @@ impl PerCodec for AreaOfInterestRanNodeItem {
 	}
 }
 // AreaOfInterestTaiList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct AreaOfInterestTaiList(pub NonEmpty<AreaOfInterestTaiItem>);
 
 impl AreaOfInterestTaiList {
@@ -2072,7 +2074,7 @@ impl PerCodec for AreaOfInterestTaiList {
 	}
 }
 // AreaOfInterestTaiItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct AreaOfInterestTaiItem {
 	pub tai: Tai,
 }
@@ -2131,7 +2133,7 @@ impl PerCodec for AreaOfInterestTaiItem {
 	}
 }
 // AssistanceDataForPaging
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct AssistanceDataForPaging {
 	pub assistance_data_for_recommended_cells: Option<AssistanceDataForRecommendedCells>,
 	pub paging_attempt_information: Option<PagingAttemptInformation>,
@@ -2249,7 +2251,7 @@ impl PerCodec for AssistanceDataForPaging {
 	}
 }
 // AssistanceDataForRecommendedCells
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct AssistanceDataForRecommendedCells {
 	pub recommended_cells_for_paging: RecommendedCellsForPaging,
 }
@@ -2310,7 +2312,7 @@ impl PerCodec for AssistanceDataForRecommendedCells {
 	}
 }
 // AssociatedMbsQosFlowSetupRequestList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct AssociatedMbsQosFlowSetupRequestList(pub NonEmpty<AssociatedMbsQosFlowSetupRequestItem>);
 
 impl AssociatedMbsQosFlowSetupRequestList {
@@ -2355,7 +2357,7 @@ impl PerCodec for AssociatedMbsQosFlowSetupRequestList {
 	}
 }
 // AssociatedMbsQosFlowSetupRequestItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct AssociatedMbsQosFlowSetupRequestItem {
 	pub mbs_qos_flow_identifier: QosFlowIdentifier,
 	pub associated_unicast_qos_flow_identifier: QosFlowIdentifier,
@@ -2420,7 +2422,7 @@ impl PerCodec for AssociatedMbsQosFlowSetupRequestItem {
 	}
 }
 // AssociatedMbsQosFlowSetuporModifyRequestList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct AssociatedMbsQosFlowSetuporModifyRequestList(
 	pub NonEmpty<AssociatedMbsQosFlowSetuporModifyRequestItem>,
 );
@@ -2469,7 +2471,7 @@ impl PerCodec for AssociatedMbsQosFlowSetuporModifyRequestList {
 	}
 }
 // AssociatedMbsQosFlowSetuporModifyRequestItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct AssociatedMbsQosFlowSetuporModifyRequestItem {
 	pub mbs_qos_flow_identifier: QosFlowIdentifier,
 	pub associated_unicast_qos_flow_identifier: QosFlowIdentifier,
@@ -2536,7 +2538,7 @@ impl PerCodec for AssociatedMbsQosFlowSetuporModifyRequestItem {
 	}
 }
 // AssociatedQosFlowList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct AssociatedQosFlowList(pub NonEmpty<AssociatedQosFlowItem>);
 
 impl AssociatedQosFlowList {
@@ -2581,7 +2583,7 @@ impl PerCodec for AssociatedQosFlowList {
 	}
 }
 // AssociatedQosFlowItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct AssociatedQosFlowItem {
 	pub qos_flow_identifier: QosFlowIdentifier,
 	pub qos_flow_mapping_indication: Option<QosFlowMappingIndication>,
@@ -2674,9 +2676,10 @@ impl PerCodec for AssociatedQosFlowItem {
 	}
 }
 // AuthenticatedIndication
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum AuthenticatedIndication {
+	#[default]
 	True,
 }
 
@@ -2715,7 +2718,7 @@ impl PerCodec for AuthenticatedIndication {
 	}
 }
 // AveragingWindow
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct AveragingWindow(pub u16);
 
 impl AveragingWindow {
@@ -2751,8 +2754,9 @@ impl PerCodec for AveragingWindow {
 	}
 }
 // AreaScopeOfMdtNr
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum AreaScopeOfMdtNr {
+	#[default]
 	CellBased(CellBasedMdtNr),
 	TaBased(TaBasedMdt),
 	PlmnWide,
@@ -2827,8 +2831,9 @@ impl PerCodec for AreaScopeOfMdtNr {
 	}
 }
 // AreaScopeOfMdtEutra
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum AreaScopeOfMdtEutra {
+	#[default]
 	CellBased(CellBasedMdtEutra),
 	TaBased(TaBasedMdt),
 	PlmnWide,
@@ -2903,7 +2908,7 @@ impl PerCodec for AreaScopeOfMdtEutra {
 	}
 }
 // AreaScopeOfNeighCellsList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct AreaScopeOfNeighCellsList(pub NonEmpty<AreaScopeOfNeighCellsItem>);
 
 impl AreaScopeOfNeighCellsList {
@@ -2948,7 +2953,7 @@ impl PerCodec for AreaScopeOfNeighCellsList {
 	}
 }
 // AreaScopeOfNeighCellsItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct AreaScopeOfNeighCellsItem {
 	pub nr_frequency_info: NrFrequencyInfo,
 	pub pci_list_for_mdt: Option<PciListForMdt>,
@@ -3020,8 +3025,9 @@ impl PerCodec for AreaScopeOfNeighCellsItem {
 	}
 }
 // AreaScopeOfQmc
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum AreaScopeOfQmc {
+	#[default]
 	CellBased(CellBasedQmc),
 	TaBased(TaBasedQmc),
 	TaiBased(TaiBasedQmc),
@@ -3096,7 +3102,7 @@ impl PerCodec for AreaScopeOfQmc {
 	}
 }
 // AvailableRanVisibleQoEMetrics
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct AvailableRanVisibleQoEMetrics {
 	pub application_layer_buffer_level_list: Option<ApplicationLayerBufferLevelList>,
 	pub playout_delay_for_media_startup: Option<PlayoutDelayForMediaStartup>,
@@ -3175,7 +3181,7 @@ impl PerCodec for AvailableRanVisibleQoEMetrics {
 	}
 }
 // BeamMeasurementsReportConfiguration
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct BeamMeasurementsReportConfiguration {
 	pub beam_measurements_report_quantity: Option<BeamMeasurementsReportQuantity>,
 	pub max_nrof_rs_indexes_to_report: Option<MaxNrofRsIndexesToReport>,
@@ -3254,7 +3260,7 @@ impl PerCodec for BeamMeasurementsReportConfiguration {
 	}
 }
 // BeamMeasurementsReportQuantity
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct BeamMeasurementsReportQuantity {
 	pub rsrp: Rsrp,
 	pub rsrq: Rsrq,
@@ -3319,7 +3325,7 @@ impl PerCodec for BeamMeasurementsReportQuantity {
 	}
 }
 // BitRate
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct BitRate(pub u64);
 
 impl BitRate {
@@ -3362,8 +3368,9 @@ impl PerCodec for BitRate {
 	}
 }
 // BroadcastCancelledAreaList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum BroadcastCancelledAreaList {
+	#[default]
 	CellIdCancelledEutra(CellIdCancelledEutra),
 	TaiCancelledEutra(TaiCancelledEutra),
 	EmergencyAreaIdCancelledEutra(EmergencyAreaIdCancelledEutra),
@@ -3456,8 +3463,9 @@ impl PerCodec for BroadcastCancelledAreaList {
 	}
 }
 // BroadcastCompletedAreaList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum BroadcastCompletedAreaList {
+	#[default]
 	CellIdBroadcastEutra(CellIdBroadcastEutra),
 	TaiBroadcastEutra(TaiBroadcastEutra),
 	EmergencyAreaIdBroadcastEutra(EmergencyAreaIdBroadcastEutra),
@@ -3550,7 +3558,7 @@ impl PerCodec for BroadcastCompletedAreaList {
 	}
 }
 // BroadcastPlmnList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct BroadcastPlmnList(pub NonEmpty<BroadcastPlmnItem>);
 
 impl BroadcastPlmnList {
@@ -3595,7 +3603,7 @@ impl PerCodec for BroadcastPlmnList {
 	}
 }
 // BroadcastPlmnItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct BroadcastPlmnItem {
 	pub plmn_identity: PlmnIdentity,
 	pub tai_slice_support_list: SliceSupportList,
@@ -3710,7 +3718,7 @@ impl PerCodec for BroadcastPlmnItem {
 	}
 }
 // BluetoothMeasurementConfiguration
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct BluetoothMeasurementConfiguration {
 	pub bluetooth_meas_config: BluetoothMeasConfig,
 	pub bluetooth_meas_config_name_list: Option<BluetoothMeasConfigNameList>,
@@ -3793,7 +3801,7 @@ impl PerCodec for BluetoothMeasurementConfiguration {
 	}
 }
 // BluetoothMeasConfigNameList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct BluetoothMeasConfigNameList(pub NonEmpty<BluetoothMeasConfigNameItem>);
 
 impl BluetoothMeasConfigNameList {
@@ -3838,7 +3846,7 @@ impl PerCodec for BluetoothMeasConfigNameList {
 	}
 }
 // BluetoothMeasConfigNameItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct BluetoothMeasConfigNameItem {
 	pub bluetooth_name: BluetoothName,
 }
@@ -3897,9 +3905,10 @@ impl PerCodec for BluetoothMeasConfigNameItem {
 	}
 }
 // BluetoothMeasConfig
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum BluetoothMeasConfig {
+	#[default]
 	Setup,
 }
 
@@ -3938,7 +3947,7 @@ impl PerCodec for BluetoothMeasConfig {
 	}
 }
 // BluetoothName
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct BluetoothName(pub Vec<u8>);
 
 impl BluetoothName {
@@ -3977,7 +3986,7 @@ impl PerCodec for BluetoothName {
 	}
 }
 // BurstArrivalTime
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct BurstArrivalTime(pub Vec<u8>);
 
 impl BurstArrivalTime {
@@ -4011,7 +4020,7 @@ impl PerCodec for BurstArrivalTime {
 	}
 }
 // CagId
-#[derive(Clone, Debug)]
+#[derive(Clone, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct CagId(pub BitString);
 
 impl CagId {
@@ -4050,9 +4059,10 @@ impl PerCodec for CagId {
 	}
 }
 // CancelAllWarningMessages
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum CancelAllWarningMessages {
+	#[default]
 	True,
 }
 
@@ -4091,7 +4101,7 @@ impl PerCodec for CancelAllWarningMessages {
 	}
 }
 // CancelledCellsInEaiEutra
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct CancelledCellsInEaiEutra(pub NonEmpty<CancelledCellsInEaiEutraItem>);
 
 impl CancelledCellsInEaiEutra {
@@ -4136,7 +4146,7 @@ impl PerCodec for CancelledCellsInEaiEutra {
 	}
 }
 // CancelledCellsInEaiEutraItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct CancelledCellsInEaiEutraItem {
 	pub eutra_cgi: EutraCgi,
 	pub number_of_broadcasts: NumberOfBroadcasts,
@@ -4201,7 +4211,7 @@ impl PerCodec for CancelledCellsInEaiEutraItem {
 	}
 }
 // CancelledCellsInEaiNr
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct CancelledCellsInEaiNr(pub NonEmpty<CancelledCellsInEaiNrItem>);
 
 impl CancelledCellsInEaiNr {
@@ -4246,7 +4256,7 @@ impl PerCodec for CancelledCellsInEaiNr {
 	}
 }
 // CancelledCellsInEaiNrItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct CancelledCellsInEaiNrItem {
 	pub nr_cgi: NrCgi,
 	pub number_of_broadcasts: NumberOfBroadcasts,
@@ -4311,7 +4321,7 @@ impl PerCodec for CancelledCellsInEaiNrItem {
 	}
 }
 // CancelledCellsInTaiEutra
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct CancelledCellsInTaiEutra(pub NonEmpty<CancelledCellsInTaiEutraItem>);
 
 impl CancelledCellsInTaiEutra {
@@ -4356,7 +4366,7 @@ impl PerCodec for CancelledCellsInTaiEutra {
 	}
 }
 // CancelledCellsInTaiEutraItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct CancelledCellsInTaiEutraItem {
 	pub eutra_cgi: EutraCgi,
 	pub number_of_broadcasts: NumberOfBroadcasts,
@@ -4421,7 +4431,7 @@ impl PerCodec for CancelledCellsInTaiEutraItem {
 	}
 }
 // CancelledCellsInTaiNr
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct CancelledCellsInTaiNr(pub NonEmpty<CancelledCellsInTaiNrItem>);
 
 impl CancelledCellsInTaiNr {
@@ -4466,7 +4476,7 @@ impl PerCodec for CancelledCellsInTaiNr {
 	}
 }
 // CancelledCellsInTaiNrItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct CancelledCellsInTaiNrItem {
 	pub nr_cgi: NrCgi,
 	pub number_of_broadcasts: NumberOfBroadcasts,
@@ -4531,7 +4541,7 @@ impl PerCodec for CancelledCellsInTaiNrItem {
 	}
 }
 // CandidateCellList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct CandidateCellList(pub NonEmpty<CandidateCellItem>);
 
 impl CandidateCellList {
@@ -4576,7 +4586,7 @@ impl PerCodec for CandidateCellList {
 	}
 }
 // CandidateCellItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct CandidateCellItem {
 	pub candidate_cell: CandidateCell,
 }
@@ -4635,8 +4645,9 @@ impl PerCodec for CandidateCellItem {
 	}
 }
 // CandidateCell
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum CandidateCell {
+	#[default]
 	CandidateCgi(CandidateCellId),
 	CandidatePci(CandidatePci),
 }
@@ -4699,7 +4710,7 @@ impl PerCodec for CandidateCell {
 	}
 }
 // CandidateCellId
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct CandidateCellId {
 	pub candidate_cell_id: NrCgi,
 }
@@ -4758,7 +4769,7 @@ impl PerCodec for CandidateCellId {
 	}
 }
 // CandidatePci
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct CandidatePci {
 	pub candidate_pci: u16,
 	pub candidate_nr_arfcn: u32,
@@ -4838,8 +4849,9 @@ impl PerCodec for CandidatePci {
 	}
 }
 // Cause
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum Cause {
+	#[default]
 	RadioNetwork(CauseRadioNetwork),
 	Transport(CauseTransport),
 	Nas(CauseNas),
@@ -4920,9 +4932,10 @@ impl PerCodec for Cause {
 	}
 }
 // CauseMisc
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum CauseMisc {
+	#[default]
 	ControlProcessingOverload,
 	NotEnoughUserPlaneProcessingResources,
 	HardwareFailure,
@@ -4966,9 +4979,10 @@ impl PerCodec for CauseMisc {
 	}
 }
 // CauseNas
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum CauseNas {
+	#[default]
 	NormalRelease,
 	AuthenticationFailure,
 	Deregister,
@@ -5010,9 +5024,10 @@ impl PerCodec for CauseNas {
 	}
 }
 // CauseProtocol
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum CauseProtocol {
+	#[default]
 	TransferSyntaxError,
 	AbstractSyntaxErrorReject,
 	AbstractSyntaxErrorIgnoreAndNotify,
@@ -5057,9 +5072,10 @@ impl PerCodec for CauseProtocol {
 	}
 }
 // CauseRadioNetwork
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum CauseRadioNetwork {
+	#[default]
 	Unspecified,
 	TxnrelocoverallExpiry,
 	SuccessfulHandover,
@@ -5142,9 +5158,10 @@ impl PerCodec for CauseRadioNetwork {
 	}
 }
 // CauseTransport
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum CauseTransport {
+	#[default]
 	TransportResourceUnavailable,
 	Unspecified,
 }
@@ -5184,7 +5201,7 @@ impl PerCodec for CauseTransport {
 	}
 }
 // CellCagInformation
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct CellCagInformation {
 	pub ngran_cgi: NgranCgi,
 	pub cell_cag_list: CellCagList,
@@ -5249,7 +5266,7 @@ impl PerCodec for CellCagInformation {
 	}
 }
 // CellCagList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct CellCagList(pub NonEmpty<CagId>);
 
 impl CellCagList {
@@ -5294,7 +5311,7 @@ impl PerCodec for CellCagList {
 	}
 }
 // CellIdBroadcastEutra
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct CellIdBroadcastEutra(pub NonEmpty<CellIdBroadcastEutraItem>);
 
 impl CellIdBroadcastEutra {
@@ -5339,7 +5356,7 @@ impl PerCodec for CellIdBroadcastEutra {
 	}
 }
 // CellIdBroadcastEutraItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct CellIdBroadcastEutraItem {
 	pub eutra_cgi: EutraCgi,
 }
@@ -5398,7 +5415,7 @@ impl PerCodec for CellIdBroadcastEutraItem {
 	}
 }
 // CellIdBroadcastNr
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct CellIdBroadcastNr(pub NonEmpty<CellIdBroadcastNrItem>);
 
 impl CellIdBroadcastNr {
@@ -5443,7 +5460,7 @@ impl PerCodec for CellIdBroadcastNr {
 	}
 }
 // CellIdBroadcastNrItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct CellIdBroadcastNrItem {
 	pub nr_cgi: NrCgi,
 }
@@ -5502,7 +5519,7 @@ impl PerCodec for CellIdBroadcastNrItem {
 	}
 }
 // CellIdCancelledEutra
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct CellIdCancelledEutra(pub NonEmpty<CellIdCancelledEutraItem>);
 
 impl CellIdCancelledEutra {
@@ -5547,7 +5564,7 @@ impl PerCodec for CellIdCancelledEutra {
 	}
 }
 // CellIdCancelledEutraItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct CellIdCancelledEutraItem {
 	pub eutra_cgi: EutraCgi,
 	pub number_of_broadcasts: NumberOfBroadcasts,
@@ -5612,7 +5629,7 @@ impl PerCodec for CellIdCancelledEutraItem {
 	}
 }
 // CellIdCancelledNr
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct CellIdCancelledNr(pub NonEmpty<CellIdCancelledNrItem>);
 
 impl CellIdCancelledNr {
@@ -5657,7 +5674,7 @@ impl PerCodec for CellIdCancelledNr {
 	}
 }
 // CellIdCancelledNrItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct CellIdCancelledNrItem {
 	pub nr_cgi: NrCgi,
 	pub number_of_broadcasts: NumberOfBroadcasts,
@@ -5722,8 +5739,9 @@ impl PerCodec for CellIdCancelledNrItem {
 	}
 }
 // CellIdListForRestart
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum CellIdListForRestart {
+	#[default]
 	EutraCgiListforRestart(EutraCgiList),
 	NrCgiListforRestart(NrCgiList),
 }
@@ -5786,9 +5804,10 @@ impl PerCodec for CellIdListForRestart {
 	}
 }
 // CellSize
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum CellSize {
+	#[default]
 	Verysmall,
 	Small,
 	Medium,
@@ -5830,7 +5849,7 @@ impl PerCodec for CellSize {
 	}
 }
 // CellType
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct CellType {
 	pub cell_size: CellSize,
 }
@@ -5889,9 +5908,10 @@ impl PerCodec for CellType {
 	}
 }
 // CEmodeBSupportIndicator
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum CEmodeBSupportIndicator {
+	#[default]
 	Supported,
 }
 
@@ -5930,9 +5950,10 @@ impl PerCodec for CEmodeBSupportIndicator {
 	}
 }
 // CEmodeBrestricted
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum CEmodeBrestricted {
+	#[default]
 	Restricted,
 	NotRestricted,
 }
@@ -5972,7 +5993,7 @@ impl PerCodec for CEmodeBrestricted {
 	}
 }
 // CnAssistedRanTuning
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct CnAssistedRanTuning {
 	pub expected_ue_behaviour: Option<ExpectedUeBehaviour>,
 }
@@ -6040,7 +6061,7 @@ impl PerCodec for CnAssistedRanTuning {
 	}
 }
 // CNsubgroupId
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct CNsubgroupId(pub u8);
 
 impl CNsubgroupId {
@@ -6076,7 +6097,7 @@ impl PerCodec for CNsubgroupId {
 	}
 }
 // CnTypeRestrictionsForEquivalent
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct CnTypeRestrictionsForEquivalent(pub NonEmpty<CnTypeRestrictionsForEquivalentItem>);
 
 impl CnTypeRestrictionsForEquivalent {
@@ -6121,7 +6142,7 @@ impl PerCodec for CnTypeRestrictionsForEquivalent {
 	}
 }
 // CnTypeRestrictionsForEquivalentItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct CnTypeRestrictionsForEquivalentItem {
 	pub plmn_identity: PlmnIdentity,
 	pub cn_type: CnType,
@@ -6186,9 +6207,10 @@ impl PerCodec for CnTypeRestrictionsForEquivalentItem {
 	}
 }
 // CnTypeRestrictionsForServing
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum CnTypeRestrictionsForServing {
+	#[default]
 	EpcForbidden,
 }
 
@@ -6227,7 +6249,7 @@ impl PerCodec for CnTypeRestrictionsForServing {
 	}
 }
 // CommonNetworkInstance
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct CommonNetworkInstance(pub Vec<u8>);
 
 impl CommonNetworkInstance {
@@ -6261,7 +6283,7 @@ impl PerCodec for CommonNetworkInstance {
 	}
 }
 // CompletedCellsInEaiEutra
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct CompletedCellsInEaiEutra(pub NonEmpty<CompletedCellsInEaiEutraItem>);
 
 impl CompletedCellsInEaiEutra {
@@ -6306,7 +6328,7 @@ impl PerCodec for CompletedCellsInEaiEutra {
 	}
 }
 // CompletedCellsInEaiEutraItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct CompletedCellsInEaiEutraItem {
 	pub eutra_cgi: EutraCgi,
 }
@@ -6365,7 +6387,7 @@ impl PerCodec for CompletedCellsInEaiEutraItem {
 	}
 }
 // CompletedCellsInEaiNr
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct CompletedCellsInEaiNr(pub NonEmpty<CompletedCellsInEaiNrItem>);
 
 impl CompletedCellsInEaiNr {
@@ -6410,7 +6432,7 @@ impl PerCodec for CompletedCellsInEaiNr {
 	}
 }
 // CompletedCellsInEaiNrItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct CompletedCellsInEaiNrItem {
 	pub nr_cgi: NrCgi,
 }
@@ -6469,7 +6491,7 @@ impl PerCodec for CompletedCellsInEaiNrItem {
 	}
 }
 // CompletedCellsInTaiEutra
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct CompletedCellsInTaiEutra(pub NonEmpty<CompletedCellsInTaiEutraItem>);
 
 impl CompletedCellsInTaiEutra {
@@ -6514,7 +6536,7 @@ impl PerCodec for CompletedCellsInTaiEutra {
 	}
 }
 // CompletedCellsInTaiEutraItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct CompletedCellsInTaiEutraItem {
 	pub eutra_cgi: EutraCgi,
 }
@@ -6573,7 +6595,7 @@ impl PerCodec for CompletedCellsInTaiEutraItem {
 	}
 }
 // CompletedCellsInTaiNr
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct CompletedCellsInTaiNr(pub NonEmpty<CompletedCellsInTaiNrItem>);
 
 impl CompletedCellsInTaiNr {
@@ -6618,7 +6640,7 @@ impl PerCodec for CompletedCellsInTaiNr {
 	}
 }
 // CompletedCellsInTaiNrItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct CompletedCellsInTaiNrItem {
 	pub nr_cgi: NrCgi,
 }
@@ -6677,9 +6699,10 @@ impl PerCodec for CompletedCellsInTaiNrItem {
 	}
 }
 // ConcurrentWarningMessageInd
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum ConcurrentWarningMessageInd {
+	#[default]
 	True,
 }
 
@@ -6718,9 +6741,10 @@ impl PerCodec for ConcurrentWarningMessageInd {
 	}
 }
 // ConfidentialityProtectionIndication
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum ConfidentialityProtectionIndication {
+	#[default]
 	Required,
 	Preferred,
 	NotNeeded,
@@ -6761,9 +6785,10 @@ impl PerCodec for ConfidentialityProtectionIndication {
 	}
 }
 // ConfidentialityProtectionResult
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum ConfidentialityProtectionResult {
+	#[default]
 	Performed,
 	NotPerformed,
 }
@@ -6803,9 +6828,10 @@ impl PerCodec for ConfidentialityProtectionResult {
 	}
 }
 // ConfiguredTacIndication
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum ConfiguredTacIndication {
+	#[default]
 	True,
 }
 
@@ -6844,7 +6870,7 @@ impl PerCodec for ConfiguredTacIndication {
 	}
 }
 // CoreNetworkAssistanceInformationForInactive
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct CoreNetworkAssistanceInformationForInactive {
 	pub ue_identity_index_value: UeIdentityIndexValue,
 	pub ue_specific_drx: Option<PagingDrx>,
@@ -7087,7 +7113,7 @@ impl PerCodec for CoreNetworkAssistanceInformationForInactive {
 	}
 }
 // CountValueForPdcpSn12
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct CountValueForPdcpSn12 {
 	pub pdcp_sn12: u16,
 	pub hfn_pdcp_sn12: u32,
@@ -7166,7 +7192,7 @@ impl PerCodec for CountValueForPdcpSn12 {
 	}
 }
 // CountValueForPdcpSn18
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct CountValueForPdcpSn18 {
 	pub pdcp_sn18: u32,
 	pub hfn_pdcp_sn18: u16,
@@ -7245,7 +7271,7 @@ impl PerCodec for CountValueForPdcpSn18 {
 	}
 }
 // CoverageEnhancementLevel
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct CoverageEnhancementLevel(pub Vec<u8>);
 
 impl CoverageEnhancementLevel {
@@ -7279,8 +7305,9 @@ impl PerCodec for CoverageEnhancementLevel {
 	}
 }
 // CpTransportLayerInformation
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum CpTransportLayerInformation {
+	#[default]
 	EndpointIpAddress(TransportLayerAddress),
 	EndpointIpAddressAndPort(EndpointIpAddressAndPort),
 }
@@ -7352,7 +7379,7 @@ impl PerCodec for CpTransportLayerInformation {
 	}
 }
 // CriticalityDiagnostics
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct CriticalityDiagnostics {
 	pub procedure_code: Option<ProcedureCode>,
 	pub triggering_message: Option<TriggeringMessage>,
@@ -7453,7 +7480,7 @@ impl PerCodec for CriticalityDiagnostics {
 	}
 }
 // CriticalityDiagnosticsIeList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct CriticalityDiagnosticsIeList(pub NonEmpty<CriticalityDiagnosticsIeItem>);
 
 impl CriticalityDiagnosticsIeList {
@@ -7498,7 +7525,7 @@ impl PerCodec for CriticalityDiagnosticsIeList {
 	}
 }
 // CriticalityDiagnosticsIeItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct CriticalityDiagnosticsIeItem {
 	pub ie_criticality: Criticality,
 	pub ie_id: ProtocolIeId,
@@ -7567,7 +7594,7 @@ impl PerCodec for CriticalityDiagnosticsIeItem {
 	}
 }
 // CellBasedMdtNr
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct CellBasedMdtNr {
 	pub cell_id_listfor_mdt: CellIdListforMdtNr,
 }
@@ -7628,7 +7655,7 @@ impl PerCodec for CellBasedMdtNr {
 	}
 }
 // CellIdListforMdtNr
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct CellIdListforMdtNr(pub NonEmpty<NrCgi>);
 
 impl CellIdListforMdtNr {
@@ -7673,7 +7700,7 @@ impl PerCodec for CellIdListforMdtNr {
 	}
 }
 // CellBasedMdtEutra
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct CellBasedMdtEutra {
 	pub cell_id_listfor_mdt: CellIdListforMdtEutra,
 }
@@ -7734,7 +7761,7 @@ impl PerCodec for CellBasedMdtEutra {
 	}
 }
 // CellBasedQmc
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct CellBasedQmc {
 	pub cell_id_listfor_qmc: CellIdListforQmc,
 }
@@ -7795,7 +7822,7 @@ impl PerCodec for CellBasedQmc {
 	}
 }
 // CellIdListforQmc
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct CellIdListforQmc(pub NonEmpty<NgranCgi>);
 
 impl CellIdListforQmc {
@@ -7840,7 +7867,7 @@ impl PerCodec for CellIdListforQmc {
 	}
 }
 // CellIdListforMdtEutra
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct CellIdListforMdtEutra(pub NonEmpty<EutraCgi>);
 
 impl CellIdListforMdtEutra {
@@ -7885,7 +7912,7 @@ impl PerCodec for CellIdListforMdtEutra {
 	}
 }
 // DataCodingScheme
-#[derive(Clone, Debug)]
+#[derive(Clone, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct DataCodingScheme(pub BitString);
 
 impl DataCodingScheme {
@@ -7924,9 +7951,10 @@ impl PerCodec for DataCodingScheme {
 	}
 }
 // DataForwardingAccepted
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum DataForwardingAccepted {
+	#[default]
 	DataForwardingAccepted,
 }
 
@@ -7965,9 +7993,10 @@ impl PerCodec for DataForwardingAccepted {
 	}
 }
 // DataForwardingNotPossible
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum DataForwardingNotPossible {
+	#[default]
 	DataForwardingNotPossible,
 }
 
@@ -8006,7 +8035,7 @@ impl PerCodec for DataForwardingNotPossible {
 	}
 }
 // DataForwardingResponseDrbList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct DataForwardingResponseDrbList(pub NonEmpty<DataForwardingResponseDrbItem>);
 
 impl DataForwardingResponseDrbList {
@@ -8051,7 +8080,7 @@ impl PerCodec for DataForwardingResponseDrbList {
 	}
 }
 // DataForwardingResponseDrbItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct DataForwardingResponseDrbItem {
 	pub drb_id: DrbId,
 	pub dl_forwarding_up_tnl_information: Option<UpTransportLayerInformation>,
@@ -8134,7 +8163,7 @@ impl PerCodec for DataForwardingResponseDrbItem {
 	}
 }
 // DapsRequestInfo
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct DapsRequestInfo {
 	pub daps_indicator: DapsIndicator,
 }
@@ -8193,7 +8222,7 @@ impl PerCodec for DapsRequestInfo {
 	}
 }
 // DapsResponseInfoList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct DapsResponseInfoList(pub NonEmpty<DapsResponseInfoItem>);
 
 impl DapsResponseInfoList {
@@ -8238,7 +8267,7 @@ impl PerCodec for DapsResponseInfoList {
 	}
 }
 // DapsResponseInfoItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct DapsResponseInfoItem {
 	pub drb_id: DrbId,
 	pub daps_response_info: DapsResponseInfo,
@@ -8303,7 +8332,7 @@ impl PerCodec for DapsResponseInfoItem {
 	}
 }
 // DapsResponseInfo
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct DapsResponseInfo {
 	pub dapsresponseindicator: Dapsresponseindicator,
 }
@@ -8364,7 +8393,7 @@ impl PerCodec for DapsResponseInfo {
 	}
 }
 // DataForwardingResponseErabList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct DataForwardingResponseErabList(pub NonEmpty<DataForwardingResponseErabListItem>);
 
 impl DataForwardingResponseErabList {
@@ -8409,7 +8438,7 @@ impl PerCodec for DataForwardingResponseErabList {
 	}
 }
 // DataForwardingResponseErabListItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct DataForwardingResponseErabListItem {
 	pub e_rab_id: ERabId,
 	pub dl_forwarding_up_tnl_information: UpTransportLayerInformation,
@@ -8474,9 +8503,10 @@ impl PerCodec for DataForwardingResponseErabListItem {
 	}
 }
 // DelayCritical
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum DelayCritical {
+	#[default]
 	DelayCritical,
 	NonDelayCritical,
 }
@@ -8516,7 +8546,7 @@ impl PerCodec for DelayCritical {
 	}
 }
 // DlCpSecurityInformation
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct DlCpSecurityInformation {
 	pub dl_nas_mac: DlNasMac,
 }
@@ -8575,7 +8605,7 @@ impl PerCodec for DlCpSecurityInformation {
 	}
 }
 // DlNasMac
-#[derive(Clone, Debug)]
+#[derive(Clone, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct DlNasMac(pub BitString);
 
 impl DlNasMac {
@@ -8614,9 +8644,10 @@ impl PerCodec for DlNasMac {
 	}
 }
 // DlForwarding
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum DlForwarding {
+	#[default]
 	DlForwardingProposed,
 }
 
@@ -8655,9 +8686,10 @@ impl PerCodec for DlForwarding {
 	}
 }
 // DlNguTnlInformationReused
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum DlNguTnlInformationReused {
+	#[default]
 	True,
 }
 
@@ -8696,9 +8728,10 @@ impl PerCodec for DlNguTnlInformationReused {
 	}
 }
 // DirectForwardingPathAvailability
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum DirectForwardingPathAvailability {
+	#[default]
 	DirectPathAvailable,
 }
 
@@ -8737,7 +8770,7 @@ impl PerCodec for DirectForwardingPathAvailability {
 	}
 }
 // DrbId
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct DrbId(pub u8);
 
 impl DrbId {
@@ -8773,7 +8806,7 @@ impl PerCodec for DrbId {
 	}
 }
 // DrbsSubjectToStatusTransferList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct DrbsSubjectToStatusTransferList(pub NonEmpty<DrbsSubjectToStatusTransferItem>);
 
 impl DrbsSubjectToStatusTransferList {
@@ -8818,7 +8851,7 @@ impl PerCodec for DrbsSubjectToStatusTransferList {
 	}
 }
 // DrbsSubjectToStatusTransferItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct DrbsSubjectToStatusTransferItem {
 	pub drb_id: DrbId,
 	pub drb_status_ul: DrbStatusUl,
@@ -8910,8 +8943,9 @@ impl PerCodec for DrbsSubjectToStatusTransferItem {
 	}
 }
 // DrbStatusDl
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum DrbStatusDl {
+	#[default]
 	DrbStatusDl12(DrbStatusDl12),
 	DrbStatusDl18(DrbStatusDl18),
 }
@@ -8974,7 +9008,7 @@ impl PerCodec for DrbStatusDl {
 	}
 }
 // DrbStatusDl12
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct DrbStatusDl12 {
 	pub dl_count_value: CountValueForPdcpSn12,
 }
@@ -9033,7 +9067,7 @@ impl PerCodec for DrbStatusDl12 {
 	}
 }
 // DrbStatusDl18
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct DrbStatusDl18 {
 	pub dl_count_value: CountValueForPdcpSn18,
 }
@@ -9092,8 +9126,9 @@ impl PerCodec for DrbStatusDl18 {
 	}
 }
 // DrbStatusUl
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum DrbStatusUl {
+	#[default]
 	DrbStatusUl12(DrbStatusUl12),
 	DrbStatusUl18(DrbStatusUl18),
 }
@@ -9156,7 +9191,7 @@ impl PerCodec for DrbStatusUl {
 	}
 }
 // DrbStatusUl12
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct DrbStatusUl12 {
 	pub ul_count_value: CountValueForPdcpSn12,
 	pub receive_status_of_ul_pdcp_s_du_s: Option<BitString>,
@@ -9228,7 +9263,7 @@ impl PerCodec for DrbStatusUl12 {
 	}
 }
 // DrbStatusUl18
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct DrbStatusUl18 {
 	pub ul_count_value: CountValueForPdcpSn18,
 	pub receive_status_of_ul_pdcp_s_du_s: Option<BitString>,
@@ -9305,7 +9340,7 @@ impl PerCodec for DrbStatusUl18 {
 	}
 }
 // DrbsToQosFlowsMappingList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct DrbsToQosFlowsMappingList(pub NonEmpty<DrbsToQosFlowsMappingItem>);
 
 impl DrbsToQosFlowsMappingList {
@@ -9350,7 +9385,7 @@ impl PerCodec for DrbsToQosFlowsMappingList {
 	}
 }
 // DrbsToQosFlowsMappingItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct DrbsToQosFlowsMappingItem {
 	pub drb_id: DrbId,
 	pub associated_qos_flow_list: AssociatedQosFlowList,
@@ -9434,7 +9469,7 @@ impl PerCodec for DrbsToQosFlowsMappingItem {
 	}
 }
 // Dynamic5qiDescriptor
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct Dynamic5qiDescriptor {
 	pub priority_level_qos: PriorityLevelQos,
 	pub packet_delay_budget: PacketDelayBudget,
@@ -9601,9 +9636,10 @@ impl PerCodec for Dynamic5qiDescriptor {
 	}
 }
 // EarlyMeasurement
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum EarlyMeasurement {
+	#[default]
 	True,
 }
 
@@ -9642,7 +9678,7 @@ impl PerCodec for EarlyMeasurement {
 	}
 }
 // EarlyStatusTransferTransparentContainer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct EarlyStatusTransferTransparentContainer {
 	pub procedure_stage: ProcedureStageChoice,
 }
@@ -9703,8 +9739,9 @@ impl PerCodec for EarlyStatusTransferTransparentContainer {
 	}
 }
 // ProcedureStageChoice
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum ProcedureStageChoice {
+	#[default]
 	FirstDlCount(FirstDlCount),
 }
 
@@ -9761,7 +9798,7 @@ impl PerCodec for ProcedureStageChoice {
 	}
 }
 // FirstDlCount
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct FirstDlCount {
 	pub drbs_subject_to_early_status_transfer: DrbsSubjectToEarlyStatusTransferList,
 }
@@ -9823,7 +9860,7 @@ impl PerCodec for FirstDlCount {
 	}
 }
 // DrbsSubjectToEarlyStatusTransferList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct DrbsSubjectToEarlyStatusTransferList(pub NonEmpty<DrbsSubjectToEarlyStatusTransferItem>);
 
 impl DrbsSubjectToEarlyStatusTransferList {
@@ -9868,7 +9905,7 @@ impl PerCodec for DrbsSubjectToEarlyStatusTransferList {
 	}
 }
 // DrbsSubjectToEarlyStatusTransferItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct DrbsSubjectToEarlyStatusTransferItem {
 	pub drb_id: DrbId,
 	pub first_dl_count: DrbStatusDl,
@@ -9933,9 +9970,10 @@ impl PerCodec for DrbsSubjectToEarlyStatusTransferItem {
 	}
 }
 // EdtSession
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum EdtSession {
+	#[default]
 	True,
 }
 
@@ -9976,7 +10014,15 @@ impl PerCodec for EdtSession {
 // EmergencyAreaId
 #[derive(Clone, Debug)]
 pub struct EmergencyAreaId(pub [u8; 3]);
-
+impl Default for EmergencyAreaId {
+	fn default() -> EmergencyAreaId {
+		let init = std::mem::MaybeUninit::<[u8; 3]>::zeroed();
+		// SAFETY: No pointers present for the assume init here
+		// TODO: Evaluate the performance issues: "https://users.rust-lang.org/t/unnecessary-performance-penalty-for-mem-maybeuninit/84063"
+		let default_value = unsafe { init.assume_init() };
+		EmergencyAreaId(default_value)
+	}
+}
 impl EmergencyAreaId {
 	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
 		Ok(Self(
@@ -10012,7 +10058,7 @@ impl PerCodec for EmergencyAreaId {
 	}
 }
 // EmergencyAreaIdBroadcastEutra
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct EmergencyAreaIdBroadcastEutra(pub NonEmpty<EmergencyAreaIdBroadcastEutraItem>);
 
 impl EmergencyAreaIdBroadcastEutra {
@@ -10057,7 +10103,7 @@ impl PerCodec for EmergencyAreaIdBroadcastEutra {
 	}
 }
 // EmergencyAreaIdBroadcastEutraItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct EmergencyAreaIdBroadcastEutraItem {
 	pub emergency_area_id: EmergencyAreaId,
 	pub completed_cells_in_eai_eutra: CompletedCellsInEaiEutra,
@@ -10122,7 +10168,7 @@ impl PerCodec for EmergencyAreaIdBroadcastEutraItem {
 	}
 }
 // EmergencyAreaIdBroadcastNr
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct EmergencyAreaIdBroadcastNr(pub NonEmpty<EmergencyAreaIdBroadcastNrItem>);
 
 impl EmergencyAreaIdBroadcastNr {
@@ -10167,7 +10213,7 @@ impl PerCodec for EmergencyAreaIdBroadcastNr {
 	}
 }
 // EmergencyAreaIdBroadcastNrItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct EmergencyAreaIdBroadcastNrItem {
 	pub emergency_area_id: EmergencyAreaId,
 	pub completed_cells_in_eai_nr: CompletedCellsInEaiNr,
@@ -10232,7 +10278,7 @@ impl PerCodec for EmergencyAreaIdBroadcastNrItem {
 	}
 }
 // EmergencyAreaIdCancelledEutra
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct EmergencyAreaIdCancelledEutra(pub NonEmpty<EmergencyAreaIdCancelledEutraItem>);
 
 impl EmergencyAreaIdCancelledEutra {
@@ -10277,7 +10323,7 @@ impl PerCodec for EmergencyAreaIdCancelledEutra {
 	}
 }
 // EmergencyAreaIdCancelledEutraItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct EmergencyAreaIdCancelledEutraItem {
 	pub emergency_area_id: EmergencyAreaId,
 	pub cancelled_cells_in_eai_eutra: CancelledCellsInEaiEutra,
@@ -10342,7 +10388,7 @@ impl PerCodec for EmergencyAreaIdCancelledEutraItem {
 	}
 }
 // EmergencyAreaIdCancelledNr
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct EmergencyAreaIdCancelledNr(pub NonEmpty<EmergencyAreaIdCancelledNrItem>);
 
 impl EmergencyAreaIdCancelledNr {
@@ -10387,7 +10433,7 @@ impl PerCodec for EmergencyAreaIdCancelledNr {
 	}
 }
 // EmergencyAreaIdCancelledNrItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct EmergencyAreaIdCancelledNrItem {
 	pub emergency_area_id: EmergencyAreaId,
 	pub cancelled_cells_in_eai_nr: CancelledCellsInEaiNr,
@@ -10452,7 +10498,7 @@ impl PerCodec for EmergencyAreaIdCancelledNrItem {
 	}
 }
 // EmergencyAreaIdList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct EmergencyAreaIdList(pub NonEmpty<EmergencyAreaId>);
 
 impl EmergencyAreaIdList {
@@ -10497,7 +10543,7 @@ impl PerCodec for EmergencyAreaIdList {
 	}
 }
 // EmergencyAreaIdListForRestart
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct EmergencyAreaIdListForRestart(pub NonEmpty<EmergencyAreaId>);
 
 impl EmergencyAreaIdListForRestart {
@@ -10542,7 +10588,7 @@ impl PerCodec for EmergencyAreaIdListForRestart {
 	}
 }
 // EmergencyFallbackIndicator
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct EmergencyFallbackIndicator {
 	pub emergency_fallback_request_indicator: EmergencyFallbackRequestIndicator,
 	pub emergency_service_target_cn: Option<EmergencyServiceTargetCn>,
@@ -10614,9 +10660,10 @@ impl PerCodec for EmergencyFallbackIndicator {
 	}
 }
 // EmergencyFallbackRequestIndicator
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum EmergencyFallbackRequestIndicator {
+	#[default]
 	EmergencyFallbackRequested,
 }
 
@@ -10655,9 +10702,10 @@ impl PerCodec for EmergencyFallbackRequestIndicator {
 	}
 }
 // EmergencyServiceTargetCn
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum EmergencyServiceTargetCn {
+	#[default]
 	FiveGc,
 	Epc,
 }
@@ -10697,8 +10745,9 @@ impl PerCodec for EmergencyServiceTargetCn {
 	}
 }
 // EnbId
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum EnbId {
+	#[default]
 	MacroEnbId(BitString),
 	HomeEnbId(BitString),
 	ShortMacroEnbId(BitString),
@@ -10793,9 +10842,10 @@ impl PerCodec for EnbId {
 	}
 }
 // EnhancedCoverageRestriction
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum EnhancedCoverageRestriction {
+	#[default]
 	Restricted,
 }
 
@@ -10834,7 +10884,7 @@ impl PerCodec for EnhancedCoverageRestriction {
 	}
 }
 // ExtendedConnectedTime
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct ExtendedConnectedTime(pub u8);
 
 impl ExtendedConnectedTime {
@@ -10870,7 +10920,7 @@ impl PerCodec for ExtendedConnectedTime {
 	}
 }
 // EnDcsonConfigurationTransfer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct EnDcsonConfigurationTransfer(pub Vec<u8>);
 
 impl EnDcsonConfigurationTransfer {
@@ -10904,7 +10954,7 @@ impl PerCodec for EnDcsonConfigurationTransfer {
 	}
 }
 // EndpointIpAddressAndPort
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct EndpointIpAddressAndPort {
 	pub endpoint_ip_address: TransportLayerAddress,
 	pub port_number: PortNumber,
@@ -10969,9 +11019,10 @@ impl PerCodec for EndpointIpAddressAndPort {
 	}
 }
 // EndIndication
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum EndIndication {
+	#[default]
 	NoFurtherData,
 	FurtherDataExists,
 }
@@ -11011,7 +11062,7 @@ impl PerCodec for EndIndication {
 	}
 }
 // EquivalentPlmns
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct EquivalentPlmns(pub NonEmpty<PlmnIdentity>);
 
 impl EquivalentPlmns {
@@ -11058,7 +11109,15 @@ impl PerCodec for EquivalentPlmns {
 // EpsTac
 #[derive(Clone, Debug)]
 pub struct EpsTac(pub [u8; 2]);
-
+impl Default for EpsTac {
+	fn default() -> EpsTac {
+		let init = std::mem::MaybeUninit::<[u8; 2]>::zeroed();
+		// SAFETY: No pointers present for the assume init here
+		// TODO: Evaluate the performance issues: "https://users.rust-lang.org/t/unnecessary-performance-penalty-for-mem-maybeuninit/84063"
+		let default_value = unsafe { init.assume_init() };
+		EpsTac(default_value)
+	}
+}
 impl EpsTac {
 	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
 		Ok(Self(
@@ -11094,7 +11153,7 @@ impl PerCodec for EpsTac {
 	}
 }
 // EpsTai
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct EpsTai {
 	pub plmn_identity: PlmnIdentity,
 	pub eps_tac: EpsTac,
@@ -11159,7 +11218,7 @@ impl PerCodec for EpsTai {
 	}
 }
 // ERabId
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct ERabId(pub u8);
 
 impl ERabId {
@@ -11195,7 +11254,7 @@ impl PerCodec for ERabId {
 	}
 }
 // ERabInformationList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct ERabInformationList(pub NonEmpty<ERabInformationItem>);
 
 impl ERabInformationList {
@@ -11240,7 +11299,7 @@ impl PerCodec for ERabInformationList {
 	}
 }
 // ERabInformationItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct ERabInformationItem {
 	pub e_rab_id: ERabId,
 	pub dl_forwarding: Option<DlForwarding>,
@@ -11345,7 +11404,7 @@ impl PerCodec for ERabInformationItem {
 	}
 }
 // EutraCellIdentity
-#[derive(Clone, Debug)]
+#[derive(Clone, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct EutraCellIdentity(pub BitString);
 
 impl EutraCellIdentity {
@@ -11384,7 +11443,7 @@ impl PerCodec for EutraCellIdentity {
 	}
 }
 // EutraCgi
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct EutraCgi {
 	pub plmn_identity: PlmnIdentity,
 	pub eutra_cell_identity: EutraCellIdentity,
@@ -11449,7 +11508,7 @@ impl PerCodec for EutraCgi {
 	}
 }
 // EutraCgiList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct EutraCgiList(pub NonEmpty<EutraCgi>);
 
 impl EutraCgiList {
@@ -11494,7 +11553,7 @@ impl PerCodec for EutraCgiList {
 	}
 }
 // EutraCgiListForWarning
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct EutraCgiListForWarning(pub NonEmpty<EutraCgi>);
 
 impl EutraCgiListForWarning {
@@ -11539,7 +11598,7 @@ impl PerCodec for EutraCgiListForWarning {
 	}
 }
 // EutraPagingeDrxInformation
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct EutraPagingeDrxInformation {
 	pub eutra_paging_e_drx_cycle: EutraPagingEDrxCycle,
 	pub eutra_paging_time_window: Option<EutraPagingTimeWindow>,
@@ -11611,9 +11670,10 @@ impl PerCodec for EutraPagingeDrxInformation {
 	}
 }
 // EutraPagingEDrxCycle
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum EutraPagingEDrxCycle {
+	#[default]
 	Hfhalf,
 	Hf1,
 	Hf2,
@@ -11665,9 +11725,10 @@ impl PerCodec for EutraPagingEDrxCycle {
 	}
 }
 // EutraPagingTimeWindow
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum EutraPagingTimeWindow {
+	#[default]
 	S1,
 	S2,
 	S3,
@@ -11721,7 +11782,7 @@ impl PerCodec for EutraPagingTimeWindow {
 	}
 }
 // EutrAencryptionAlgorithms
-#[derive(Clone, Debug)]
+#[derive(Clone, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct EutrAencryptionAlgorithms(pub BitString);
 
 impl EutrAencryptionAlgorithms {
@@ -11760,7 +11821,7 @@ impl PerCodec for EutrAencryptionAlgorithms {
 	}
 }
 // EutrAintegrityProtectionAlgorithms
-#[derive(Clone, Debug)]
+#[derive(Clone, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct EutrAintegrityProtectionAlgorithms(pub BitString);
 
 impl EutrAintegrityProtectionAlgorithms {
@@ -11799,9 +11860,10 @@ impl PerCodec for EutrAintegrityProtectionAlgorithms {
 	}
 }
 // EventType
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum EventType {
+	#[default]
 	Direct,
 	ChangeOfServeCell,
 	UePresenceInAreaOfInterest,
@@ -11845,7 +11907,7 @@ impl PerCodec for EventType {
 	}
 }
 // ExcessPacketDelayThresholdConfiguration
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct ExcessPacketDelayThresholdConfiguration(pub NonEmpty<ExcessPacketDelayThresholdItem>);
 
 impl ExcessPacketDelayThresholdConfiguration {
@@ -11892,7 +11954,7 @@ impl PerCodec for ExcessPacketDelayThresholdConfiguration {
 	}
 }
 // ExcessPacketDelayThresholdItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct ExcessPacketDelayThresholdItem {
 	pub five_qi: FiveQi,
 	pub excess_packet_delay_threshold_value: ExcessPacketDelayThresholdValue,
@@ -11957,9 +12019,10 @@ impl PerCodec for ExcessPacketDelayThresholdItem {
 	}
 }
 // ExcessPacketDelayThresholdValue
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum ExcessPacketDelayThresholdValue {
+	#[default]
 	Ms0dot25,
 	Ms0dot5,
 	Ms1,
@@ -12016,7 +12079,7 @@ impl PerCodec for ExcessPacketDelayThresholdValue {
 	}
 }
 // ExpectedActivityPeriod
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct ExpectedActivityPeriod(pub u8);
 
 impl ExpectedActivityPeriod {
@@ -12052,9 +12115,10 @@ impl PerCodec for ExpectedActivityPeriod {
 	}
 }
 // ExpectedHoInterval
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum ExpectedHoInterval {
+	#[default]
 	Sec15,
 	Sec30,
 	Sec60,
@@ -12099,7 +12163,7 @@ impl PerCodec for ExpectedHoInterval {
 	}
 }
 // ExpectedIdlePeriod
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct ExpectedIdlePeriod(pub u8);
 
 impl ExpectedIdlePeriod {
@@ -12135,7 +12199,7 @@ impl PerCodec for ExpectedIdlePeriod {
 	}
 }
 // ExpectedUeActivityBehaviour
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct ExpectedUeActivityBehaviour {
 	pub expected_activity_period: Option<ExpectedActivityPeriod>,
 	pub expected_idle_period: Option<ExpectedIdlePeriod>,
@@ -12225,7 +12289,7 @@ impl PerCodec for ExpectedUeActivityBehaviour {
 	}
 }
 // ExpectedUeBehaviour
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct ExpectedUeBehaviour {
 	pub expected_ue_activity_behaviour: Option<ExpectedUeActivityBehaviour>,
 	pub expected_ho_interval: Option<ExpectedHoInterval>,
@@ -12326,9 +12390,10 @@ impl PerCodec for ExpectedUeBehaviour {
 	}
 }
 // ExpectedUeMobility
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum ExpectedUeMobility {
+	#[default]
 	Stationary,
 	Mobile,
 }
@@ -12368,7 +12433,7 @@ impl PerCodec for ExpectedUeMobility {
 	}
 }
 // ExpectedUeMovingTrajectory
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct ExpectedUeMovingTrajectory(pub NonEmpty<ExpectedUeMovingTrajectoryItem>);
 
 impl ExpectedUeMovingTrajectory {
@@ -12413,7 +12478,7 @@ impl PerCodec for ExpectedUeMovingTrajectory {
 	}
 }
 // ExpectedUeMovingTrajectoryItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct ExpectedUeMovingTrajectoryItem {
 	pub ngran_cgi: NgranCgi,
 	pub time_stayed_in_cell: Option<u16>,
@@ -12485,7 +12550,7 @@ impl PerCodec for ExpectedUeMovingTrajectoryItem {
 	}
 }
 // ExtendedAmfName
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct ExtendedAmfName {
 	pub amf_name_visible_string: Option<AmfNameVisibleString>,
 	pub amf_name_utf8_string: Option<AmfNameUtf8String>,
@@ -12564,7 +12629,7 @@ impl PerCodec for ExtendedAmfName {
 	}
 }
 // ExtendedPacketDelayBudget
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct ExtendedPacketDelayBudget(pub i128);
 
 impl ExtendedPacketDelayBudget {
@@ -12600,7 +12665,7 @@ impl PerCodec for ExtendedPacketDelayBudget {
 	}
 }
 // ExtendedRanNodeName
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct ExtendedRanNodeName {
 	pub ran_node_name_visible_string: Option<RanNodeNameVisibleString>,
 	pub ran_node_name_utf8_string: Option<RanNodeNameUtf8String>,
@@ -12679,7 +12744,7 @@ impl PerCodec for ExtendedRanNodeName {
 	}
 }
 // ExtendedRatRestrictionInformation
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct ExtendedRatRestrictionInformation {
 	pub primary_rat_restriction: BitString,
 	pub secondary_rat_restriction: BitString,
@@ -12758,7 +12823,7 @@ impl PerCodec for ExtendedRatRestrictionInformation {
 	}
 }
 // ExtendedRncId
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct ExtendedRncId(pub u16);
 
 impl ExtendedRncId {
@@ -12794,7 +12859,7 @@ impl PerCodec for ExtendedRncId {
 	}
 }
 // ExtendedSliceSupportList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct ExtendedSliceSupportList(pub NonEmpty<SliceSupportItem>);
 
 impl ExtendedSliceSupportList {
@@ -12839,7 +12904,7 @@ impl PerCodec for ExtendedSliceSupportList {
 	}
 }
 // ExtendedUeIdentityIndexValue
-#[derive(Clone, Debug)]
+#[derive(Clone, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct ExtendedUeIdentityIndexValue(pub BitString);
 
 impl ExtendedUeIdentityIndexValue {
@@ -12878,8 +12943,9 @@ impl PerCodec for ExtendedUeIdentityIndexValue {
 	}
 }
 // EventTrigger
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum EventTrigger {
+	#[default]
 	OutOfCoverage(OutOfCoverage),
 	EventL1LoggedMdtConfig(EventL1LoggedMdtConfig),
 }
@@ -12944,7 +13010,7 @@ impl PerCodec for EventTrigger {
 	}
 }
 // EventL1LoggedMdtConfig
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct EventL1LoggedMdtConfig {
 	pub l1_threshold: MeasurementThresholdL1LoggedMdt,
 	pub hysteresis: Hysteresis,
@@ -13013,8 +13079,9 @@ impl PerCodec for EventL1LoggedMdtConfig {
 	}
 }
 // MeasurementThresholdL1LoggedMdt
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum MeasurementThresholdL1LoggedMdt {
+	#[default]
 	ThresholdRsrp(ThresholdRsrp),
 	ThresholdRsrq(ThresholdRsrq),
 }
@@ -13077,7 +13144,7 @@ impl PerCodec for MeasurementThresholdL1LoggedMdt {
 	}
 }
 // FailureIndication
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct FailureIndication {
 	pub ue_rlf_report_container: UeRlfReportContainer,
 }
@@ -13138,7 +13205,7 @@ impl PerCodec for FailureIndication {
 	}
 }
 // FiveGProSeAuthorized
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct FiveGProSeAuthorized {
 	pub five_g_pro_se_direct_discovery: Option<FiveGProSeDirectDiscovery>,
 	pub five_g_pro_se_direct_communication: Option<FiveGProSeDirectCommunication>,
@@ -13250,9 +13317,10 @@ impl PerCodec for FiveGProSeAuthorized {
 	}
 }
 // FiveGProSeDirectDiscovery
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum FiveGProSeDirectDiscovery {
+	#[default]
 	Authorized,
 	NotAuthorized,
 }
@@ -13292,9 +13360,10 @@ impl PerCodec for FiveGProSeDirectDiscovery {
 	}
 }
 // FiveGProSeDirectCommunication
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum FiveGProSeDirectCommunication {
+	#[default]
 	Authorized,
 	NotAuthorized,
 }
@@ -13334,9 +13403,10 @@ impl PerCodec for FiveGProSeDirectCommunication {
 	}
 }
 // FiveGProSeLayer2UeToNetworkRelay
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum FiveGProSeLayer2UeToNetworkRelay {
+	#[default]
 	Authorized,
 	NotAuthorized,
 }
@@ -13376,9 +13446,10 @@ impl PerCodec for FiveGProSeLayer2UeToNetworkRelay {
 	}
 }
 // FiveGProSeLayer3UeToNetworkRelay
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum FiveGProSeLayer3UeToNetworkRelay {
+	#[default]
 	Authorized,
 	NotAuthorized,
 }
@@ -13418,9 +13489,10 @@ impl PerCodec for FiveGProSeLayer3UeToNetworkRelay {
 	}
 }
 // FiveGProSeLayer2RemoteUe
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum FiveGProSeLayer2RemoteUe {
+	#[default]
 	Authorized,
 	NotAuthorized,
 }
@@ -13460,7 +13532,7 @@ impl PerCodec for FiveGProSeLayer2RemoteUe {
 	}
 }
 // FiveGProSePc5QosParameters
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct FiveGProSePc5QosParameters {
 	pub five_g_pro_sepc_5_qos_flow_list: FiveGProSePc5QosFlowList,
 	pub five_g_pro_sepc_5_link_aggregate_bit_rates: Option<BitRate>,
@@ -13532,7 +13604,7 @@ impl PerCodec for FiveGProSePc5QosParameters {
 	}
 }
 // FiveGProSePc5QosFlowList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct FiveGProSePc5QosFlowList(pub NonEmpty<FiveGProSePc5QosFlowItem>);
 
 impl FiveGProSePc5QosFlowList {
@@ -13577,7 +13649,7 @@ impl PerCodec for FiveGProSePc5QosFlowList {
 	}
 }
 // FiveGProSePc5QosFlowItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct FiveGProSePc5QosFlowItem {
 	pub five_gpro_sep_qi: FiveQi,
 	pub five_gpro_sepc_5_flow_bit_rates: Option<FiveGProSePc5FlowBitRates>,
@@ -13660,7 +13732,7 @@ impl PerCodec for FiveGProSePc5QosFlowItem {
 	}
 }
 // FiveGProSePc5FlowBitRates
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct FiveGProSePc5FlowBitRates {
 	pub five_gpro_seguaranteed_flow_bit_rate: BitRate,
 	pub five_gpro_semaximum_flow_bit_rate: BitRate,
@@ -13725,7 +13797,7 @@ impl PerCodec for FiveGProSePc5FlowBitRates {
 	}
 }
 // FiveGSTmsi
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct FiveGSTmsi {
 	pub amf_set_id: AmfSetId,
 	pub amf_pointer: AmfPointer,
@@ -13796,7 +13868,15 @@ impl PerCodec for FiveGSTmsi {
 // FiveGTmsi
 #[derive(Clone, Debug)]
 pub struct FiveGTmsi(pub [u8; 4]);
-
+impl Default for FiveGTmsi {
+	fn default() -> FiveGTmsi {
+		let init = std::mem::MaybeUninit::<[u8; 4]>::zeroed();
+		// SAFETY: No pointers present for the assume init here
+		// TODO: Evaluate the performance issues: "https://users.rust-lang.org/t/unnecessary-performance-penalty-for-mem-maybeuninit/84063"
+		let default_value = unsafe { init.assume_init() };
+		FiveGTmsi(default_value)
+	}
+}
 impl FiveGTmsi {
 	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
 		Ok(Self(
@@ -13832,7 +13912,7 @@ impl PerCodec for FiveGTmsi {
 	}
 }
 // FiveQi
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct FiveQi(pub u8);
 
 impl FiveQi {
@@ -13868,7 +13948,7 @@ impl PerCodec for FiveQi {
 	}
 }
 // ForbiddenAreaInformation
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct ForbiddenAreaInformation(pub NonEmpty<ForbiddenAreaInformationItem>);
 
 impl ForbiddenAreaInformation {
@@ -13913,7 +13993,7 @@ impl PerCodec for ForbiddenAreaInformation {
 	}
 }
 // ForbiddenAreaInformationItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct ForbiddenAreaInformationItem {
 	pub plmn_identity: PlmnIdentity,
 	pub forbidden_ta_cs: ForbiddenTaCs,
@@ -13978,7 +14058,7 @@ impl PerCodec for ForbiddenAreaInformationItem {
 	}
 }
 // ForbiddenTaCs
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct ForbiddenTaCs(pub NonEmpty<Tac>);
 
 impl ForbiddenTaCs {
@@ -14023,7 +14103,7 @@ impl PerCodec for ForbiddenTaCs {
 	}
 }
 // FromEutranToNgran
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct FromEutranToNgran {
 	pub source_enb_id: IntersystemSonEnbId,
 	pub target_ngran_node_id: IntersystemSonNgranNodeId,
@@ -14088,7 +14168,7 @@ impl PerCodec for FromEutranToNgran {
 	}
 }
 // FromNgranToEutran
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct FromNgranToEutran {
 	pub source_ngran_node_id: IntersystemSonNgranNodeId,
 	pub target_enb_id: IntersystemSonEnbId,
@@ -14153,7 +14233,7 @@ impl PerCodec for FromNgranToEutran {
 	}
 }
 // GbrQosInformation
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct GbrQosInformation {
 	pub maximum_flow_bit_rate_dl: BitRate,
 	pub maximum_flow_bit_rate_ul: BitRate,
@@ -14281,7 +14361,7 @@ impl PerCodec for GbrQosInformation {
 	}
 }
 // GlobalCableId
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct GlobalCableId(pub Vec<u8>);
 
 impl GlobalCableId {
@@ -14315,7 +14395,7 @@ impl PerCodec for GlobalCableId {
 	}
 }
 // GlobalCableIdNew
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct GlobalCableIdNew {
 	pub global_cable_id: GlobalCableId,
 	pub tai: Tai,
@@ -14380,7 +14460,7 @@ impl PerCodec for GlobalCableIdNew {
 	}
 }
 // GlobalEnbId
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct GlobalEnbId {
 	pub plmn_identity: PlmnIdentity,
 	pub enb_id: EnbId,
@@ -14445,7 +14525,7 @@ impl PerCodec for GlobalEnbId {
 	}
 }
 // GlobalGnbId
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct GlobalGnbId {
 	pub plmn_identity: PlmnIdentity,
 	pub gnb_id: GnbId,
@@ -14510,7 +14590,7 @@ impl PerCodec for GlobalGnbId {
 	}
 }
 // GlobalN3IwfId
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct GlobalN3IwfId {
 	pub plmn_identity: PlmnIdentity,
 	pub n3_iwf_id: N3IwfId,
@@ -14575,7 +14655,7 @@ impl PerCodec for GlobalN3IwfId {
 	}
 }
 // GlobalLineId
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct GlobalLineId {
 	pub global_line_identity: GlobalLineIdentity,
 	pub line_type: Option<LineType>,
@@ -14666,7 +14746,7 @@ impl PerCodec for GlobalLineId {
 	}
 }
 // GlobalLineIdentity
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct GlobalLineIdentity(pub Vec<u8>);
 
 impl GlobalLineIdentity {
@@ -14700,7 +14780,7 @@ impl PerCodec for GlobalLineIdentity {
 	}
 }
 // GlobalNgEnbId
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct GlobalNgEnbId {
 	pub plmn_identity: PlmnIdentity,
 	pub ng_enb_id: NgEnbId,
@@ -14765,8 +14845,9 @@ impl PerCodec for GlobalNgEnbId {
 	}
 }
 // GlobalRanNodeId
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum GlobalRanNodeId {
+	#[default]
 	GlobalGnbId(GlobalGnbId),
 	GlobalNgEnbId(GlobalNgEnbId),
 	GlobalN3IwfId(GlobalN3IwfId),
@@ -14868,7 +14949,7 @@ impl PerCodec for GlobalRanNodeId {
 	}
 }
 // GlobalTngfId
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct GlobalTngfId {
 	pub plmn_identity: PlmnIdentity,
 	pub tngf_id: TngfId,
@@ -14933,7 +15014,7 @@ impl PerCodec for GlobalTngfId {
 	}
 }
 // GlobalTwifId
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct GlobalTwifId {
 	pub plmn_identity: PlmnIdentity,
 	pub twif_id: TwifId,
@@ -14998,7 +15079,7 @@ impl PerCodec for GlobalTwifId {
 	}
 }
 // GlobalWAgfId
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct GlobalWAgfId {
 	pub plmn_identity: PlmnIdentity,
 	pub w_agf_id: WAgfId,
@@ -15063,8 +15144,9 @@ impl PerCodec for GlobalWAgfId {
 	}
 }
 // GnbId
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum GnbId {
+	#[default]
 	GnbId(BitString),
 }
 
@@ -15126,7 +15208,7 @@ impl PerCodec for GnbId {
 	}
 }
 // Guami
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct Guami {
 	pub plmn_identity: PlmnIdentity,
 	pub amf_region_id: AmfRegionId,
@@ -15199,9 +15281,10 @@ impl PerCodec for Guami {
 	}
 }
 // GuamiType
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum GuamiType {
+	#[default]
 	Native,
 	Mapped,
 }
@@ -15241,7 +15324,7 @@ impl PerCodec for GuamiType {
 	}
 }
 // HandoverCommandTransfer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct HandoverCommandTransfer {
 	pub dl_forwarding_up_tnl_information: Option<UpTransportLayerInformation>,
 	pub qos_flow_to_be_forwarded_list: Option<QosFlowToBeForwardedList>,
@@ -15423,9 +15506,10 @@ impl PerCodec for HandoverCommandTransfer {
 	}
 }
 // HandoverFlag
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum HandoverFlag {
+	#[default]
 	HandoverPreparation,
 }
 
@@ -15464,7 +15548,7 @@ impl PerCodec for HandoverFlag {
 	}
 }
 // HandoverPreparationUnsuccessfulTransfer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct HandoverPreparationUnsuccessfulTransfer {
 	pub cause: Cause,
 }
@@ -15525,7 +15609,7 @@ impl PerCodec for HandoverPreparationUnsuccessfulTransfer {
 	}
 }
 // HandoverRequestAcknowledgeTransfer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct HandoverRequestAcknowledgeTransfer {
 	pub dl_ngu_up_tnl_information: UpTransportLayerInformation,
 	pub dl_forwarding_up_tnl_information: Option<UpTransportLayerInformation>,
@@ -15772,7 +15856,7 @@ impl PerCodec for HandoverRequestAcknowledgeTransfer {
 	}
 }
 // HandoverRequiredTransfer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct HandoverRequiredTransfer {
 	pub direct_forwarding_path_availability: Option<DirectForwardingPathAvailability>,
 }
@@ -15840,7 +15924,7 @@ impl PerCodec for HandoverRequiredTransfer {
 	}
 }
 // HandoverResourceAllocationUnsuccessfulTransfer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct HandoverResourceAllocationUnsuccessfulTransfer {
 	pub cause: Cause,
 	pub criticality_diagnostics: Option<CriticalityDiagnostics>,
@@ -15914,9 +15998,10 @@ impl PerCodec for HandoverResourceAllocationUnsuccessfulTransfer {
 	}
 }
 // HandoverType
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum HandoverType {
+	#[default]
 	Intra5gs,
 	FivegsToEps,
 	EpsTo5gs,
@@ -15957,7 +16042,7 @@ impl PerCodec for HandoverType {
 	}
 }
 // HashedUeIdentityIndexValue
-#[derive(Clone, Debug)]
+#[derive(Clone, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct HashedUeIdentityIndexValue(pub BitString);
 
 impl HashedUeIdentityIndexValue {
@@ -15996,7 +16081,7 @@ impl PerCodec for HashedUeIdentityIndexValue {
 	}
 }
 // HfcNodeId
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct HfcNodeId(pub Vec<u8>);
 
 impl HfcNodeId {
@@ -16030,7 +16115,7 @@ impl PerCodec for HfcNodeId {
 	}
 }
 // HfcNodeIdNew
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct HfcNodeIdNew {
 	pub hfc_node_id: HfcNodeId,
 	pub tai: Tai,
@@ -16092,7 +16177,7 @@ impl PerCodec for HfcNodeIdNew {
 	}
 }
 // HoReport
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct HoReport {
 	pub handover_report_type: HandoverReportType,
 	pub handover_cause: Cause,
@@ -16242,7 +16327,7 @@ impl PerCodec for HoReport {
 	}
 }
 // Hysteresis
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct Hysteresis(pub u8);
 
 impl Hysteresis {
@@ -16278,9 +16363,10 @@ impl PerCodec for Hysteresis {
 	}
 }
 // IabAuthorized
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum IabAuthorized {
+	#[default]
 	Authorized,
 	NotAuthorized,
 }
@@ -16320,9 +16406,10 @@ impl PerCodec for IabAuthorized {
 	}
 }
 // IabSupported
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum IabSupported {
+	#[default]
 	True,
 }
 
@@ -16361,9 +16448,10 @@ impl PerCodec for IabSupported {
 	}
 }
 // IabNodeIndication
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum IabNodeIndication {
+	#[default]
 	True,
 }
 
@@ -16402,9 +16490,10 @@ impl PerCodec for IabNodeIndication {
 	}
 }
 // ImsVoiceSupportIndicator
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum ImsVoiceSupportIndicator {
+	#[default]
 	Supported,
 	NotSupported,
 }
@@ -16444,7 +16533,7 @@ impl PerCodec for ImsVoiceSupportIndicator {
 	}
 }
 // IndexToRfsp
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct IndexToRfsp(pub u16);
 
 impl IndexToRfsp {
@@ -16480,7 +16569,7 @@ impl PerCodec for IndexToRfsp {
 	}
 }
 // InfoOnRecommendedCellsAndRanNodesForPaging
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct InfoOnRecommendedCellsAndRanNodesForPaging {
 	pub recommended_cells_for_paging: RecommendedCellsForPaging,
 	pub recommend_ran_nodes_for_paging: RecommendedRanNodesForPaging,
@@ -16547,9 +16636,10 @@ impl PerCodec for InfoOnRecommendedCellsAndRanNodesForPaging {
 	}
 }
 // IntegrityProtectionIndication
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum IntegrityProtectionIndication {
+	#[default]
 	Required,
 	Preferred,
 	NotNeeded,
@@ -16590,9 +16680,10 @@ impl PerCodec for IntegrityProtectionIndication {
 	}
 }
 // IntegrityProtectionResult
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum IntegrityProtectionResult {
+	#[default]
 	Performed,
 	NotPerformed,
 }
@@ -16632,7 +16723,7 @@ impl PerCodec for IntegrityProtectionResult {
 	}
 }
 // IntendedNumberOfPagingAttempts
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct IntendedNumberOfPagingAttempts(pub u8);
 
 impl IntendedNumberOfPagingAttempts {
@@ -16668,7 +16759,7 @@ impl PerCodec for IntendedNumberOfPagingAttempts {
 	}
 }
 // InterfacesToTrace
-#[derive(Clone, Debug)]
+#[derive(Clone, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct InterfacesToTrace(pub BitString);
 
 impl InterfacesToTrace {
@@ -16707,7 +16798,7 @@ impl PerCodec for InterfacesToTrace {
 	}
 }
 // ImmediateMdtNr
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct ImmediateMdtNr {
 	pub measurements_to_activate: MeasurementsToActivate,
 	pub m1_configuration: Option<M1Configuration>,
@@ -16867,7 +16958,7 @@ impl PerCodec for ImmediateMdtNr {
 	}
 }
 // InterSystemFailureIndication
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct InterSystemFailureIndication {
 	pub ue_rlf_report_container: Option<UeRlfReportContainer>,
 }
@@ -16935,7 +17026,7 @@ impl PerCodec for InterSystemFailureIndication {
 	}
 }
 // IntersystemSonConfigurationTransfer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct IntersystemSonConfigurationTransfer {
 	pub transfer_type: IntersystemSonTransferType,
 	pub intersystem_son_information: IntersystemSonInformation,
@@ -17000,8 +17091,9 @@ impl PerCodec for IntersystemSonConfigurationTransfer {
 	}
 }
 // IntersystemSonTransferType
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum IntersystemSonTransferType {
+	#[default]
 	FromEutranToNgran(FromEutranToNgran),
 	FromNgranToEutran(FromNgranToEutran),
 }
@@ -17064,7 +17156,7 @@ impl PerCodec for IntersystemSonTransferType {
 	}
 }
 // IntersystemSonEnbId
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct IntersystemSonEnbId {
 	pub global_enb_id: GlobalEnbId,
 	pub selected_epstai: EpsTai,
@@ -17129,7 +17221,7 @@ impl PerCodec for IntersystemSonEnbId {
 	}
 }
 // IntersystemSonNgranNodeId
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct IntersystemSonNgranNodeId {
 	pub global_ran_node_id: GlobalRanNodeId,
 	pub selected_tai: Tai,
@@ -17194,8 +17286,9 @@ impl PerCodec for IntersystemSonNgranNodeId {
 	}
 }
 // IntersystemSonInformation
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum IntersystemSonInformation {
+	#[default]
 	IntersystemSonInformationReport(IntersystemSonInformationReport),
 	IntersystemSonInformationRequest(IntersystemSonInformationRequest),
 	IntersystemSonInformationReply(IntersystemSonInformationReply),
@@ -17280,8 +17373,9 @@ impl PerCodec for IntersystemSonInformation {
 	}
 }
 // IntersystemSonInformationRequest
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum IntersystemSonInformationRequest {
+	#[default]
 	NgranCellActivation(IntersystemCellActivationRequest),
 	ResourceStatus(IntersystemResourceStatusRequest),
 }
@@ -17348,7 +17442,7 @@ impl PerCodec for IntersystemSonInformationRequest {
 	}
 }
 // IntersystemCellActivationRequest
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct IntersystemCellActivationRequest {
 	pub activation_id: u16,
 	pub cells_to_activate_list: CellsToActivateList,
@@ -17420,7 +17514,7 @@ impl PerCodec for IntersystemCellActivationRequest {
 	}
 }
 // CellsToActivateList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct CellsToActivateList(pub NonEmpty<NgranCgi>);
 
 impl CellsToActivateList {
@@ -17465,7 +17559,7 @@ impl PerCodec for CellsToActivateList {
 	}
 }
 // IntersystemResourceStatusRequest
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct IntersystemResourceStatusRequest {
 	pub reporting_system: ReportingSystem,
 	pub report_characteristics: ReportCharacteristics,
@@ -17534,8 +17628,9 @@ impl PerCodec for IntersystemResourceStatusRequest {
 	}
 }
 // ReportingSystem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum ReportingSystem {
+	#[default]
 	Eutran(EutranReportingSystemIEs),
 	Ngran(NgranReportingSystemIEs),
 	NoReporting,
@@ -17604,7 +17699,7 @@ impl PerCodec for ReportingSystem {
 	}
 }
 // EutranReportingSystemIEs
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct EutranReportingSystemIEs {
 	pub eutran_cell_to_report_list: EutranCellToReportList,
 }
@@ -17665,7 +17760,7 @@ impl PerCodec for EutranReportingSystemIEs {
 	}
 }
 // NgranReportingSystemIEs
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct NgranReportingSystemIEs {
 	pub ngran_cell_to_report_list: NgranCellToReportList,
 }
@@ -17726,7 +17821,7 @@ impl PerCodec for NgranReportingSystemIEs {
 	}
 }
 // EutranCellToReportList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct EutranCellToReportList(pub NonEmpty<EutranCellToReportItem>);
 
 impl EutranCellToReportList {
@@ -17771,7 +17866,7 @@ impl PerCodec for EutranCellToReportList {
 	}
 }
 // EutranCellToReportItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct EutranCellToReportItem {
 	pub ecgi: EutraCgi,
 }
@@ -17830,7 +17925,7 @@ impl PerCodec for EutranCellToReportItem {
 	}
 }
 // NgranCellToReportList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct NgranCellToReportList(pub NonEmpty<NgranCellToReportItem>);
 
 impl NgranCellToReportList {
@@ -17875,7 +17970,7 @@ impl PerCodec for NgranCellToReportList {
 	}
 }
 // NgranCellToReportItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct NgranCellToReportItem {
 	pub ngran_cgi: NgranCgi,
 }
@@ -17934,7 +18029,7 @@ impl PerCodec for NgranCellToReportItem {
 	}
 }
 // ReportCharacteristics
-#[derive(Clone, Debug)]
+#[derive(Clone, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct ReportCharacteristics(pub BitString);
 
 impl ReportCharacteristics {
@@ -17973,8 +18068,9 @@ impl PerCodec for ReportCharacteristics {
 	}
 }
 // ReportType
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum ReportType {
+	#[default]
 	EventBasedReporting(EventBasedReportingIEs),
 	PeriodicReporting(PeriodicReportingIEs),
 }
@@ -18039,7 +18135,7 @@ impl PerCodec for ReportType {
 	}
 }
 // EventBasedReportingIEs
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct EventBasedReportingIEs {
 	pub intersystem_resource_threshold_low: IntersystemResourceThreshold,
 	pub intersystem_resource_threshold_high: IntersystemResourceThreshold,
@@ -18109,7 +18205,7 @@ impl PerCodec for EventBasedReportingIEs {
 	}
 }
 // IntersystemResourceThreshold
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct IntersystemResourceThreshold(pub u8);
 
 impl IntersystemResourceThreshold {
@@ -18145,9 +18241,10 @@ impl PerCodec for IntersystemResourceThreshold {
 	}
 }
 // NumberOfMeasurementReportingLevels
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum NumberOfMeasurementReportingLevels {
+	#[default]
 	N2,
 	N3,
 	N4,
@@ -18190,7 +18287,7 @@ impl PerCodec for NumberOfMeasurementReportingLevels {
 	}
 }
 // PeriodicReportingIEs
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PeriodicReportingIEs {
 	pub reporting_periodicity: ReportingPeriodicity,
 }
@@ -18251,9 +18348,10 @@ impl PerCodec for PeriodicReportingIEs {
 	}
 }
 // ReportingPeriodicity
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum ReportingPeriodicity {
+	#[default]
 	Stop,
 	Single,
 	Ms1000,
@@ -18297,8 +18395,9 @@ impl PerCodec for ReportingPeriodicity {
 	}
 }
 // IntersystemSonInformationReply
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum IntersystemSonInformationReply {
+	#[default]
 	NgranCellActivation(IntersystemCellActivationReply),
 	ResourceStatus(IntersystemResourceStatusReply),
 }
@@ -18365,7 +18464,7 @@ impl PerCodec for IntersystemSonInformationReply {
 	}
 }
 // IntersystemCellActivationReply
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct IntersystemCellActivationReply {
 	pub activated_cell_list: ActivatedCellList,
 	pub activation_id: u16,
@@ -18437,7 +18536,7 @@ impl PerCodec for IntersystemCellActivationReply {
 	}
 }
 // ActivatedCellList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct ActivatedCellList(pub NonEmpty<NgranCgi>);
 
 impl ActivatedCellList {
@@ -18482,7 +18581,7 @@ impl PerCodec for ActivatedCellList {
 	}
 }
 // IntersystemResourceStatusReply
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct IntersystemResourceStatusReply {
 	pub reportingsystem: ReportingSystem,
 }
@@ -18541,8 +18640,9 @@ impl PerCodec for IntersystemResourceStatusReply {
 	}
 }
 // IntersystemSonInformationReport
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum IntersystemSonInformationReport {
+	#[default]
 	HoReportInformation(InterSystemHoReport),
 	FailureIndicationInformation(InterSystemFailureIndication),
 	IntersystemCellStateIndication(IntersystemCellStateIndication),
@@ -18635,7 +18735,7 @@ impl PerCodec for IntersystemSonInformationReport {
 	}
 }
 // IntersystemCellStateIndication
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct IntersystemCellStateIndication {
 	pub notification_cell_list: NotificationCellList,
 }
@@ -18696,7 +18796,7 @@ impl PerCodec for IntersystemCellStateIndication {
 	}
 }
 // NotificationCellList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct NotificationCellList(pub NonEmpty<NotificationCellItem>);
 
 impl NotificationCellList {
@@ -18741,7 +18841,7 @@ impl PerCodec for NotificationCellList {
 	}
 }
 // NotificationCellItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct NotificationCellItem {
 	pub ngran_cgi: NgranCgi,
 	pub notify_flag: NotifyFlag,
@@ -18806,7 +18906,7 @@ impl PerCodec for NotificationCellItem {
 	}
 }
 // IntersystemResourceStatusReport
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct IntersystemResourceStatusReport {
 	pub reporting_system: ResourceStatusReportingSystem,
 }
@@ -18865,8 +18965,9 @@ impl PerCodec for IntersystemResourceStatusReport {
 	}
 }
 // ResourceStatusReportingSystem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum ResourceStatusReportingSystem {
+	#[default]
 	EutranReportingStatus(EutranReportingStatusIEs),
 	NgranReportingStatus(NgranReportingStatusIEs),
 }
@@ -18933,7 +19034,7 @@ impl PerCodec for ResourceStatusReportingSystem {
 	}
 }
 // EutranReportingStatusIEs
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct EutranReportingStatusIEs {
 	pub eutran_cell_report_list: EutranCellReportList,
 }
@@ -18994,7 +19095,7 @@ impl PerCodec for EutranReportingStatusIEs {
 	}
 }
 // EutranCellReportList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct EutranCellReportList(pub NonEmpty<EutranCellReportItem>);
 
 impl EutranCellReportList {
@@ -19039,7 +19140,7 @@ impl PerCodec for EutranCellReportList {
 	}
 }
 // EutranCellReportItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct EutranCellReportItem {
 	pub ecgi: EutraCgi,
 	pub eutran_composite_available_capacity_group: EutranCompositeAvailableCapacityGroup,
@@ -19139,7 +19240,7 @@ impl PerCodec for EutranCellReportItem {
 	}
 }
 // EutranCompositeAvailableCapacityGroup
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct EutranCompositeAvailableCapacityGroup {
 	pub dl_composite_available_capacity: CompositeAvailableCapacity,
 	pub ul_composite_available_capacity: CompositeAvailableCapacity,
@@ -19204,7 +19305,7 @@ impl PerCodec for EutranCompositeAvailableCapacityGroup {
 	}
 }
 // CompositeAvailableCapacity
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct CompositeAvailableCapacity {
 	pub cell_capacity_class_value: Option<u8>,
 	pub capacity_value: u8,
@@ -19283,7 +19384,7 @@ impl PerCodec for CompositeAvailableCapacity {
 	}
 }
 // EutranNumberOfActiveUes
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct EutranNumberOfActiveUes(pub u32);
 
 impl EutranNumberOfActiveUes {
@@ -19319,7 +19420,7 @@ impl PerCodec for EutranNumberOfActiveUes {
 	}
 }
 // EutranRadioResourceStatus
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct EutranRadioResourceStatus {
 	pub dl_gbr_prb_usage: u8,
 	pub ul_gbr_prb_usage: u8,
@@ -19464,7 +19565,7 @@ impl PerCodec for EutranRadioResourceStatus {
 	}
 }
 // NgranReportingStatusIEs
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct NgranReportingStatusIEs {
 	pub ngran_cell_report_list: NgranCellReportList,
 }
@@ -19525,7 +19626,7 @@ impl PerCodec for NgranReportingStatusIEs {
 	}
 }
 // NgranCellReportList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct NgranCellReportList(pub NonEmpty<NgranCellReportItem>);
 
 impl NgranCellReportList {
@@ -19570,7 +19671,7 @@ impl PerCodec for NgranCellReportList {
 	}
 }
 // NgranCellReportItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct NgranCellReportItem {
 	pub ngran_cgi: NgranCgi,
 	pub ngran_composite_available_capacity_group: EutranCompositeAvailableCapacityGroup,
@@ -19669,7 +19770,7 @@ impl PerCodec for NgranCellReportItem {
 	}
 }
 // NgranNumberOfActiveUes
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct NgranNumberOfActiveUes(pub u32);
 
 impl NgranNumberOfActiveUes {
@@ -19705,7 +19806,7 @@ impl PerCodec for NgranNumberOfActiveUes {
 	}
 }
 // NgranNoofRrcConnections
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct NgranNoofRrcConnections(pub u32);
 
 impl NgranNoofRrcConnections {
@@ -19741,7 +19842,7 @@ impl PerCodec for NgranNoofRrcConnections {
 	}
 }
 // NgranRadioResourceStatus
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct NgranRadioResourceStatus {
 	pub dl_gbr_prb_usage_for_mimo: u8,
 	pub ul_gbr_prb_usage_for_mimo: u8,
@@ -19870,7 +19971,7 @@ impl PerCodec for NgranRadioResourceStatus {
 	}
 }
 // InterSystemHoReport
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct InterSystemHoReport {
 	pub handover_report_type: InterSystemHandoverReportType,
 }
@@ -19931,8 +20032,9 @@ impl PerCodec for InterSystemHoReport {
 	}
 }
 // InterSystemHandoverReportType
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum InterSystemHandoverReportType {
+	#[default]
 	TooearlyIntersystemHo(TooearlyIntersystemHo),
 	IntersystemUnnecessaryHo(IntersystemUnnecessaryHo),
 }
@@ -19999,7 +20101,7 @@ impl PerCodec for InterSystemHandoverReportType {
 	}
 }
 // IntersystemUnnecessaryHo
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct IntersystemUnnecessaryHo {
 	pub sourcecell_id: NgranCgi,
 	pub targetcell_id: EutraCgi,
@@ -20074,7 +20176,15 @@ impl PerCodec for IntersystemUnnecessaryHo {
 // Lac
 #[derive(Clone, Debug)]
 pub struct Lac(pub [u8; 2]);
-
+impl Default for Lac {
+	fn default() -> Lac {
+		let init = std::mem::MaybeUninit::<[u8; 2]>::zeroed();
+		// SAFETY: No pointers present for the assume init here
+		// TODO: Evaluate the performance issues: "https://users.rust-lang.org/t/unnecessary-performance-penalty-for-mem-maybeuninit/84063"
+		let default_value = unsafe { init.assume_init() };
+		Lac(default_value)
+	}
+}
 impl Lac {
 	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
 		Ok(Self(
@@ -20110,7 +20220,7 @@ impl PerCodec for Lac {
 	}
 }
 // Lai
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct Lai {
 	pub plmn_identity: PlmnIdentity,
 	pub lac: Lac,
@@ -20172,8 +20282,9 @@ impl PerCodec for Lai {
 	}
 }
 // LastVisitedCellInformation
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum LastVisitedCellInformation {
+	#[default]
 	NgranCell(LastVisitedNgranCellInformation),
 	EutranCell(LastVisitedEutranCellInformation),
 	UtranCell(LastVisitedUtranCellInformation),
@@ -20256,7 +20367,7 @@ impl PerCodec for LastVisitedCellInformation {
 	}
 }
 // LastVisitedCellItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct LastVisitedCellItem {
 	pub last_visited_cell_information: LastVisitedCellInformation,
 }
@@ -20317,7 +20428,7 @@ impl PerCodec for LastVisitedCellItem {
 	}
 }
 // LastVisitedEutranCellInformation
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct LastVisitedEutranCellInformation(pub Vec<u8>);
 
 impl LastVisitedEutranCellInformation {
@@ -20351,7 +20462,7 @@ impl PerCodec for LastVisitedEutranCellInformation {
 	}
 }
 // LastVisitedGeranCellInformation
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct LastVisitedGeranCellInformation(pub Vec<u8>);
 
 impl LastVisitedGeranCellInformation {
@@ -20385,7 +20496,7 @@ impl PerCodec for LastVisitedGeranCellInformation {
 	}
 }
 // LastVisitedNgranCellInformation
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct LastVisitedNgranCellInformation {
 	pub global_cell_id: NgranCgi,
 	pub cell_type: CellType,
@@ -20495,7 +20606,7 @@ impl PerCodec for LastVisitedNgranCellInformation {
 	}
 }
 // LastVisitedPsCellList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct LastVisitedPsCellList(pub NonEmpty<LastVisitedPsCellInformation>);
 
 impl LastVisitedPsCellList {
@@ -20540,7 +20651,7 @@ impl PerCodec for LastVisitedPsCellList {
 	}
 }
 // LastVisitedPsCellInformation
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct LastVisitedPsCellInformation {
 	pub ps_cell_id: Option<NgranCgi>,
 	pub time_stay: u16,
@@ -20619,7 +20730,7 @@ impl PerCodec for LastVisitedPsCellInformation {
 	}
 }
 // LastVisitedUtranCellInformation
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct LastVisitedUtranCellInformation(pub Vec<u8>);
 
 impl LastVisitedUtranCellInformation {
@@ -20653,9 +20764,10 @@ impl PerCodec for LastVisitedUtranCellInformation {
 	}
 }
 // LineType
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum LineType {
+	#[default]
 	Dsl,
 	Pon,
 }
@@ -20695,9 +20807,10 @@ impl PerCodec for LineType {
 	}
 }
 // LocationReportingAdditionalInfo
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum LocationReportingAdditionalInfo {
+	#[default]
 	IncludePsCell,
 }
 
@@ -20736,7 +20849,7 @@ impl PerCodec for LocationReportingAdditionalInfo {
 	}
 }
 // LocationReportingReferenceId
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct LocationReportingReferenceId(pub u8);
 
 impl LocationReportingReferenceId {
@@ -20772,7 +20885,7 @@ impl PerCodec for LocationReportingReferenceId {
 	}
 }
 // LocationReportingRequestType
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct LocationReportingRequestType {
 	pub event_type: EventType,
 	pub report_area: ReportArea,
@@ -20884,7 +20997,7 @@ impl PerCodec for LocationReportingRequestType {
 	}
 }
 // LoggedMdtNr
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct LoggedMdtNr {
 	pub logging_interval: LoggingInterval,
 	pub logging_duration: LoggingDuration,
@@ -21016,9 +21129,10 @@ impl PerCodec for LoggedMdtNr {
 	}
 }
 // LoggingInterval
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum LoggingInterval {
+	#[default]
 	Ms320,
 	Ms640,
 	Ms1280,
@@ -21067,9 +21181,10 @@ impl PerCodec for LoggingInterval {
 	}
 }
 // LoggingDuration
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum LoggingDuration {
+	#[default]
 	M10,
 	M20,
 	M40,
@@ -21113,9 +21228,10 @@ impl PerCodec for LoggingDuration {
 	}
 }
 // LinksToLog
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum LinksToLog {
+	#[default]
 	Uplink,
 	Downlink,
 	BothUplinkAndDownlink,
@@ -21156,8 +21272,9 @@ impl PerCodec for LinksToLog {
 	}
 }
 // LoggedMdtTrigger
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum LoggedMdtTrigger {
+	#[default]
 	Periodical,
 	EventTrigger(EventTrigger),
 }
@@ -21220,9 +21337,10 @@ impl PerCodec for LoggedMdtTrigger {
 	}
 }
 // LtemIndication
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum LtemIndication {
+	#[default]
 	LteM,
 }
 
@@ -21261,7 +21379,7 @@ impl PerCodec for LtemIndication {
 	}
 }
 // LteUeRlfReportContainer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct LteUeRlfReportContainer(pub Vec<u8>);
 
 impl LteUeRlfReportContainer {
@@ -21295,7 +21413,7 @@ impl PerCodec for LteUeRlfReportContainer {
 	}
 }
 // Ltev2xServicesAuthorized
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct Ltev2xServicesAuthorized {
 	pub vehicle_ue: Option<VehicleUe>,
 	pub pedestrian_ue: Option<PedestrianUe>,
@@ -21374,7 +21492,7 @@ impl PerCodec for Ltev2xServicesAuthorized {
 	}
 }
 // LteUeSidelinkAggregateMaximumBitrate
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct LteUeSidelinkAggregateMaximumBitrate {
 	pub ue_sidelink_aggregate_maximum_bit_rate: BitRate,
 }
@@ -21435,7 +21553,7 @@ impl PerCodec for LteUeSidelinkAggregateMaximumBitrate {
 	}
 }
 // MaskedImeisv
-#[derive(Clone, Debug)]
+#[derive(Clone, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct MaskedImeisv(pub BitString);
 
 impl MaskedImeisv {
@@ -21474,7 +21592,7 @@ impl PerCodec for MaskedImeisv {
 	}
 }
 // MaximumDataBurstVolume
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct MaximumDataBurstVolume(pub i128);
 
 impl MaximumDataBurstVolume {
@@ -21510,7 +21628,7 @@ impl PerCodec for MaximumDataBurstVolume {
 	}
 }
 // MessageIdentifier
-#[derive(Clone, Debug)]
+#[derive(Clone, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct MessageIdentifier(pub BitString);
 
 impl MessageIdentifier {
@@ -21549,9 +21667,10 @@ impl PerCodec for MessageIdentifier {
 	}
 }
 // MaximumIntegrityProtectedDataRate
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum MaximumIntegrityProtectedDataRate {
+	#[default]
 	Bitrate64kbs,
 	MaximumUeRate,
 }
@@ -21591,7 +21710,7 @@ impl PerCodec for MaximumIntegrityProtectedDataRate {
 	}
 }
 // MbsAreaSessionId
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct MbsAreaSessionId(pub u16);
 
 impl MbsAreaSessionId {
@@ -21627,7 +21746,7 @@ impl PerCodec for MbsAreaSessionId {
 	}
 }
 // MbsDataForwardingResponseMrbList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MbsDataForwardingResponseMrbList(pub NonEmpty<MbsDataForwardingResponseMrbItem>);
 
 impl MbsDataForwardingResponseMrbList {
@@ -21672,7 +21791,7 @@ impl PerCodec for MbsDataForwardingResponseMrbList {
 	}
 }
 // MbsDataForwardingResponseMrbItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MbsDataForwardingResponseMrbItem {
 	pub mrb_id: MrbId,
 	pub dl_forwarding_up_tnl_information: UpTransportLayerInformation,
@@ -21748,7 +21867,7 @@ impl PerCodec for MbsDataForwardingResponseMrbItem {
 	}
 }
 // MbsMappingandDataForwardingRequestList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MbsMappingandDataForwardingRequestList(
 	pub NonEmpty<MbsMappingandDataForwardingRequestItem>,
 );
@@ -21797,7 +21916,7 @@ impl PerCodec for MbsMappingandDataForwardingRequestList {
 	}
 }
 // MbsMappingandDataForwardingRequestItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MbsMappingandDataForwardingRequestItem {
 	pub mrb_id: MrbId,
 	pub mbs_qos_flow_list: MbsQosFlowList,
@@ -21875,7 +21994,7 @@ impl PerCodec for MbsMappingandDataForwardingRequestItem {
 	}
 }
 // MbsQosFlowList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MbsQosFlowList(pub NonEmpty<QosFlowIdentifier>);
 
 impl MbsQosFlowList {
@@ -21920,8 +22039,9 @@ impl PerCodec for MbsQosFlowList {
 	}
 }
 // MrbProgressInformation
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum MrbProgressInformation {
+	#[default]
 	PdcpSnLength12(u16),
 	PdcpSnLength18(u32),
 }
@@ -21988,7 +22108,7 @@ impl PerCodec for MrbProgressInformation {
 	}
 }
 // MbsQosFlowsToBeSetupList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MbsQosFlowsToBeSetupList(pub NonEmpty<MbsQosFlowsToBeSetupItem>);
 
 impl MbsQosFlowsToBeSetupList {
@@ -22033,7 +22153,7 @@ impl PerCodec for MbsQosFlowsToBeSetupList {
 	}
 }
 // MbsQosFlowsToBeSetupItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MbsQosFlowsToBeSetupItem {
 	pub mbs_qos_flow_identifier: QosFlowIdentifier,
 	pub mbs_qos_flow_level_qos_parameters: QosFlowLevelQosParameters,
@@ -22098,8 +22218,9 @@ impl PerCodec for MbsQosFlowsToBeSetupItem {
 	}
 }
 // MbsServiceArea
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum MbsServiceArea {
+	#[default]
 	Locationindependent(MbsServiceAreaInformation),
 	Locationdependent(MbsServiceAreaInformationList),
 }
@@ -22166,7 +22287,7 @@ impl PerCodec for MbsServiceArea {
 	}
 }
 // MbsServiceAreaInformationList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MbsServiceAreaInformationList(pub NonEmpty<MbsServiceAreaInformationItem>);
 
 impl MbsServiceAreaInformationList {
@@ -22211,7 +22332,7 @@ impl PerCodec for MbsServiceAreaInformationList {
 	}
 }
 // MbsServiceAreaInformationItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MbsServiceAreaInformationItem {
 	pub mbs_area_session_id: MbsAreaSessionId,
 	pub mbs_service_area_information: MbsServiceAreaInformation,
@@ -22276,7 +22397,7 @@ impl PerCodec for MbsServiceAreaInformationItem {
 	}
 }
 // MbsServiceAreaInformation
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MbsServiceAreaInformation {
 	pub mbs_service_area_cell_list: Option<MbsServiceAreaCellList>,
 	pub mbs_service_area_tai_list: Option<MbsServiceAreaTaiList>,
@@ -22355,7 +22476,7 @@ impl PerCodec for MbsServiceAreaInformation {
 	}
 }
 // MbsServiceAreaCellList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MbsServiceAreaCellList(pub NonEmpty<NrCgi>);
 
 impl MbsServiceAreaCellList {
@@ -22400,7 +22521,7 @@ impl PerCodec for MbsServiceAreaCellList {
 	}
 }
 // MbsServiceAreaTaiList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MbsServiceAreaTaiList(pub NonEmpty<Tai>);
 
 impl MbsServiceAreaTaiList {
@@ -22445,7 +22566,7 @@ impl PerCodec for MbsServiceAreaTaiList {
 	}
 }
 // MbsSessionId
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MbsSessionId {
 	pub tmgi: Tmgi,
 	pub nid: Option<Nid>,
@@ -22514,7 +22635,7 @@ impl PerCodec for MbsSessionId {
 	}
 }
 // MbsSessionFailedtoSetupList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MbsSessionFailedtoSetupList(pub NonEmpty<MbsSessionFailedtoSetupItem>);
 
 impl MbsSessionFailedtoSetupList {
@@ -22559,7 +22680,7 @@ impl PerCodec for MbsSessionFailedtoSetupList {
 	}
 }
 // MbsSessionFailedtoSetupItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MbsSessionFailedtoSetupItem {
 	pub mbs_session_id: MbsSessionId,
 	pub mbs_area_session_id: Option<MbsAreaSessionId>,
@@ -22635,7 +22756,7 @@ impl PerCodec for MbsSessionFailedtoSetupItem {
 	}
 }
 // MbsActiveSessionInformationSourcetoTargetList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MbsActiveSessionInformationSourcetoTargetList(
 	pub NonEmpty<MbsActiveSessionInformationSourcetoTargetItem>,
 );
@@ -22684,7 +22805,7 @@ impl PerCodec for MbsActiveSessionInformationSourcetoTargetList {
 	}
 }
 // MbsActiveSessionInformationSourcetoTargetItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MbsActiveSessionInformationSourcetoTargetItem {
 	pub mbs_session_id: MbsSessionId,
 	pub mbs_area_session_id: Option<MbsAreaSessionId>,
@@ -22784,7 +22905,7 @@ impl PerCodec for MbsActiveSessionInformationSourcetoTargetItem {
 	}
 }
 // MbsActiveSessionInformationTargettoSourceList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MbsActiveSessionInformationTargettoSourceList(
 	pub NonEmpty<MbsActiveSessionInformationTargettoSourceItem>,
 );
@@ -22833,7 +22954,7 @@ impl PerCodec for MbsActiveSessionInformationTargettoSourceList {
 	}
 }
 // MbsActiveSessionInformationTargettoSourceItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MbsActiveSessionInformationTargettoSourceItem {
 	pub mbs_session_id: MbsSessionId,
 	pub mbs_data_forwarding_response_mrb_list: Option<MbsDataForwardingResponseMrbList>,
@@ -22907,7 +23028,7 @@ impl PerCodec for MbsActiveSessionInformationTargettoSourceItem {
 	}
 }
 // MbsSessionSetupOrModFailureTransfer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MbsSessionSetupOrModFailureTransfer {
 	pub cause: Cause,
 	pub criticality_diagnostics: Option<CriticalityDiagnostics>,
@@ -22979,7 +23100,7 @@ impl PerCodec for MbsSessionSetupOrModFailureTransfer {
 	}
 }
 // MbsSessionSetupResponseList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MbsSessionSetupResponseList(pub NonEmpty<MbsSessionSetupResponseItem>);
 
 impl MbsSessionSetupResponseList {
@@ -23024,7 +23145,7 @@ impl PerCodec for MbsSessionSetupResponseList {
 	}
 }
 // MbsSessionSetupResponseItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MbsSessionSetupResponseItem {
 	pub mbs_session_id: MbsSessionId,
 	pub mbs_area_session_id: Option<MbsAreaSessionId>,
@@ -23096,7 +23217,7 @@ impl PerCodec for MbsSessionSetupResponseItem {
 	}
 }
 // MbsSessionSetupOrModRequestTransfer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MbsSessionSetupOrModRequestTransfer {
 	pub mbs_session_tnl_info_5gc: Option<MbsSessionTnlInfo5gc>,
 	pub mbs_qos_flows_to_be_setup_mod_list: MbsQosFlowsToBeSetupList,
@@ -23198,7 +23319,7 @@ impl PerCodec for MbsSessionSetupOrModRequestTransfer {
 	}
 }
 // MbsSessionFsaidList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MbsSessionFsaidList(pub NonEmpty<MbsSessionFsaid>);
 
 impl MbsSessionFsaidList {
@@ -23245,7 +23366,15 @@ impl PerCodec for MbsSessionFsaidList {
 // MbsSessionFsaid
 #[derive(Clone, Debug)]
 pub struct MbsSessionFsaid(pub [u8; 3]);
-
+impl Default for MbsSessionFsaid {
+	fn default() -> MbsSessionFsaid {
+		let init = std::mem::MaybeUninit::<[u8; 3]>::zeroed();
+		// SAFETY: No pointers present for the assume init here
+		// TODO: Evaluate the performance issues: "https://users.rust-lang.org/t/unnecessary-performance-penalty-for-mem-maybeuninit/84063"
+		let default_value = unsafe { init.assume_init() };
+		MbsSessionFsaid(default_value)
+	}
+}
 impl MbsSessionFsaid {
 	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
 		Ok(Self(
@@ -23281,7 +23410,7 @@ impl PerCodec for MbsSessionFsaid {
 	}
 }
 // MbsSessionReleaseResponseTransfer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MbsSessionReleaseResponseTransfer {
 	pub mbs_session_tnl_info_ngran: Option<MbsSessionTnlInfoNgran>,
 }
@@ -23349,7 +23478,7 @@ impl PerCodec for MbsSessionReleaseResponseTransfer {
 	}
 }
 // MbsSessionSetupOrModResponseTransfer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MbsSessionSetupOrModResponseTransfer {
 	pub mbs_session_tnl_info_ngran: Option<MbsSessionTnlInfoNgran>,
 }
@@ -23417,9 +23546,10 @@ impl PerCodec for MbsSessionSetupOrModResponseTransfer {
 	}
 }
 // MbsSupportIndicator
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum MbsSupportIndicator {
+	#[default]
 	True,
 }
 
@@ -23458,8 +23588,9 @@ impl PerCodec for MbsSupportIndicator {
 	}
 }
 // MbsSessionTnlInfo5gc
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum MbsSessionTnlInfo5gc {
+	#[default]
 	Locationindependent(SharedNguMulticastTnlInformation),
 	Locationdependent(MbsSessionTnlInfo5gcList),
 }
@@ -23526,7 +23657,7 @@ impl PerCodec for MbsSessionTnlInfo5gc {
 	}
 }
 // MbsSessionTnlInfo5gcList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MbsSessionTnlInfo5gcList(pub NonEmpty<MbsSessionTnlInfo5gcItem>);
 
 impl MbsSessionTnlInfo5gcList {
@@ -23571,7 +23702,7 @@ impl PerCodec for MbsSessionTnlInfo5gcList {
 	}
 }
 // MbsSessionTnlInfo5gcItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MbsSessionTnlInfo5gcItem {
 	pub mbs_area_session_id: MbsAreaSessionId,
 	pub shared_ngu_multicast_tnl_information: SharedNguMulticastTnlInformation,
@@ -23636,8 +23767,9 @@ impl PerCodec for MbsSessionTnlInfo5gcItem {
 	}
 }
 // MbsSessionTnlInfoNgran
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum MbsSessionTnlInfoNgran {
+	#[default]
 	Locationindependent(UpTransportLayerInformation),
 	Locationdependent(MbsSessionTnlInfoNgranList),
 }
@@ -23704,7 +23836,7 @@ impl PerCodec for MbsSessionTnlInfoNgran {
 	}
 }
 // MbsSessionTnlInfoNgranList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MbsSessionTnlInfoNgranList(pub NonEmpty<MbsSessionTnlInfoNgranItem>);
 
 impl MbsSessionTnlInfoNgranList {
@@ -23749,7 +23881,7 @@ impl PerCodec for MbsSessionTnlInfoNgranList {
 	}
 }
 // MbsSessionTnlInfoNgranItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MbsSessionTnlInfoNgranItem {
 	pub mbs_area_session_id: MbsAreaSessionId,
 	pub shared_ngu_unicast_tnl_information: Option<UpTransportLayerInformation>,
@@ -23821,7 +23953,7 @@ impl PerCodec for MbsSessionTnlInfoNgranItem {
 	}
 }
 // MbsDistributionReleaseRequestTransfer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MbsDistributionReleaseRequestTransfer {
 	pub mbs_session_id: MbsSessionId,
 	pub mbs_area_session_id: Option<MbsAreaSessionId>,
@@ -23908,7 +24040,7 @@ impl PerCodec for MbsDistributionReleaseRequestTransfer {
 	}
 }
 // MbsDistributionSetupRequestTransfer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MbsDistributionSetupRequestTransfer {
 	pub mbs_session_id: MbsSessionId,
 	pub mbs_area_session_id: Option<MbsAreaSessionId>,
@@ -23991,7 +24123,7 @@ impl PerCodec for MbsDistributionSetupRequestTransfer {
 	}
 }
 // MbsDistributionSetupResponseTransfer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MbsDistributionSetupResponseTransfer {
 	pub mbs_session_id: MbsSessionId,
 	pub mbs_area_session_id: Option<MbsAreaSessionId>,
@@ -24093,7 +24225,7 @@ impl PerCodec for MbsDistributionSetupResponseTransfer {
 	}
 }
 // MbsDistributionSetupUnsuccessfulTransfer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MbsDistributionSetupUnsuccessfulTransfer {
 	pub mbs_session_id: MbsSessionId,
 	pub mbs_area_session_id: Option<MbsAreaSessionId>,
@@ -24182,7 +24314,7 @@ impl PerCodec for MbsDistributionSetupUnsuccessfulTransfer {
 	}
 }
 // MbsSessionSetupRequestList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MbsSessionSetupRequestList(pub NonEmpty<MbsSessionSetupRequestItem>);
 
 impl MbsSessionSetupRequestList {
@@ -24227,7 +24359,7 @@ impl PerCodec for MbsSessionSetupRequestList {
 	}
 }
 // MbsSessionSetupRequestItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MbsSessionSetupRequestItem {
 	pub mbs_session_id: MbsSessionId,
 	pub mbs_area_session_id: Option<MbsAreaSessionId>,
@@ -24310,7 +24442,7 @@ impl PerCodec for MbsSessionSetupRequestItem {
 	}
 }
 // MbsSessionSetuporModifyRequestList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MbsSessionSetuporModifyRequestList(pub NonEmpty<MbsSessionSetuporModifyRequestItem>);
 
 impl MbsSessionSetuporModifyRequestList {
@@ -24355,7 +24487,7 @@ impl PerCodec for MbsSessionSetuporModifyRequestList {
 	}
 }
 // MbsSessionSetuporModifyRequestItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MbsSessionSetuporModifyRequestItem {
 	pub mbs_session_id: MbsSessionId,
 	pub mbs_area_session_id: Option<MbsAreaSessionId>,
@@ -24453,7 +24585,7 @@ impl PerCodec for MbsSessionSetuporModifyRequestItem {
 	}
 }
 // MbsSessionToReleaseList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MbsSessionToReleaseList(pub NonEmpty<MbsSessionToReleaseItem>);
 
 impl MbsSessionToReleaseList {
@@ -24498,7 +24630,7 @@ impl PerCodec for MbsSessionToReleaseList {
 	}
 }
 // MbsSessionToReleaseItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MbsSessionToReleaseItem {
 	pub mbs_session_id: MbsSessionId,
 	pub cause: Cause,
@@ -24563,9 +24695,10 @@ impl PerCodec for MbsSessionToReleaseItem {
 	}
 }
 // MbsSessionStatus
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum MbsSessionStatus {
+	#[default]
 	Activated,
 	Deactivated,
 }
@@ -24605,9 +24738,10 @@ impl PerCodec for MbsSessionStatus {
 	}
 }
 // MicoAllPlmn
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum MicoAllPlmn {
+	#[default]
 	True,
 }
 
@@ -24646,9 +24780,10 @@ impl PerCodec for MicoAllPlmn {
 	}
 }
 // MicoModeIndication
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum MicoModeIndication {
+	#[default]
 	True,
 }
 
@@ -24687,7 +24822,7 @@ impl PerCodec for MicoModeIndication {
 	}
 }
 // MobilityInformation
-#[derive(Clone, Debug)]
+#[derive(Clone, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct MobilityInformation(pub BitString);
 
 impl MobilityInformation {
@@ -24726,7 +24861,7 @@ impl PerCodec for MobilityInformation {
 	}
 }
 // ExtendedMobilityInformation
-#[derive(Clone, Debug)]
+#[derive(Clone, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct ExtendedMobilityInformation(pub BitString);
 
 impl ExtendedMobilityInformation {
@@ -24765,7 +24900,7 @@ impl PerCodec for ExtendedMobilityInformation {
 	}
 }
 // MobilityRestrictionList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MobilityRestrictionList {
 	pub serving_plmn: PlmnIdentity,
 	pub equivalent_plmns: Option<EquivalentPlmns>,
@@ -24937,8 +25072,9 @@ impl PerCodec for MobilityRestrictionList {
 	}
 }
 // MdtAlignmentInfo
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum MdtAlignmentInfo {
+	#[default]
 	SBasedMdt(NgranTraceId),
 }
 
@@ -24995,7 +25131,7 @@ impl PerCodec for MdtAlignmentInfo {
 	}
 }
 // MdtPlmnList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MdtPlmnList(pub NonEmpty<PlmnIdentity>);
 
 impl MdtPlmnList {
@@ -25040,7 +25176,7 @@ impl PerCodec for MdtPlmnList {
 	}
 }
 // MdtPlmnModificationList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MdtPlmnModificationList(pub Vec<PlmnIdentity>);
 
 impl MdtPlmnModificationList {
@@ -25085,7 +25221,7 @@ impl PerCodec for MdtPlmnModificationList {
 	}
 }
 // MdtConfiguration
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MdtConfiguration {
 	pub mdt_config_nr: Option<MdtConfigurationNr>,
 	pub mdt_config_eutra: Option<MdtConfigurationEutra>,
@@ -25164,7 +25300,7 @@ impl PerCodec for MdtConfiguration {
 	}
 }
 // MdtConfigurationNr
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MdtConfigurationNr {
 	pub mdt_activation: MdtActivation,
 	pub area_scope_of_mdt: AreaScopeOfMdtNr,
@@ -25244,7 +25380,7 @@ impl PerCodec for MdtConfigurationNr {
 	}
 }
 // MdtConfigurationEutra
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MdtConfigurationEutra {
 	pub mdt_activation: MdtActivation,
 	pub area_scope_of_mdt: AreaScopeOfMdtEutra,
@@ -25324,9 +25460,10 @@ impl PerCodec for MdtConfigurationEutra {
 	}
 }
 // MdtActivation
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum MdtActivation {
+	#[default]
 	ImmediateMdtOnly,
 	LoggedMdtOnly,
 	ImmediateMdtAndTrace,
@@ -25367,8 +25504,9 @@ impl PerCodec for MdtActivation {
 	}
 }
 // MdtModeNr
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum MdtModeNr {
+	#[default]
 	ImmediateMdtNr(ImmediateMdtNr),
 	LoggedMdtNr(LoggedMdtNr),
 }
@@ -25431,7 +25569,7 @@ impl PerCodec for MdtModeNr {
 	}
 }
 // MdtModeEutra
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MdtModeEutra(pub Vec<u8>);
 
 impl MdtModeEutra {
@@ -25465,7 +25603,7 @@ impl PerCodec for MdtModeEutra {
 	}
 }
 // MeasurementsToActivate
-#[derive(Clone, Debug)]
+#[derive(Clone, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct MeasurementsToActivate(pub BitString);
 
 impl MeasurementsToActivate {
@@ -25504,7 +25642,7 @@ impl PerCodec for MeasurementsToActivate {
 	}
 }
 // MrbId
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct MrbId(pub u16);
 
 impl MrbId {
@@ -25540,7 +25678,7 @@ impl PerCodec for MrbId {
 	}
 }
 // MulticastSessionActivationRequestTransfer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MulticastSessionActivationRequestTransfer {
 	pub mbs_session_id: MbsSessionId,
 }
@@ -25601,7 +25739,7 @@ impl PerCodec for MulticastSessionActivationRequestTransfer {
 	}
 }
 // MulticastSessionDeactivationRequestTransfer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MulticastSessionDeactivationRequestTransfer {
 	pub mbs_session_id: MbsSessionId,
 }
@@ -25662,7 +25800,7 @@ impl PerCodec for MulticastSessionDeactivationRequestTransfer {
 	}
 }
 // MulticastSessionUpdateRequestTransfer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MulticastSessionUpdateRequestTransfer {
 	pub mbs_session_id: MbsSessionId,
 	pub mbs_service_area: Option<MbsServiceArea>,
@@ -25791,7 +25929,7 @@ impl PerCodec for MulticastSessionUpdateRequestTransfer {
 	}
 }
 // MulticastGroupPagingAreaList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MulticastGroupPagingAreaList(pub NonEmpty<MulticastGroupPagingAreaItem>);
 
 impl MulticastGroupPagingAreaList {
@@ -25836,7 +25974,7 @@ impl PerCodec for MulticastGroupPagingAreaList {
 	}
 }
 // MulticastGroupPagingAreaItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MulticastGroupPagingAreaItem {
 	pub multicast_group_paging_area: MulticastGroupPagingArea,
 	pub ue_paging_list: Option<UePagingList>,
@@ -25908,7 +26046,7 @@ impl PerCodec for MulticastGroupPagingAreaItem {
 	}
 }
 // MbsAreaTaiList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MbsAreaTaiList(pub NonEmpty<Tai>);
 
 impl MbsAreaTaiList {
@@ -25953,7 +26091,7 @@ impl PerCodec for MbsAreaTaiList {
 	}
 }
 // MulticastGroupPagingArea
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MulticastGroupPagingArea {
 	pub mbs_area_tai_list: MbsAreaTaiList,
 }
@@ -26012,7 +26150,7 @@ impl PerCodec for MulticastGroupPagingArea {
 	}
 }
 // UePagingList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UePagingList(pub NonEmpty<UePagingItem>);
 
 impl UePagingList {
@@ -26057,7 +26195,7 @@ impl PerCodec for UePagingList {
 	}
 }
 // UePagingItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UePagingItem {
 	pub ue_identity_index_value: UeIdentityIndexValue,
 	pub paging_drx: Option<PagingDrx>,
@@ -26129,7 +26267,7 @@ impl PerCodec for UePagingItem {
 	}
 }
 // M1Configuration
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct M1Configuration {
 	pub m1reporting_trigger: M1ReportingTrigger,
 	pub m1threshold_event_a2: Option<M1ThresholdEventA2>,
@@ -26254,9 +26392,10 @@ impl PerCodec for M1Configuration {
 	}
 }
 // IncludeBeamMeasurementsIndication
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum IncludeBeamMeasurementsIndication {
+	#[default]
 	True,
 }
 
@@ -26295,7 +26434,7 @@ impl PerCodec for IncludeBeamMeasurementsIndication {
 	}
 }
 // MaxNrofRsIndexesToReport
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct MaxNrofRsIndexesToReport(pub u8);
 
 impl MaxNrofRsIndexesToReport {
@@ -26331,9 +26470,10 @@ impl PerCodec for MaxNrofRsIndexesToReport {
 	}
 }
 // M1ReportingTrigger
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum M1ReportingTrigger {
+	#[default]
 	Periodic,
 	A2eventtriggered,
 	A2eventtriggeredPeriodic,
@@ -26374,7 +26514,7 @@ impl PerCodec for M1ReportingTrigger {
 	}
 }
 // M1ThresholdEventA2
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct M1ThresholdEventA2 {
 	pub m1_threshold_type: M1ThresholdType,
 }
@@ -26433,8 +26573,9 @@ impl PerCodec for M1ThresholdEventA2 {
 	}
 }
 // M1ThresholdType
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum M1ThresholdType {
+	#[default]
 	ThresholdRsrp(ThresholdRsrp),
 	ThresholdRsrq(ThresholdRsrq),
 	ThresholdSiNr(ThresholdSiNr),
@@ -26503,7 +26644,7 @@ impl PerCodec for M1ThresholdType {
 	}
 }
 // M1PeriodicReporting
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct M1PeriodicReporting {
 	pub report_interval: ReportIntervalMdt,
 	pub report_amount: ReportAmountMdt,
@@ -26590,7 +26731,7 @@ impl PerCodec for M1PeriodicReporting {
 	}
 }
 // M4Configuration
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct M4Configuration {
 	pub m4period: M4period,
 	pub m4_links_to_log: LinksToLog,
@@ -26674,9 +26815,10 @@ impl PerCodec for M4Configuration {
 	}
 }
 // M4ReportAmountMdt
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum M4ReportAmountMdt {
+	#[default]
 	R1,
 	R2,
 	R4,
@@ -26722,9 +26864,10 @@ impl PerCodec for M4ReportAmountMdt {
 	}
 }
 // M4period
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum M4period {
+	#[default]
 	Ms1024,
 	Ms2048,
 	Ms5120,
@@ -26767,7 +26910,7 @@ impl PerCodec for M4period {
 	}
 }
 // M5Configuration
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct M5Configuration {
 	pub m5period: M5period,
 	pub m5_links_to_log: LinksToLog,
@@ -26851,9 +26994,10 @@ impl PerCodec for M5Configuration {
 	}
 }
 // M5ReportAmountMdt
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum M5ReportAmountMdt {
+	#[default]
 	R1,
 	R2,
 	R4,
@@ -26899,9 +27043,10 @@ impl PerCodec for M5ReportAmountMdt {
 	}
 }
 // M5period
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum M5period {
+	#[default]
 	Ms1024,
 	Ms2048,
 	Ms5120,
@@ -26944,7 +27089,7 @@ impl PerCodec for M5period {
 	}
 }
 // M6Configuration
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct M6Configuration {
 	pub m6report_interval: M6reportInterval,
 	pub m6_links_to_log: LinksToLog,
@@ -27048,9 +27193,10 @@ impl PerCodec for M6Configuration {
 	}
 }
 // M6ReportAmountMdt
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum M6ReportAmountMdt {
+	#[default]
 	R1,
 	R2,
 	R4,
@@ -27096,9 +27242,10 @@ impl PerCodec for M6ReportAmountMdt {
 	}
 }
 // M6reportInterval
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum M6reportInterval {
+	#[default]
 	Ms120,
 	Ms240,
 	Ms480,
@@ -27150,7 +27297,7 @@ impl PerCodec for M6reportInterval {
 	}
 }
 // M7Configuration
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct M7Configuration {
 	pub m7period: M7period,
 	pub m7_links_to_log: LinksToLog,
@@ -27234,9 +27381,10 @@ impl PerCodec for M7Configuration {
 	}
 }
 // M7ReportAmountMdt
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum M7ReportAmountMdt {
+	#[default]
 	R1,
 	R2,
 	R4,
@@ -27282,7 +27430,7 @@ impl PerCodec for M7ReportAmountMdt {
 	}
 }
 // M7period
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct M7period(pub u8);
 
 impl M7period {
@@ -27318,7 +27466,7 @@ impl PerCodec for M7period {
 	}
 }
 // MdtLocationInfo
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct MdtLocationInfo {
 	pub mdt_location_information: MdtLocationInformation,
 }
@@ -27379,7 +27527,7 @@ impl PerCodec for MdtLocationInfo {
 	}
 }
 // MdtLocationInformation
-#[derive(Clone, Debug)]
+#[derive(Clone, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct MdtLocationInformation(pub BitString);
 
 impl MdtLocationInformation {
@@ -27418,8 +27566,9 @@ impl PerCodec for MdtLocationInformation {
 	}
 }
 // N3IwfId
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum N3IwfId {
+	#[default]
 	N3IwfId(BitString),
 }
 
@@ -27481,7 +27630,7 @@ impl PerCodec for N3IwfId {
 	}
 }
 // NasPdu
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct NasPdu(pub Vec<u8>);
 
 impl NasPdu {
@@ -27515,7 +27664,7 @@ impl PerCodec for NasPdu {
 	}
 }
 // NasSecurityParametersFromNgran
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct NasSecurityParametersFromNgran(pub Vec<u8>);
 
 impl NasSecurityParametersFromNgran {
@@ -27549,9 +27698,10 @@ impl PerCodec for NasSecurityParametersFromNgran {
 	}
 }
 // NbIotDefaultPagingDrx
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum NbIotDefaultPagingDrx {
+	#[default]
 	Rf128,
 	Rf256,
 	Rf512,
@@ -27593,9 +27743,10 @@ impl PerCodec for NbIotDefaultPagingDrx {
 	}
 }
 // NbIotPagingDrx
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum NbIotPagingDrx {
+	#[default]
 	Rf32,
 	Rf64,
 	Rf128,
@@ -27639,9 +27790,10 @@ impl PerCodec for NbIotPagingDrx {
 	}
 }
 // NbIotPagingEDrxCycle
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum NbIotPagingEDrxCycle {
+	#[default]
 	Hf2,
 	Hf4,
 	Hf6,
@@ -27693,9 +27845,10 @@ impl PerCodec for NbIotPagingEDrxCycle {
 	}
 }
 // NbIotPagingTimeWindow
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum NbIotPagingTimeWindow {
+	#[default]
 	S1,
 	S2,
 	S3,
@@ -27749,7 +27902,7 @@ impl PerCodec for NbIotPagingTimeWindow {
 	}
 }
 // NbIotPagingEDrxInfo
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct NbIotPagingEDrxInfo {
 	pub nb_iot_paging_e_drx_cycle: NbIotPagingEDrxCycle,
 	pub nb_iot_paging_time_window: Option<NbIotPagingTimeWindow>,
@@ -27821,7 +27974,7 @@ impl PerCodec for NbIotPagingEDrxInfo {
 	}
 }
 // NbIotUePriority
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct NbIotUePriority(pub u8);
 
 impl NbIotUePriority {
@@ -27857,7 +28010,7 @@ impl PerCodec for NbIotUePriority {
 	}
 }
 // NetworkInstance
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct NetworkInstance(pub u16);
 
 impl NetworkInstance {
@@ -27893,9 +28046,10 @@ impl PerCodec for NetworkInstance {
 	}
 }
 // NewSecurityContextInd
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum NewSecurityContextInd {
+	#[default]
 	True,
 }
 
@@ -27934,7 +28088,7 @@ impl PerCodec for NewSecurityContextInd {
 	}
 }
 // NextHopChainingCount
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct NextHopChainingCount(pub u8);
 
 impl NextHopChainingCount {
@@ -27970,9 +28124,10 @@ impl PerCodec for NextHopChainingCount {
 	}
 }
 // NextPagingAreaScope
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum NextPagingAreaScope {
+	#[default]
 	Same,
 	Changed,
 }
@@ -28012,7 +28167,7 @@ impl PerCodec for NextPagingAreaScope {
 	}
 }
 // NgapieSupportInformationRequestList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct NgapieSupportInformationRequestList(pub NonEmpty<NgapieSupportInformationRequestItem>);
 
 impl NgapieSupportInformationRequestList {
@@ -28057,7 +28212,7 @@ impl PerCodec for NgapieSupportInformationRequestList {
 	}
 }
 // NgapieSupportInformationRequestItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct NgapieSupportInformationRequestItem {
 	pub ngap_protocol_ie_id: ProtocolIeId,
 }
@@ -28118,7 +28273,7 @@ impl PerCodec for NgapieSupportInformationRequestItem {
 	}
 }
 // NgapieSupportInformationResponseList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct NgapieSupportInformationResponseList(pub NonEmpty<NgapieSupportInformationResponseItem>);
 
 impl NgapieSupportInformationResponseList {
@@ -28163,7 +28318,7 @@ impl PerCodec for NgapieSupportInformationResponseList {
 	}
 }
 // NgapieSupportInformationResponseItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct NgapieSupportInformationResponseItem {
 	pub ngap_protocol_ie_id: ProtocolIeId,
 	pub ngap_protocol_ie_support_info: NgapProtocolIeSupportInfo,
@@ -28232,8 +28387,9 @@ impl PerCodec for NgapieSupportInformationResponseItem {
 	}
 }
 // NgEnbId
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum NgEnbId {
+	#[default]
 	MacroNgEnbId(BitString),
 	ShortMacroNgEnbId(BitString),
 	LongMacroNgEnbId(BitString),
@@ -28317,9 +28473,10 @@ impl PerCodec for NgEnbId {
 	}
 }
 // NotifySourceNgranNode
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum NotifySourceNgranNode {
+	#[default]
 	NotifySource,
 }
 
@@ -28358,8 +28515,9 @@ impl PerCodec for NotifySourceNgranNode {
 	}
 }
 // NgranCgi
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum NgranCgi {
+	#[default]
 	NrCgi(NrCgi),
 	EutraCgi(EutraCgi),
 }
@@ -28422,7 +28580,7 @@ impl PerCodec for NgranCgi {
 	}
 }
 // NgranTnlAssociationToRemoveList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct NgranTnlAssociationToRemoveList(pub NonEmpty<NgranTnlAssociationToRemoveItem>);
 
 impl NgranTnlAssociationToRemoveList {
@@ -28467,7 +28625,7 @@ impl PerCodec for NgranTnlAssociationToRemoveList {
 	}
 }
 // NgranTnlAssociationToRemoveItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct NgranTnlAssociationToRemoveItem {
 	pub tnl_association_transport_layer_address: CpTransportLayerInformation,
 	pub tnl_association_transport_layer_address_amf: Option<CpTransportLayerInformation>,
@@ -28541,7 +28699,15 @@ impl PerCodec for NgranTnlAssociationToRemoveItem {
 // NgranTraceId
 #[derive(Clone, Debug)]
 pub struct NgranTraceId(pub [u8; 8]);
-
+impl Default for NgranTraceId {
+	fn default() -> NgranTraceId {
+		let init = std::mem::MaybeUninit::<[u8; 8]>::zeroed();
+		// SAFETY: No pointers present for the assume init here
+		// TODO: Evaluate the performance issues: "https://users.rust-lang.org/t/unnecessary-performance-penalty-for-mem-maybeuninit/84063"
+		let default_value = unsafe { init.assume_init() };
+		NgranTraceId(default_value)
+	}
+}
 impl NgranTraceId {
 	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
 		Ok(Self(
@@ -28577,7 +28743,7 @@ impl PerCodec for NgranTraceId {
 	}
 }
 // Nid
-#[derive(Clone, Debug)]
+#[derive(Clone, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct Nid(pub BitString);
 
 impl Nid {
@@ -28616,7 +28782,7 @@ impl PerCodec for Nid {
 	}
 }
 // NonDynamic5qiDescriptor
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct NonDynamic5qiDescriptor {
 	pub five_qi: FiveQi,
 	pub priority_level_qos: Option<PriorityLevelQos>,
@@ -28747,7 +28913,7 @@ impl PerCodec for NonDynamic5qiDescriptor {
 	}
 }
 // NotAllowedTaCs
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct NotAllowedTaCs(pub NonEmpty<Tac>);
 
 impl NotAllowedTaCs {
@@ -28792,9 +28958,10 @@ impl PerCodec for NotAllowedTaCs {
 	}
 }
 // NotificationCause
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum NotificationCause {
+	#[default]
 	Fulfilled,
 	NotFulfilled,
 }
@@ -28834,9 +29001,10 @@ impl PerCodec for NotificationCause {
 	}
 }
 // NotificationControl
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum NotificationControl {
+	#[default]
 	NotificationRequested,
 }
 
@@ -28875,8 +29043,9 @@ impl PerCodec for NotificationControl {
 	}
 }
 // NpnAccessInformation
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum NpnAccessInformation {
+	#[default]
 	PniNpnAccessInformation(CellCagList),
 }
 
@@ -28933,8 +29102,9 @@ impl PerCodec for NpnAccessInformation {
 	}
 }
 // NpnMobilityInformation
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum NpnMobilityInformation {
+	#[default]
 	SnpnMobilityInformation(SnpnMobilityInformation),
 	PniNpnMobilityInformation(PniNpnMobilityInformation),
 }
@@ -29001,8 +29171,9 @@ impl PerCodec for NpnMobilityInformation {
 	}
 }
 // NpnPagingAssistanceInformation
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum NpnPagingAssistanceInformation {
+	#[default]
 	PniNpnPagingAssistance(AllowedPniNpnList),
 }
 
@@ -29061,8 +29232,9 @@ impl PerCodec for NpnPagingAssistanceInformation {
 	}
 }
 // NpnSupport
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum NpnSupport {
+	#[default]
 	Snpn(Nid),
 }
 
@@ -29119,7 +29291,7 @@ impl PerCodec for NpnSupport {
 	}
 }
 // NrCellIdentity
-#[derive(Clone, Debug)]
+#[derive(Clone, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct NrCellIdentity(pub BitString);
 
 impl NrCellIdentity {
@@ -29158,7 +29330,7 @@ impl PerCodec for NrCellIdentity {
 	}
 }
 // NrCgi
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct NrCgi {
 	pub plmn_identity: PlmnIdentity,
 	pub nr_cell_identity: NrCellIdentity,
@@ -29223,7 +29395,7 @@ impl PerCodec for NrCgi {
 	}
 }
 // NrCgiList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct NrCgiList(pub NonEmpty<NrCgi>);
 
 impl NrCgiList {
@@ -29268,7 +29440,7 @@ impl PerCodec for NrCgiList {
 	}
 }
 // NrCgiListForWarning
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct NrCgiListForWarning(pub NonEmpty<NrCgi>);
 
 impl NrCgiListForWarning {
@@ -29313,7 +29485,7 @@ impl PerCodec for NrCgiListForWarning {
 	}
 }
 // NrPagingeDrxInformation
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct NrPagingeDrxInformation {
 	pub nr_paging_e_drx_cycle: NrPagingEDrxCycle,
 	pub nr_paging_time_window: Option<NrPagingTimeWindow>,
@@ -29385,9 +29557,10 @@ impl PerCodec for NrPagingeDrxInformation {
 	}
 }
 // NrPagingEDrxCycle
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum NrPagingEDrxCycle {
+	#[default]
 	Hfquarter,
 	Hfhalf,
 	Hf1,
@@ -29438,9 +29611,10 @@ impl PerCodec for NrPagingEDrxCycle {
 	}
 }
 // NrPagingTimeWindow
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum NrPagingTimeWindow {
+	#[default]
 	S1,
 	S2,
 	S3,
@@ -29494,7 +29668,7 @@ impl PerCodec for NrPagingTimeWindow {
 	}
 }
 // NrEncryptionAlgorithms
-#[derive(Clone, Debug)]
+#[derive(Clone, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct NrEncryptionAlgorithms(pub BitString);
 
 impl NrEncryptionAlgorithms {
@@ -29533,7 +29707,7 @@ impl PerCodec for NrEncryptionAlgorithms {
 	}
 }
 // NrIntegrityProtectionAlgorithms
-#[derive(Clone, Debug)]
+#[derive(Clone, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct NrIntegrityProtectionAlgorithms(pub BitString);
 
 impl NrIntegrityProtectionAlgorithms {
@@ -29572,7 +29746,7 @@ impl PerCodec for NrIntegrityProtectionAlgorithms {
 	}
 }
 // NrMobilityHistoryReport
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct NrMobilityHistoryReport(pub Vec<u8>);
 
 impl NrMobilityHistoryReport {
@@ -29606,7 +29780,7 @@ impl PerCodec for NrMobilityHistoryReport {
 	}
 }
 // NrPPaPdu
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct NrPPaPdu(pub Vec<u8>);
 
 impl NrPPaPdu {
@@ -29640,7 +29814,7 @@ impl PerCodec for NrPPaPdu {
 	}
 }
 // NrUeRlfReportContainer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct NrUeRlfReportContainer(pub Vec<u8>);
 
 impl NrUeRlfReportContainer {
@@ -29674,7 +29848,7 @@ impl PerCodec for NrUeRlfReportContainer {
 	}
 }
 // NrNtntaiInformation
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct NrNtntaiInformation {
 	pub serving_plmn: PlmnIdentity,
 	pub tac_list_in_nr_ntn: TacListInNrNtn,
@@ -29750,7 +29924,7 @@ impl PerCodec for NrNtntaiInformation {
 	}
 }
 // NumberOfBroadcasts
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct NumberOfBroadcasts(pub u16);
 
 impl NumberOfBroadcasts {
@@ -29786,7 +29960,7 @@ impl PerCodec for NumberOfBroadcasts {
 	}
 }
 // NumberOfBroadcastsRequested
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct NumberOfBroadcastsRequested(pub u16);
 
 impl NumberOfBroadcastsRequested {
@@ -29822,7 +29996,7 @@ impl PerCodec for NumberOfBroadcastsRequested {
 	}
 }
 // NrArfcn
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct NrArfcn(pub u32);
 
 impl NrArfcn {
@@ -29858,7 +30032,7 @@ impl PerCodec for NrArfcn {
 	}
 }
 // NrFrequencyBand
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct NrFrequencyBand(pub u16);
 
 impl NrFrequencyBand {
@@ -29894,7 +30068,7 @@ impl PerCodec for NrFrequencyBand {
 	}
 }
 // NrFrequencyBandList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct NrFrequencyBandList(pub NonEmpty<NrFrequencyBandItem>);
 
 impl NrFrequencyBandList {
@@ -29939,7 +30113,7 @@ impl PerCodec for NrFrequencyBandList {
 	}
 }
 // NrFrequencyBandItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct NrFrequencyBandItem {
 	pub nr_frequency_band: NrFrequencyBand,
 }
@@ -29998,7 +30172,7 @@ impl PerCodec for NrFrequencyBandItem {
 	}
 }
 // NrFrequencyInfo
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct NrFrequencyInfo {
 	pub nr_arfcn: NrArfcn,
 	pub frequency_band_list: NrFrequencyBandList,
@@ -30063,7 +30237,7 @@ impl PerCodec for NrFrequencyInfo {
 	}
 }
 // NrPci
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct NrPci(pub u16);
 
 impl NrPci {
@@ -30099,7 +30273,7 @@ impl PerCodec for NrPci {
 	}
 }
 // NrV2xServicesAuthorized
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct NrV2xServicesAuthorized {
 	pub vehicle_ue: Option<VehicleUe>,
 	pub pedestrian_ue: Option<PedestrianUe>,
@@ -30178,9 +30352,10 @@ impl PerCodec for NrV2xServicesAuthorized {
 	}
 }
 // VehicleUe
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum VehicleUe {
+	#[default]
 	Authorized,
 	NotAuthorized,
 }
@@ -30220,9 +30395,10 @@ impl PerCodec for VehicleUe {
 	}
 }
 // PedestrianUe
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum PedestrianUe {
+	#[default]
 	Authorized,
 	NotAuthorized,
 }
@@ -30262,7 +30438,7 @@ impl PerCodec for PedestrianUe {
 	}
 }
 // NrUeSidelinkAggregateMaximumBitrate
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct NrUeSidelinkAggregateMaximumBitrate {
 	pub ue_sidelink_aggregate_maximum_bit_rate: BitRate,
 }
@@ -30323,7 +30499,7 @@ impl PerCodec for NrUeSidelinkAggregateMaximumBitrate {
 	}
 }
 // NsagId
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct NsagId(pub u8);
 
 impl NsagId {
@@ -30359,9 +30535,10 @@ impl PerCodec for NsagId {
 	}
 }
 // OnboardingSupport
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum OnboardingSupport {
+	#[default]
 	True,
 }
 
@@ -30400,9 +30577,10 @@ impl PerCodec for OnboardingSupport {
 	}
 }
 // OverloadAction
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum OverloadAction {
+	#[default]
 	RejectNonEmergencyMoDt,
 	RejectRrcCrSignalling,
 	PermitEmergencySessionsAndMobileTerminatedServicesOnly,
@@ -30444,8 +30622,9 @@ impl PerCodec for OverloadAction {
 	}
 }
 // OverloadResponse
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum OverloadResponse {
+	#[default]
 	OverloadAction(OverloadAction),
 }
 
@@ -30502,7 +30681,7 @@ impl PerCodec for OverloadResponse {
 	}
 }
 // OverloadStartNssaiList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct OverloadStartNssaiList(pub NonEmpty<OverloadStartNssaiItem>);
 
 impl OverloadStartNssaiList {
@@ -30547,7 +30726,7 @@ impl PerCodec for OverloadStartNssaiList {
 	}
 }
 // OverloadStartNssaiItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct OverloadStartNssaiItem {
 	pub slice_overload_list: SliceOverloadList,
 	pub slice_overload_response: Option<OverloadResponse>,
@@ -30630,7 +30809,7 @@ impl PerCodec for OverloadStartNssaiItem {
 	}
 }
 // PacketDelayBudget
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct PacketDelayBudget(pub u16);
 
 impl PacketDelayBudget {
@@ -30666,7 +30845,7 @@ impl PerCodec for PacketDelayBudget {
 	}
 }
 // PacketErrorRate
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PacketErrorRate {
 	pub per_scalar: u8,
 	pub per_exponent: u8,
@@ -30738,7 +30917,7 @@ impl PerCodec for PacketErrorRate {
 	}
 }
 // PacketLossRate
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct PacketLossRate(pub u16);
 
 impl PacketLossRate {
@@ -30774,7 +30953,7 @@ impl PerCodec for PacketLossRate {
 	}
 }
 // PagingAssisDataforCEcapabUe
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PagingAssisDataforCEcapabUe {
 	pub eutra_cgi: EutraCgi,
 	pub coverage_enhancement_level: CoverageEnhancementLevel,
@@ -30839,7 +31018,7 @@ impl PerCodec for PagingAssisDataforCEcapabUe {
 	}
 }
 // PagingAttemptInformation
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PagingAttemptInformation {
 	pub paging_attempt_count: PagingAttemptCount,
 	pub intended_number_of_paging_attempts: IntendedNumberOfPagingAttempts,
@@ -30915,7 +31094,7 @@ impl PerCodec for PagingAttemptInformation {
 	}
 }
 // PagingAttemptCount
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct PagingAttemptCount(pub u8);
 
 impl PagingAttemptCount {
@@ -30951,9 +31130,10 @@ impl PerCodec for PagingAttemptCount {
 	}
 }
 // PagingCause
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum PagingCause {
+	#[default]
 	Voice,
 }
 
@@ -30992,9 +31172,10 @@ impl PerCodec for PagingCause {
 	}
 }
 // PagingCauseIndicationForVoiceService
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum PagingCauseIndicationForVoiceService {
+	#[default]
 	Supported,
 }
 
@@ -31033,9 +31214,10 @@ impl PerCodec for PagingCauseIndicationForVoiceService {
 	}
 }
 // PagingDrx
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum PagingDrx {
+	#[default]
 	V32,
 	V64,
 	V128,
@@ -31077,9 +31259,10 @@ impl PerCodec for PagingDrx {
 	}
 }
 // PagingOrigin
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum PagingOrigin {
+	#[default]
 	Non3gpp,
 }
 
@@ -31118,9 +31301,10 @@ impl PerCodec for PagingOrigin {
 	}
 }
 // PagingPriority
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum PagingPriority {
+	#[default]
 	Priolevel1,
 	Priolevel2,
 	Priolevel3,
@@ -31166,9 +31350,10 @@ impl PerCodec for PagingPriority {
 	}
 }
 // PagingProbabilityInformation
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum PagingProbabilityInformation {
+	#[default]
 	P00,
 	P05,
 	P10,
@@ -31227,7 +31412,7 @@ impl PerCodec for PagingProbabilityInformation {
 	}
 }
 // PathSwitchRequestAcknowledgeTransfer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PathSwitchRequestAcknowledgeTransfer {
 	pub ul_ngu_up_tnl_information: Option<UpTransportLayerInformation>,
 	pub security_indication: Option<SecurityIndication>,
@@ -31379,7 +31564,7 @@ impl PerCodec for PathSwitchRequestAcknowledgeTransfer {
 	}
 }
 // PathSwitchRequestSetupFailedTransfer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PathSwitchRequestSetupFailedTransfer {
 	pub cause: Cause,
 }
@@ -31438,7 +31623,7 @@ impl PerCodec for PathSwitchRequestSetupFailedTransfer {
 	}
 }
 // PathSwitchRequestTransfer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PathSwitchRequestTransfer {
 	pub dl_ngu_up_tnl_information: UpTransportLayerInformation,
 	pub dl_ngu_tnl_information_reused: Option<DlNguTnlInformationReused>,
@@ -31645,7 +31830,7 @@ impl PerCodec for PathSwitchRequestTransfer {
 	}
 }
 // PathSwitchRequestUnsuccessfulTransfer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PathSwitchRequestUnsuccessfulTransfer {
 	pub cause: Cause,
 }
@@ -31704,7 +31889,7 @@ impl PerCodec for PathSwitchRequestUnsuccessfulTransfer {
 	}
 }
 // Pc5QosParameters
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct Pc5QosParameters {
 	pub pc_5_qos_flow_list: Pc5QosFlowList,
 	pub pc_5_link_aggregate_bit_rates: Option<BitRate>,
@@ -31776,7 +31961,7 @@ impl PerCodec for Pc5QosParameters {
 	}
 }
 // Pc5QosFlowList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct Pc5QosFlowList(pub NonEmpty<Pc5QosFlowItem>);
 
 impl Pc5QosFlowList {
@@ -31821,7 +32006,7 @@ impl PerCodec for Pc5QosFlowList {
 	}
 }
 // Pc5QosFlowItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct Pc5QosFlowItem {
 	pub pqi: FiveQi,
 	pub pc_5_flow_bit_rates: Option<Pc5FlowBitRates>,
@@ -31904,7 +32089,7 @@ impl PerCodec for Pc5QosFlowItem {
 	}
 }
 // Pc5FlowBitRates
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct Pc5FlowBitRates {
 	pub guaranteed_flow_bit_rate: BitRate,
 	pub maximum_flow_bit_rate: BitRate,
@@ -31969,7 +32154,7 @@ impl PerCodec for Pc5FlowBitRates {
 	}
 }
 // PciListForMdt
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PciListForMdt(pub NonEmpty<NrPci>);
 
 impl PciListForMdt {
@@ -32014,9 +32199,10 @@ impl PerCodec for PciListForMdt {
 	}
 }
 // PrivacyIndicator
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum PrivacyIndicator {
+	#[default]
 	ImmediateMdt,
 	LoggedMdt,
 }
@@ -32056,7 +32242,7 @@ impl PerCodec for PrivacyIndicator {
 	}
 }
 // PduSessionAggregateMaximumBitRate
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionAggregateMaximumBitRate {
 	pub pdu_session_aggregate_maximum_bit_rate_dl: BitRate,
 	pub pdu_session_aggregate_maximum_bit_rate_ul: BitRate,
@@ -32123,7 +32309,7 @@ impl PerCodec for PduSessionAggregateMaximumBitRate {
 	}
 }
 // PduSessionPairId
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct PduSessionPairId(pub u8);
 
 impl PduSessionPairId {
@@ -32159,7 +32345,7 @@ impl PerCodec for PduSessionPairId {
 	}
 }
 // PduSessionResourceAdmittedList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceAdmittedList(pub NonEmpty<PduSessionResourceAdmittedItem>);
 
 impl PduSessionResourceAdmittedList {
@@ -32204,7 +32390,7 @@ impl PerCodec for PduSessionResourceAdmittedList {
 	}
 }
 // PduSessionResourceAdmittedItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceAdmittedItem {
 	pub pdu_session_id: PduSessionId,
 	pub handover_request_acknowledge_transfer: Vec<u8>,
@@ -32277,7 +32463,7 @@ impl PerCodec for PduSessionResourceAdmittedItem {
 	}
 }
 // PduSessionResourceFailedToModifyListModCfm
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceFailedToModifyListModCfm(
 	pub NonEmpty<PduSessionResourceFailedToModifyItemModCfm>,
 );
@@ -32326,7 +32512,7 @@ impl PerCodec for PduSessionResourceFailedToModifyListModCfm {
 	}
 }
 // PduSessionResourceFailedToModifyItemModCfm
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceFailedToModifyItemModCfm {
 	pub pdu_session_id: PduSessionId,
 	pub pdu_session_resource_modify_indication_unsuccessful_transfer: Vec<u8>,
@@ -32401,7 +32587,7 @@ impl PerCodec for PduSessionResourceFailedToModifyItemModCfm {
 	}
 }
 // PduSessionResourceFailedToModifyListModRes
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceFailedToModifyListModRes(
 	pub NonEmpty<PduSessionResourceFailedToModifyItemModRes>,
 );
@@ -32450,7 +32636,7 @@ impl PerCodec for PduSessionResourceFailedToModifyListModRes {
 	}
 }
 // PduSessionResourceFailedToModifyItemModRes
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceFailedToModifyItemModRes {
 	pub pdu_session_id: PduSessionId,
 	pub pdu_session_resource_modify_unsuccessful_transfer: Vec<u8>,
@@ -32525,7 +32711,7 @@ impl PerCodec for PduSessionResourceFailedToModifyItemModRes {
 	}
 }
 // PduSessionResourceFailedToResumeListResReq
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceFailedToResumeListResReq(
 	pub NonEmpty<PduSessionResourceFailedToResumeItemResReq>,
 );
@@ -32574,7 +32760,7 @@ impl PerCodec for PduSessionResourceFailedToResumeListResReq {
 	}
 }
 // PduSessionResourceFailedToResumeItemResReq
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceFailedToResumeItemResReq {
 	pub pdu_session_id: PduSessionId,
 	pub cause: Cause,
@@ -32641,7 +32827,7 @@ impl PerCodec for PduSessionResourceFailedToResumeItemResReq {
 	}
 }
 // PduSessionResourceFailedToResumeListResRes
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceFailedToResumeListResRes(
 	pub NonEmpty<PduSessionResourceFailedToResumeItemResRes>,
 );
@@ -32690,7 +32876,7 @@ impl PerCodec for PduSessionResourceFailedToResumeListResRes {
 	}
 }
 // PduSessionResourceFailedToResumeItemResRes
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceFailedToResumeItemResRes {
 	pub pdu_session_id: PduSessionId,
 	pub cause: Cause,
@@ -32757,7 +32943,7 @@ impl PerCodec for PduSessionResourceFailedToResumeItemResRes {
 	}
 }
 // PduSessionResourceFailedToSetupListCxtFail
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceFailedToSetupListCxtFail(
 	pub NonEmpty<PduSessionResourceFailedToSetupItemCxtFail>,
 );
@@ -32806,7 +32992,7 @@ impl PerCodec for PduSessionResourceFailedToSetupListCxtFail {
 	}
 }
 // PduSessionResourceFailedToSetupItemCxtFail
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceFailedToSetupItemCxtFail {
 	pub pdu_session_id: PduSessionId,
 	pub pdu_session_resource_setup_unsuccessful_transfer: Vec<u8>,
@@ -32881,7 +33067,7 @@ impl PerCodec for PduSessionResourceFailedToSetupItemCxtFail {
 	}
 }
 // PduSessionResourceFailedToSetupListCxtRes
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceFailedToSetupListCxtRes(
 	pub NonEmpty<PduSessionResourceFailedToSetupItemCxtRes>,
 );
@@ -32930,7 +33116,7 @@ impl PerCodec for PduSessionResourceFailedToSetupListCxtRes {
 	}
 }
 // PduSessionResourceFailedToSetupItemCxtRes
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceFailedToSetupItemCxtRes {
 	pub pdu_session_id: PduSessionId,
 	pub pdu_session_resource_setup_unsuccessful_transfer: Vec<u8>,
@@ -33005,7 +33191,7 @@ impl PerCodec for PduSessionResourceFailedToSetupItemCxtRes {
 	}
 }
 // PduSessionResourceFailedToSetupListHoAck
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceFailedToSetupListHoAck(
 	pub NonEmpty<PduSessionResourceFailedToSetupItemHoAck>,
 );
@@ -33054,7 +33240,7 @@ impl PerCodec for PduSessionResourceFailedToSetupListHoAck {
 	}
 }
 // PduSessionResourceFailedToSetupItemHoAck
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceFailedToSetupItemHoAck {
 	pub pdu_session_id: PduSessionId,
 	pub handover_resource_allocation_unsuccessful_transfer: Vec<u8>,
@@ -33129,7 +33315,7 @@ impl PerCodec for PduSessionResourceFailedToSetupItemHoAck {
 	}
 }
 // PduSessionResourceFailedToSetupListPsReq
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceFailedToSetupListPsReq(
 	pub NonEmpty<PduSessionResourceFailedToSetupItemPsReq>,
 );
@@ -33178,7 +33364,7 @@ impl PerCodec for PduSessionResourceFailedToSetupListPsReq {
 	}
 }
 // PduSessionResourceFailedToSetupItemPsReq
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceFailedToSetupItemPsReq {
 	pub pdu_session_id: PduSessionId,
 	pub path_switch_request_setup_failed_transfer: Vec<u8>,
@@ -33253,7 +33439,7 @@ impl PerCodec for PduSessionResourceFailedToSetupItemPsReq {
 	}
 }
 // PduSessionResourceFailedToSetupListSuRes
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceFailedToSetupListSuRes(
 	pub NonEmpty<PduSessionResourceFailedToSetupItemSuRes>,
 );
@@ -33302,7 +33488,7 @@ impl PerCodec for PduSessionResourceFailedToSetupListSuRes {
 	}
 }
 // PduSessionResourceFailedToSetupItemSuRes
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceFailedToSetupItemSuRes {
 	pub pdu_session_id: PduSessionId,
 	pub pdu_session_resource_setup_unsuccessful_transfer: Vec<u8>,
@@ -33377,7 +33563,7 @@ impl PerCodec for PduSessionResourceFailedToSetupItemSuRes {
 	}
 }
 // PduSessionResourceHandoverList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceHandoverList(pub NonEmpty<PduSessionResourceHandoverItem>);
 
 impl PduSessionResourceHandoverList {
@@ -33422,7 +33608,7 @@ impl PerCodec for PduSessionResourceHandoverList {
 	}
 }
 // PduSessionResourceHandoverItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceHandoverItem {
 	pub pdu_session_id: PduSessionId,
 	pub handover_command_transfer: Vec<u8>,
@@ -33494,7 +33680,7 @@ impl PerCodec for PduSessionResourceHandoverItem {
 	}
 }
 // PduSessionResourceInformationList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceInformationList(pub NonEmpty<PduSessionResourceInformationItem>);
 
 impl PduSessionResourceInformationList {
@@ -33539,7 +33725,7 @@ impl PerCodec for PduSessionResourceInformationList {
 	}
 }
 // PduSessionResourceInformationItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceInformationItem {
 	pub pdu_session_id: PduSessionId,
 	pub qos_flow_information_list: QosFlowInformationList,
@@ -33615,7 +33801,7 @@ impl PerCodec for PduSessionResourceInformationItem {
 	}
 }
 // PduSessionResourceListCxtRelCpl
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceListCxtRelCpl(pub NonEmpty<PduSessionResourceItemCxtRelCpl>);
 
 impl PduSessionResourceListCxtRelCpl {
@@ -33660,7 +33846,7 @@ impl PerCodec for PduSessionResourceListCxtRelCpl {
 	}
 }
 // PduSessionResourceItemCxtRelCpl
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceItemCxtRelCpl {
 	pub pdu_session_id: PduSessionId,
 	pub pdu_session_resource_release_response_transfer: Option<Vec<u8>>,
@@ -33743,7 +33929,7 @@ impl PerCodec for PduSessionResourceItemCxtRelCpl {
 	}
 }
 // PduSessionResourceListCxtRelReq
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceListCxtRelReq(pub NonEmpty<PduSessionResourceItemCxtRelReq>);
 
 impl PduSessionResourceListCxtRelReq {
@@ -33788,7 +33974,7 @@ impl PerCodec for PduSessionResourceListCxtRelReq {
 	}
 }
 // PduSessionResourceItemCxtRelReq
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceItemCxtRelReq {
 	pub pdu_session_id: PduSessionId,
 }
@@ -33847,7 +34033,7 @@ impl PerCodec for PduSessionResourceItemCxtRelReq {
 	}
 }
 // PduSessionResourceListHoRqd
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceListHoRqd(pub NonEmpty<PduSessionResourceItemHoRqd>);
 
 impl PduSessionResourceListHoRqd {
@@ -33892,7 +34078,7 @@ impl PerCodec for PduSessionResourceListHoRqd {
 	}
 }
 // PduSessionResourceItemHoRqd
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceItemHoRqd {
 	pub pdu_session_id: PduSessionId,
 	pub handover_required_transfer: Vec<u8>,
@@ -33964,7 +34150,7 @@ impl PerCodec for PduSessionResourceItemHoRqd {
 	}
 }
 // PduSessionResourceModifyConfirmTransfer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceModifyConfirmTransfer {
 	pub qos_flow_modify_confirm_list: QosFlowModifyConfirmList,
 	pub ulngu_up_tnl_information: UpTransportLayerInformation,
@@ -34094,7 +34280,7 @@ impl PerCodec for PduSessionResourceModifyConfirmTransfer {
 	}
 }
 // PduSessionResourceModifyIndicationUnsuccessfulTransfer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceModifyIndicationUnsuccessfulTransfer {
 	pub cause: Cause,
 }
@@ -34155,7 +34341,7 @@ impl PerCodec for PduSessionResourceModifyIndicationUnsuccessfulTransfer {
 	}
 }
 // PduSessionResourceModifyRequestTransfer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceModifyRequestTransfer {
 	pub pdu_session_aggregate_maximum_bit_rate: Option<PduSessionAggregateMaximumBitRate>,
 	pub ul_ngu_up_tnl_modify_list: Option<UlNguUpTnlModifyList>,
@@ -34420,7 +34606,7 @@ impl PerCodec for PduSessionResourceModifyRequestTransfer {
 	}
 }
 // PduSessionResourceModifyResponseTransfer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceModifyResponseTransfer {
 	pub dl_ngu_up_tnl_information: Option<UpTransportLayerInformation>,
 	pub ul_ngu_up_tnl_information: Option<UpTransportLayerInformation>,
@@ -34696,7 +34882,7 @@ impl PerCodec for PduSessionResourceModifyResponseTransfer {
 	}
 }
 // PduSessionResourceModifyIndicationTransfer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceModifyIndicationTransfer {
 	pub dl_qos_flow_per_tnl_information: QosFlowPerTnlInformation,
 	pub additional_dl_qos_flow_per_tnl_information: Option<QosFlowPerTnlInformationList>,
@@ -34856,7 +35042,7 @@ impl PerCodec for PduSessionResourceModifyIndicationTransfer {
 	}
 }
 // PduSessionResourceModifyListModCfm
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceModifyListModCfm(pub NonEmpty<PduSessionResourceModifyItemModCfm>);
 
 impl PduSessionResourceModifyListModCfm {
@@ -34901,7 +35087,7 @@ impl PerCodec for PduSessionResourceModifyListModCfm {
 	}
 }
 // PduSessionResourceModifyItemModCfm
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceModifyItemModCfm {
 	pub pdu_session_id: PduSessionId,
 	pub pdu_session_resource_modify_confirm_transfer: Vec<u8>,
@@ -34974,7 +35160,7 @@ impl PerCodec for PduSessionResourceModifyItemModCfm {
 	}
 }
 // PduSessionResourceModifyListModInd
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceModifyListModInd(pub NonEmpty<PduSessionResourceModifyItemModInd>);
 
 impl PduSessionResourceModifyListModInd {
@@ -35019,7 +35205,7 @@ impl PerCodec for PduSessionResourceModifyListModInd {
 	}
 }
 // PduSessionResourceModifyItemModInd
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceModifyItemModInd {
 	pub pdu_session_id: PduSessionId,
 	pub pdu_session_resource_modify_indication_transfer: Vec<u8>,
@@ -35092,7 +35278,7 @@ impl PerCodec for PduSessionResourceModifyItemModInd {
 	}
 }
 // PduSessionResourceModifyListModReq
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceModifyListModReq(pub NonEmpty<PduSessionResourceModifyItemModReq>);
 
 impl PduSessionResourceModifyListModReq {
@@ -35137,7 +35323,7 @@ impl PerCodec for PduSessionResourceModifyListModReq {
 	}
 }
 // PduSessionResourceModifyItemModReq
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceModifyItemModReq {
 	pub pdu_session_id: PduSessionId,
 	pub nas_pdu: Option<NasPdu>,
@@ -35258,7 +35444,7 @@ impl PerCodec for PduSessionResourceModifyItemModReq {
 	}
 }
 // PduSessionResourceModifyListModRes
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceModifyListModRes(pub NonEmpty<PduSessionResourceModifyItemModRes>);
 
 impl PduSessionResourceModifyListModRes {
@@ -35303,7 +35489,7 @@ impl PerCodec for PduSessionResourceModifyListModRes {
 	}
 }
 // PduSessionResourceModifyItemModRes
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceModifyItemModRes {
 	pub pdu_session_id: PduSessionId,
 	pub pdu_session_resource_modify_response_transfer: Vec<u8>,
@@ -35376,7 +35562,7 @@ impl PerCodec for PduSessionResourceModifyItemModRes {
 	}
 }
 // PduSessionResourceModifyUnsuccessfulTransfer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceModifyUnsuccessfulTransfer {
 	pub cause: Cause,
 	pub criticality_diagnostics: Option<CriticalityDiagnostics>,
@@ -35450,7 +35636,7 @@ impl PerCodec for PduSessionResourceModifyUnsuccessfulTransfer {
 	}
 }
 // PduSessionResourceNotifyList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceNotifyList(pub NonEmpty<PduSessionResourceNotifyItem>);
 
 impl PduSessionResourceNotifyList {
@@ -35495,7 +35681,7 @@ impl PerCodec for PduSessionResourceNotifyList {
 	}
 }
 // PduSessionResourceNotifyItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceNotifyItem {
 	pub pdu_session_id: PduSessionId,
 	pub pdu_session_resource_notify_transfer: Vec<u8>,
@@ -35568,7 +35754,7 @@ impl PerCodec for PduSessionResourceNotifyItem {
 	}
 }
 // PduSessionResourceNotifyReleasedTransfer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceNotifyReleasedTransfer {
 	pub cause: Cause,
 	pub secondary_rat_usage_information: Option<SecondaryRatUsageInformation>,
@@ -35653,7 +35839,7 @@ impl PerCodec for PduSessionResourceNotifyReleasedTransfer {
 	}
 }
 // PduSessionResourceNotifyTransfer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceNotifyTransfer {
 	pub qos_flow_notify_list: Option<QosFlowNotifyList>,
 	pub qos_flow_released_list: Option<QosFlowListWithCause>,
@@ -35768,7 +35954,7 @@ impl PerCodec for PduSessionResourceNotifyTransfer {
 	}
 }
 // PduSessionResourceReleaseCommandTransfer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceReleaseCommandTransfer {
 	pub cause: Cause,
 }
@@ -35829,7 +36015,7 @@ impl PerCodec for PduSessionResourceReleaseCommandTransfer {
 	}
 }
 // PduSessionResourceReleasedListNot
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceReleasedListNot(pub NonEmpty<PduSessionResourceReleasedItemNot>);
 
 impl PduSessionResourceReleasedListNot {
@@ -35874,7 +36060,7 @@ impl PerCodec for PduSessionResourceReleasedListNot {
 	}
 }
 // PduSessionResourceReleasedItemNot
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceReleasedItemNot {
 	pub pdu_session_id: PduSessionId,
 	pub pdu_session_resource_notify_released_transfer: Vec<u8>,
@@ -35947,7 +36133,7 @@ impl PerCodec for PduSessionResourceReleasedItemNot {
 	}
 }
 // PduSessionResourceReleasedListPsAck
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceReleasedListPsAck(pub NonEmpty<PduSessionResourceReleasedItemPsAck>);
 
 impl PduSessionResourceReleasedListPsAck {
@@ -35992,7 +36178,7 @@ impl PerCodec for PduSessionResourceReleasedListPsAck {
 	}
 }
 // PduSessionResourceReleasedItemPsAck
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceReleasedItemPsAck {
 	pub pdu_session_id: PduSessionId,
 	pub path_switch_request_unsuccessful_transfer: Vec<u8>,
@@ -36065,7 +36251,7 @@ impl PerCodec for PduSessionResourceReleasedItemPsAck {
 	}
 }
 // PduSessionResourceReleasedListPsFail
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceReleasedListPsFail(pub NonEmpty<PduSessionResourceReleasedItemPsFail>);
 
 impl PduSessionResourceReleasedListPsFail {
@@ -36110,7 +36296,7 @@ impl PerCodec for PduSessionResourceReleasedListPsFail {
 	}
 }
 // PduSessionResourceReleasedItemPsFail
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceReleasedItemPsFail {
 	pub pdu_session_id: PduSessionId,
 	pub path_switch_request_unsuccessful_transfer: Vec<u8>,
@@ -36183,7 +36369,7 @@ impl PerCodec for PduSessionResourceReleasedItemPsFail {
 	}
 }
 // PduSessionResourceReleasedListRelRes
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceReleasedListRelRes(pub NonEmpty<PduSessionResourceReleasedItemRelRes>);
 
 impl PduSessionResourceReleasedListRelRes {
@@ -36228,7 +36414,7 @@ impl PerCodec for PduSessionResourceReleasedListRelRes {
 	}
 }
 // PduSessionResourceReleasedItemRelRes
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceReleasedItemRelRes {
 	pub pdu_session_id: PduSessionId,
 	pub pdu_session_resource_release_response_transfer: Vec<u8>,
@@ -36301,7 +36487,7 @@ impl PerCodec for PduSessionResourceReleasedItemRelRes {
 	}
 }
 // PduSessionResourceReleaseResponseTransfer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceReleaseResponseTransfer {
 	pub secondary_rat_usage_information: Option<SecondaryRatUsageInformation>,
 }
@@ -36382,7 +36568,7 @@ impl PerCodec for PduSessionResourceReleaseResponseTransfer {
 	}
 }
 // PduSessionResourceResumeListResReq
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceResumeListResReq(pub NonEmpty<PduSessionResourceResumeItemResReq>);
 
 impl PduSessionResourceResumeListResReq {
@@ -36427,7 +36613,7 @@ impl PerCodec for PduSessionResourceResumeListResReq {
 	}
 }
 // PduSessionResourceResumeItemResReq
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceResumeItemResReq {
 	pub pdu_session_id: PduSessionId,
 	pub ue_context_resume_request_transfer: Vec<u8>,
@@ -36500,7 +36686,7 @@ impl PerCodec for PduSessionResourceResumeItemResReq {
 	}
 }
 // PduSessionResourceResumeListResRes
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceResumeListResRes(pub NonEmpty<PduSessionResourceResumeItemResRes>);
 
 impl PduSessionResourceResumeListResRes {
@@ -36545,7 +36731,7 @@ impl PerCodec for PduSessionResourceResumeListResRes {
 	}
 }
 // PduSessionResourceResumeItemResRes
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceResumeItemResRes {
 	pub pdu_session_id: PduSessionId,
 	pub ue_context_resume_response_transfer: Vec<u8>,
@@ -36618,7 +36804,7 @@ impl PerCodec for PduSessionResourceResumeItemResRes {
 	}
 }
 // PduSessionResourceSecondaryRatUsageList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceSecondaryRatUsageList(
 	pub NonEmpty<PduSessionResourceSecondaryRatUsageItem>,
 );
@@ -36667,7 +36853,7 @@ impl PerCodec for PduSessionResourceSecondaryRatUsageList {
 	}
 }
 // PduSessionResourceSecondaryRatUsageItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceSecondaryRatUsageItem {
 	pub pdu_session_id: PduSessionId,
 	pub secondary_rat_data_usage_report_transfer: Vec<u8>,
@@ -36742,7 +36928,7 @@ impl PerCodec for PduSessionResourceSecondaryRatUsageItem {
 	}
 }
 // PduSessionResourceSetupListCxtReq
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceSetupListCxtReq(pub NonEmpty<PduSessionResourceSetupItemCxtReq>);
 
 impl PduSessionResourceSetupListCxtReq {
@@ -36787,7 +36973,7 @@ impl PerCodec for PduSessionResourceSetupListCxtReq {
 	}
 }
 // PduSessionResourceSetupItemCxtReq
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceSetupItemCxtReq {
 	pub pdu_session_id: PduSessionId,
 	pub nas_pdu: Option<NasPdu>,
@@ -36898,7 +37084,7 @@ impl PerCodec for PduSessionResourceSetupItemCxtReq {
 	}
 }
 // PduSessionResourceSetupListCxtRes
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceSetupListCxtRes(pub NonEmpty<PduSessionResourceSetupItemCxtRes>);
 
 impl PduSessionResourceSetupListCxtRes {
@@ -36943,7 +37129,7 @@ impl PerCodec for PduSessionResourceSetupListCxtRes {
 	}
 }
 // PduSessionResourceSetupItemCxtRes
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceSetupItemCxtRes {
 	pub pdu_session_id: PduSessionId,
 	pub pdu_session_resource_setup_response_transfer: Vec<u8>,
@@ -37016,7 +37202,7 @@ impl PerCodec for PduSessionResourceSetupItemCxtRes {
 	}
 }
 // PduSessionResourceSetupListHoReq
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceSetupListHoReq(pub NonEmpty<PduSessionResourceSetupItemHoReq>);
 
 impl PduSessionResourceSetupListHoReq {
@@ -37061,7 +37247,7 @@ impl PerCodec for PduSessionResourceSetupListHoReq {
 	}
 }
 // PduSessionResourceSetupItemHoReq
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceSetupItemHoReq {
 	pub pdu_session_id: PduSessionId,
 	pub snssai: Snssai,
@@ -37160,7 +37346,7 @@ impl PerCodec for PduSessionResourceSetupItemHoReq {
 	}
 }
 // PduSessionResourceSetupListSuReq
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceSetupListSuReq(pub NonEmpty<PduSessionResourceSetupItemSuReq>);
 
 impl PduSessionResourceSetupListSuReq {
@@ -37205,7 +37391,7 @@ impl PerCodec for PduSessionResourceSetupListSuReq {
 	}
 }
 // PduSessionResourceSetupItemSuReq
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceSetupItemSuReq {
 	pub pdu_session_id: PduSessionId,
 	pub pdu_session_nas_pdu: Option<NasPdu>,
@@ -37316,7 +37502,7 @@ impl PerCodec for PduSessionResourceSetupItemSuReq {
 	}
 }
 // PduSessionResourceSetupListSuRes
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceSetupListSuRes(pub NonEmpty<PduSessionResourceSetupItemSuRes>);
 
 impl PduSessionResourceSetupListSuRes {
@@ -37361,7 +37547,7 @@ impl PerCodec for PduSessionResourceSetupListSuRes {
 	}
 }
 // PduSessionResourceSetupItemSuRes
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceSetupItemSuRes {
 	pub pdu_session_id: PduSessionId,
 	pub pdu_session_resource_setup_response_transfer: Vec<u8>,
@@ -37434,7 +37620,7 @@ impl PerCodec for PduSessionResourceSetupItemSuRes {
 	}
 }
 // PduSessionResourceSetupRequestTransfer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceSetupRequestTransfer {
 	pub pdu_session_aggregate_maximum_bit_rate: Option<PduSessionAggregateMaximumBitRate>,
 	pub ul_ngu_up_tnl_information: UpTransportLayerInformation,
@@ -37733,7 +37919,7 @@ impl PerCodec for PduSessionResourceSetupRequestTransfer {
 	}
 }
 // PduSessionResourceSetupResponseTransfer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceSetupResponseTransfer {
 	pub dl_qos_flow_per_tnl_information: QosFlowPerTnlInformation,
 	pub additional_dl_qos_flow_per_tnl_information: Option<QosFlowPerTnlInformationList>,
@@ -37948,7 +38134,7 @@ impl PerCodec for PduSessionResourceSetupResponseTransfer {
 	}
 }
 // PduSessionResourceSetupUnsuccessfulTransfer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceSetupUnsuccessfulTransfer {
 	pub cause: Cause,
 	pub criticality_diagnostics: Option<CriticalityDiagnostics>,
@@ -38022,7 +38208,7 @@ impl PerCodec for PduSessionResourceSetupUnsuccessfulTransfer {
 	}
 }
 // PduSessionResourceSuspendListSusReq
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceSuspendListSusReq(pub NonEmpty<PduSessionResourceSuspendItemSusReq>);
 
 impl PduSessionResourceSuspendListSusReq {
@@ -38067,7 +38253,7 @@ impl PerCodec for PduSessionResourceSuspendListSusReq {
 	}
 }
 // PduSessionResourceSuspendItemSusReq
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceSuspendItemSusReq {
 	pub pdu_session_id: PduSessionId,
 	pub ue_context_suspend_request_transfer: Vec<u8>,
@@ -38140,7 +38326,7 @@ impl PerCodec for PduSessionResourceSuspendItemSusReq {
 	}
 }
 // PduSessionResourceSwitchedList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceSwitchedList(pub NonEmpty<PduSessionResourceSwitchedItem>);
 
 impl PduSessionResourceSwitchedList {
@@ -38185,7 +38371,7 @@ impl PerCodec for PduSessionResourceSwitchedList {
 	}
 }
 // PduSessionResourceSwitchedItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceSwitchedItem {
 	pub pdu_session_id: PduSessionId,
 	pub path_switch_request_acknowledge_transfer: Vec<u8>,
@@ -38281,7 +38467,7 @@ impl PerCodec for PduSessionResourceSwitchedItem {
 	}
 }
 // PduSessionResourceToBeSwitchedDlList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceToBeSwitchedDlList(pub NonEmpty<PduSessionResourceToBeSwitchedDlItem>);
 
 impl PduSessionResourceToBeSwitchedDlList {
@@ -38326,7 +38512,7 @@ impl PerCodec for PduSessionResourceToBeSwitchedDlList {
 	}
 }
 // PduSessionResourceToBeSwitchedDlItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceToBeSwitchedDlItem {
 	pub pdu_session_id: PduSessionId,
 	pub path_switch_request_transfer: Vec<u8>,
@@ -38398,7 +38584,7 @@ impl PerCodec for PduSessionResourceToBeSwitchedDlItem {
 	}
 }
 // PduSessionResourceToReleaseListHoCmd
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceToReleaseListHoCmd(pub NonEmpty<PduSessionResourceToReleaseItemHoCmd>);
 
 impl PduSessionResourceToReleaseListHoCmd {
@@ -38443,7 +38629,7 @@ impl PerCodec for PduSessionResourceToReleaseListHoCmd {
 	}
 }
 // PduSessionResourceToReleaseItemHoCmd
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceToReleaseItemHoCmd {
 	pub pdu_session_id: PduSessionId,
 	pub handover_preparation_unsuccessful_transfer: Vec<u8>,
@@ -38516,7 +38702,7 @@ impl PerCodec for PduSessionResourceToReleaseItemHoCmd {
 	}
 }
 // PduSessionResourceToReleaseListRelCmd
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceToReleaseListRelCmd(
 	pub NonEmpty<PduSessionResourceToReleaseItemRelCmd>,
 );
@@ -38563,7 +38749,7 @@ impl PerCodec for PduSessionResourceToReleaseListRelCmd {
 	}
 }
 // PduSessionResourceToReleaseItemRelCmd
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionResourceToReleaseItemRelCmd {
 	pub pdu_session_id: PduSessionId,
 	pub pdu_session_resource_release_command_transfer: Vec<u8>,
@@ -38636,9 +38822,10 @@ impl PerCodec for PduSessionResourceToReleaseItemRelCmd {
 	}
 }
 // PduSessionType
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum PduSessionType {
+	#[default]
 	Ipv4,
 	Ipv6,
 	Ipv4v6,
@@ -38681,7 +38868,7 @@ impl PerCodec for PduSessionType {
 	}
 }
 // PduSessionUsageReport
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PduSessionUsageReport {
 	pub rat_type: RatType,
 	pub pdu_session_timed_report_list: VolumeTimedReportList,
@@ -38746,7 +38933,7 @@ impl PerCodec for PduSessionUsageReport {
 	}
 }
 // PeipSassistanceInformation
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PeipSassistanceInformation {
 	pub c_nsubgroup_id: CNsubgroupId,
 }
@@ -38805,7 +38992,7 @@ impl PerCodec for PeipSassistanceInformation {
 	}
 }
 // Periodicity
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct Periodicity(pub u32);
 
 impl Periodicity {
@@ -38841,7 +39028,7 @@ impl PerCodec for Periodicity {
 	}
 }
 // PeriodicRegistrationUpdateTimer
-#[derive(Clone, Debug)]
+#[derive(Clone, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct PeriodicRegistrationUpdateTimer(pub BitString);
 
 impl PeriodicRegistrationUpdateTimer {
@@ -38882,7 +39069,15 @@ impl PerCodec for PeriodicRegistrationUpdateTimer {
 // PlmnIdentity
 #[derive(Clone, Debug)]
 pub struct PlmnIdentity(pub [u8; 3]);
-
+impl Default for PlmnIdentity {
+	fn default() -> PlmnIdentity {
+		let init = std::mem::MaybeUninit::<[u8; 3]>::zeroed();
+		// SAFETY: No pointers present for the assume init here
+		// TODO: Evaluate the performance issues: "https://users.rust-lang.org/t/unnecessary-performance-penalty-for-mem-maybeuninit/84063"
+		let default_value = unsafe { init.assume_init() };
+		PlmnIdentity(default_value)
+	}
+}
 impl PlmnIdentity {
 	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
 		Ok(Self(
@@ -38918,7 +39113,7 @@ impl PerCodec for PlmnIdentity {
 	}
 }
 // PlmnAreaBasedQmc
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PlmnAreaBasedQmc {
 	pub plmn_listfor_qmc: PlmnListforQmc,
 }
@@ -38977,7 +39172,7 @@ impl PerCodec for PlmnAreaBasedQmc {
 	}
 }
 // PlmnListforQmc
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PlmnListforQmc(pub NonEmpty<PlmnIdentity>);
 
 impl PlmnListforQmc {
@@ -39022,7 +39217,7 @@ impl PerCodec for PlmnListforQmc {
 	}
 }
 // PlmnSupportList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PlmnSupportList(pub NonEmpty<PlmnSupportItem>);
 
 impl PlmnSupportList {
@@ -39067,7 +39262,7 @@ impl PerCodec for PlmnSupportList {
 	}
 }
 // PlmnSupportItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PlmnSupportItem {
 	pub plmn_identity: PlmnIdentity,
 	pub slice_support_list: SliceSupportList,
@@ -39181,7 +39376,7 @@ impl PerCodec for PlmnSupportItem {
 	}
 }
 // PniNpnMobilityInformation
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct PniNpnMobilityInformation {
 	pub allowed_pni_npi_list: AllowedPniNpnList,
 }
@@ -39244,7 +39439,15 @@ impl PerCodec for PniNpnMobilityInformation {
 // PortNumber
 #[derive(Clone, Debug)]
 pub struct PortNumber(pub [u8; 2]);
-
+impl Default for PortNumber {
+	fn default() -> PortNumber {
+		let init = std::mem::MaybeUninit::<[u8; 2]>::zeroed();
+		// SAFETY: No pointers present for the assume init here
+		// TODO: Evaluate the performance issues: "https://users.rust-lang.org/t/unnecessary-performance-penalty-for-mem-maybeuninit/84063"
+		let default_value = unsafe { init.assume_init() };
+		PortNumber(default_value)
+	}
+}
 impl PortNumber {
 	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
 		Ok(Self(
@@ -39280,9 +39483,10 @@ impl PerCodec for PortNumber {
 	}
 }
 // PreEmptionCapability
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum PreEmptionCapability {
+	#[default]
 	ShallNotTriggerPreEmption,
 	MayTriggerPreEmption,
 }
@@ -39322,9 +39526,10 @@ impl PerCodec for PreEmptionCapability {
 	}
 }
 // PreEmptionVulnerability
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum PreEmptionVulnerability {
+	#[default]
 	NotPreEmptable,
 	PreEmptable,
 }
@@ -39364,7 +39569,7 @@ impl PerCodec for PreEmptionVulnerability {
 	}
 }
 // PriorityLevelArp
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct PriorityLevelArp(pub u8);
 
 impl PriorityLevelArp {
@@ -39400,7 +39605,7 @@ impl PerCodec for PriorityLevelArp {
 	}
 }
 // PriorityLevelQos
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct PriorityLevelQos(pub u8);
 
 impl PriorityLevelQos {
@@ -39436,8 +39641,9 @@ impl PerCodec for PriorityLevelQos {
 	}
 }
 // PwsFailedCellIdList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum PwsFailedCellIdList {
+	#[default]
 	EutraCgiPwsFailedList(EutraCgiList),
 	NrCgiPwsFailedList(NrCgiList),
 }
@@ -39500,7 +39706,7 @@ impl PerCodec for PwsFailedCellIdList {
 	}
 }
 // QmcConfigInfo
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct QmcConfigInfo {
 	pub ue_app_layer_meas_info_list: UeAppLayerMeasInfoList,
 }
@@ -39561,7 +39767,7 @@ impl PerCodec for QmcConfigInfo {
 	}
 }
 // QmcDeactivation
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct QmcDeactivation {
 	pub qo_e_reference_list: QoEReferenceList,
 }
@@ -39622,7 +39828,7 @@ impl PerCodec for QmcDeactivation {
 	}
 }
 // QoEReferenceList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct QoEReferenceList(pub NonEmpty<QoEReference>);
 
 impl QoEReferenceList {
@@ -39669,7 +39875,15 @@ impl PerCodec for QoEReferenceList {
 // QoEReference
 #[derive(Clone, Debug)]
 pub struct QoEReference(pub [u8; 6]);
-
+impl Default for QoEReference {
+	fn default() -> QoEReference {
+		let init = std::mem::MaybeUninit::<[u8; 6]>::zeroed();
+		// SAFETY: No pointers present for the assume init here
+		// TODO: Evaluate the performance issues: "https://users.rust-lang.org/t/unnecessary-performance-penalty-for-mem-maybeuninit/84063"
+		let default_value = unsafe { init.assume_init() };
+		QoEReference(default_value)
+	}
+}
 impl QoEReference {
 	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
 		Ok(Self(
@@ -39705,8 +39919,9 @@ impl PerCodec for QoEReference {
 	}
 }
 // QosCharacteristics
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum QosCharacteristics {
+	#[default]
 	NonDynamic5qi(NonDynamic5qiDescriptor),
 	Dynamic5qi(Dynamic5qiDescriptor),
 }
@@ -39769,7 +39984,7 @@ impl PerCodec for QosCharacteristics {
 	}
 }
 // QosFlowAcceptedList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct QosFlowAcceptedList(pub NonEmpty<QosFlowAcceptedItem>);
 
 impl QosFlowAcceptedList {
@@ -39814,7 +40029,7 @@ impl PerCodec for QosFlowAcceptedList {
 	}
 }
 // QosFlowAcceptedItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct QosFlowAcceptedItem {
 	pub qos_flow_identifier: QosFlowIdentifier,
 	pub current_qos_para_set_index: Option<AlternativeQosParaSetIndex>,
@@ -39896,7 +40111,7 @@ impl PerCodec for QosFlowAcceptedItem {
 	}
 }
 // QosFlowAddOrModifyRequestList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct QosFlowAddOrModifyRequestList(pub NonEmpty<QosFlowAddOrModifyRequestItem>);
 
 impl QosFlowAddOrModifyRequestList {
@@ -39941,7 +40156,7 @@ impl PerCodec for QosFlowAddOrModifyRequestList {
 	}
 }
 // QosFlowAddOrModifyRequestItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct QosFlowAddOrModifyRequestItem {
 	pub qos_flow_identifier: QosFlowIdentifier,
 	pub qos_flow_level_qos_parameters: Option<QosFlowLevelQosParameters>,
@@ -40062,7 +40277,7 @@ impl PerCodec for QosFlowAddOrModifyRequestItem {
 	}
 }
 // QosFlowAddOrModifyResponseList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct QosFlowAddOrModifyResponseList(pub NonEmpty<QosFlowAddOrModifyResponseItem>);
 
 impl QosFlowAddOrModifyResponseList {
@@ -40107,7 +40322,7 @@ impl PerCodec for QosFlowAddOrModifyResponseList {
 	}
 }
 // QosFlowAddOrModifyResponseItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct QosFlowAddOrModifyResponseItem {
 	pub qos_flow_identifier: QosFlowIdentifier,
 	pub current_qos_para_set_index: Option<AlternativeQosParaSetIndex>,
@@ -40189,7 +40404,7 @@ impl PerCodec for QosFlowAddOrModifyResponseItem {
 	}
 }
 // QosFlowFeedbackList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct QosFlowFeedbackList(pub NonEmpty<QosFlowFeedbackItem>);
 
 impl QosFlowFeedbackList {
@@ -40234,7 +40449,7 @@ impl PerCodec for QosFlowFeedbackList {
 	}
 }
 // QosFlowFeedbackItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct QosFlowFeedbackItem {
 	pub qos_flow_identifier: QosFlowIdentifier,
 	pub update_feedback: Option<UpdateFeedback>,
@@ -40328,7 +40543,7 @@ impl PerCodec for QosFlowFeedbackItem {
 	}
 }
 // QosFlowIdentifier
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct QosFlowIdentifier(pub u8);
 
 impl QosFlowIdentifier {
@@ -40364,7 +40579,7 @@ impl PerCodec for QosFlowIdentifier {
 	}
 }
 // QosFlowInformationList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct QosFlowInformationList(pub NonEmpty<QosFlowInformationItem>);
 
 impl QosFlowInformationList {
@@ -40409,7 +40624,7 @@ impl PerCodec for QosFlowInformationList {
 	}
 }
 // QosFlowInformationItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct QosFlowInformationItem {
 	pub qos_flow_identifier: QosFlowIdentifier,
 	pub dl_forwarding: Option<DlForwarding>,
@@ -40528,7 +40743,7 @@ impl PerCodec for QosFlowInformationItem {
 	}
 }
 // QosFlowLevelQosParameters
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct QosFlowLevelQosParameters {
 	pub qos_characteristics: QosCharacteristics,
 	pub allocation_and_retention_priority: AllocationAndRetentionPriority,
@@ -40662,9 +40877,10 @@ impl PerCodec for QosFlowLevelQosParameters {
 	}
 }
 // QosMonitoringRequest
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum QosMonitoringRequest {
+	#[default]
 	Ul,
 	Dl,
 	Both,
@@ -40705,7 +40921,7 @@ impl PerCodec for QosMonitoringRequest {
 	}
 }
 // QosMonitoringReportingFrequency
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct QosMonitoringReportingFrequency(pub u16);
 
 impl QosMonitoringReportingFrequency {
@@ -40741,7 +40957,7 @@ impl PerCodec for QosMonitoringReportingFrequency {
 	}
 }
 // QosFlowList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct QosFlowList(pub NonEmpty<QosFlowIdentifier>);
 
 impl QosFlowList {
@@ -40786,7 +41002,7 @@ impl PerCodec for QosFlowList {
 	}
 }
 // QosFlowListWithCause
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct QosFlowListWithCause(pub NonEmpty<QosFlowWithCauseItem>);
 
 impl QosFlowListWithCause {
@@ -40831,7 +41047,7 @@ impl PerCodec for QosFlowListWithCause {
 	}
 }
 // QosFlowWithCauseItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct QosFlowWithCauseItem {
 	pub qos_flow_identifier: QosFlowIdentifier,
 	pub cause: Cause,
@@ -40896,7 +41112,7 @@ impl PerCodec for QosFlowWithCauseItem {
 	}
 }
 // QosFlowModifyConfirmList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct QosFlowModifyConfirmList(pub NonEmpty<QosFlowModifyConfirmItem>);
 
 impl QosFlowModifyConfirmList {
@@ -40941,7 +41157,7 @@ impl PerCodec for QosFlowModifyConfirmList {
 	}
 }
 // QosFlowModifyConfirmItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct QosFlowModifyConfirmItem {
 	pub qos_flow_identifier: QosFlowIdentifier,
 }
@@ -41002,7 +41218,7 @@ impl PerCodec for QosFlowModifyConfirmItem {
 	}
 }
 // QosFlowNotifyList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct QosFlowNotifyList(pub NonEmpty<QosFlowNotifyItem>);
 
 impl QosFlowNotifyList {
@@ -41047,7 +41263,7 @@ impl PerCodec for QosFlowNotifyList {
 	}
 }
 // QosFlowNotifyItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct QosFlowNotifyItem {
 	pub qos_flow_identifier: QosFlowIdentifier,
 	pub notification_cause: NotificationCause,
@@ -41134,7 +41350,7 @@ impl PerCodec for QosFlowNotifyItem {
 	}
 }
 // QosFlowParametersList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct QosFlowParametersList(pub NonEmpty<QosFlowParametersItem>);
 
 impl QosFlowParametersList {
@@ -41179,7 +41395,7 @@ impl PerCodec for QosFlowParametersList {
 	}
 }
 // QosFlowParametersItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct QosFlowParametersItem {
 	pub qos_flow_identifier: QosFlowIdentifier,
 	pub alternative_qos_para_set_list: Option<AlternativeQosParaSetList>,
@@ -41302,7 +41518,7 @@ impl PerCodec for QosFlowParametersItem {
 	}
 }
 // QosFlowPerTnlInformation
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct QosFlowPerTnlInformation {
 	pub up_transport_layer_information: UpTransportLayerInformation,
 	pub associated_qos_flow_list: AssociatedQosFlowList,
@@ -41367,7 +41583,7 @@ impl PerCodec for QosFlowPerTnlInformation {
 	}
 }
 // QosFlowPerTnlInformationList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct QosFlowPerTnlInformationList(pub NonEmpty<QosFlowPerTnlInformationItem>);
 
 impl QosFlowPerTnlInformationList {
@@ -41412,7 +41628,7 @@ impl PerCodec for QosFlowPerTnlInformationList {
 	}
 }
 // QosFlowPerTnlInformationItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct QosFlowPerTnlInformationItem {
 	pub qos_flow_per_tnl_information: QosFlowPerTnlInformation,
 }
@@ -41473,7 +41689,7 @@ impl PerCodec for QosFlowPerTnlInformationItem {
 	}
 }
 // QosFlowSetupRequestList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct QosFlowSetupRequestList(pub NonEmpty<QosFlowSetupRequestItem>);
 
 impl QosFlowSetupRequestList {
@@ -41518,7 +41734,7 @@ impl PerCodec for QosFlowSetupRequestList {
 	}
 }
 // QosFlowSetupRequestItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct QosFlowSetupRequestItem {
 	pub qos_flow_identifier: QosFlowIdentifier,
 	pub qos_flow_level_qos_parameters: QosFlowLevelQosParameters,
@@ -41632,7 +41848,7 @@ impl PerCodec for QosFlowSetupRequestItem {
 	}
 }
 // QosFlowListWithDataForwarding
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct QosFlowListWithDataForwarding(pub NonEmpty<QosFlowItemWithDataForwarding>);
 
 impl QosFlowListWithDataForwarding {
@@ -41677,7 +41893,7 @@ impl PerCodec for QosFlowListWithDataForwarding {
 	}
 }
 // QosFlowItemWithDataForwarding
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct QosFlowItemWithDataForwarding {
 	pub qos_flow_identifier: QosFlowIdentifier,
 	pub data_forwarding_accepted: Option<DataForwardingAccepted>,
@@ -41770,7 +41986,7 @@ impl PerCodec for QosFlowItemWithDataForwarding {
 	}
 }
 // QosFlowToBeForwardedList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct QosFlowToBeForwardedList(pub NonEmpty<QosFlowToBeForwardedItem>);
 
 impl QosFlowToBeForwardedList {
@@ -41815,7 +42031,7 @@ impl PerCodec for QosFlowToBeForwardedList {
 	}
 }
 // QosFlowToBeForwardedItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct QosFlowToBeForwardedItem {
 	pub qos_flow_identifier: QosFlowIdentifier,
 }
@@ -41876,7 +42092,7 @@ impl PerCodec for QosFlowToBeForwardedItem {
 	}
 }
 // QosFlowsUsageReportList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct QosFlowsUsageReportList(pub NonEmpty<QosFlowsUsageReportItem>);
 
 impl QosFlowsUsageReportList {
@@ -41921,7 +42137,7 @@ impl PerCodec for QosFlowsUsageReportList {
 	}
 }
 // QosFlowsUsageReportItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct QosFlowsUsageReportItem {
 	pub qos_flow_identifier: QosFlowIdentifier,
 	pub rat_type: RatType1,
@@ -41990,9 +42206,10 @@ impl PerCodec for QosFlowsUsageReportItem {
 	}
 }
 // Range
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum Range {
+	#[default]
 	M50,
 	M80,
 	M180,
@@ -42039,7 +42256,7 @@ impl PerCodec for Range {
 	}
 }
 // RanNodeName
-#[derive(Clone, Debug)]
+#[derive(Clone, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct RanNodeName(pub String);
 
 impl RanNodeName {
@@ -42078,7 +42295,7 @@ impl PerCodec for RanNodeName {
 	}
 }
 // RanNodeNameVisibleString
-#[derive(Clone, Debug)]
+#[derive(Clone, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct RanNodeNameVisibleString(pub String);
 
 impl RanNodeNameVisibleString {
@@ -42117,7 +42334,7 @@ impl PerCodec for RanNodeNameVisibleString {
 	}
 }
 // RanNodeNameUtf8String
-#[derive(Clone, Debug)]
+#[derive(Clone, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct RanNodeNameUtf8String(pub String);
 
 impl RanNodeNameUtf8String {
@@ -42156,7 +42373,7 @@ impl PerCodec for RanNodeNameUtf8String {
 	}
 }
 // RanPagingPriority
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct RanPagingPriority(pub u16);
 
 impl RanPagingPriority {
@@ -42192,7 +42409,7 @@ impl PerCodec for RanPagingPriority {
 	}
 }
 // RanStatusTransferTransparentContainer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct RanStatusTransferTransparentContainer {
 	pub drbs_subject_to_status_transfer_list: DrbsSubjectToStatusTransferList,
 }
@@ -42253,7 +42470,7 @@ impl PerCodec for RanStatusTransferTransparentContainer {
 	}
 }
 // RanUeNgapId
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct RanUeNgapId(pub u32);
 
 impl RanUeNgapId {
@@ -42296,9 +42513,10 @@ impl PerCodec for RanUeNgapId {
 	}
 }
 // RatInformation
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum RatInformation {
+	#[default]
 	Unlicensed,
 	NbIot,
 }
@@ -42338,7 +42556,7 @@ impl PerCodec for RatInformation {
 	}
 }
 // RatRestrictions
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct RatRestrictions(pub NonEmpty<RatRestrictionsItem>);
 
 impl RatRestrictions {
@@ -42383,7 +42601,7 @@ impl PerCodec for RatRestrictions {
 	}
 }
 // RatRestrictionsItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct RatRestrictionsItem {
 	pub plmn_identity: PlmnIdentity,
 	pub rat_restriction_information: RatRestrictionInformation,
@@ -42471,7 +42689,7 @@ impl PerCodec for RatRestrictionsItem {
 	}
 }
 // RatRestrictionInformation
-#[derive(Clone, Debug)]
+#[derive(Clone, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct RatRestrictionInformation(pub BitString);
 
 impl RatRestrictionInformation {
@@ -42510,7 +42728,7 @@ impl PerCodec for RatRestrictionInformation {
 	}
 }
 // RecommendedCellsForPaging
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct RecommendedCellsForPaging {
 	pub recommended_cell_list: RecommendedCellList,
 }
@@ -42571,7 +42789,7 @@ impl PerCodec for RecommendedCellsForPaging {
 	}
 }
 // RecommendedCellList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct RecommendedCellList(pub NonEmpty<RecommendedCellItem>);
 
 impl RecommendedCellList {
@@ -42616,7 +42834,7 @@ impl PerCodec for RecommendedCellList {
 	}
 }
 // RecommendedCellItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct RecommendedCellItem {
 	pub ngran_cgi: NgranCgi,
 	pub time_stayed_in_cell: Option<u16>,
@@ -42688,7 +42906,7 @@ impl PerCodec for RecommendedCellItem {
 	}
 }
 // RecommendedRanNodesForPaging
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct RecommendedRanNodesForPaging {
 	pub recommended_ran_node_list: RecommendedRanNodeList,
 }
@@ -42749,7 +42967,7 @@ impl PerCodec for RecommendedRanNodesForPaging {
 	}
 }
 // RecommendedRanNodeList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct RecommendedRanNodeList(pub NonEmpty<RecommendedRanNodeItem>);
 
 impl RecommendedRanNodeList {
@@ -42794,7 +43012,7 @@ impl PerCodec for RecommendedRanNodeList {
 	}
 }
 // RecommendedRanNodeItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct RecommendedRanNodeItem {
 	pub amf_paging_target: AmfPagingTarget,
 }
@@ -42853,9 +43071,10 @@ impl PerCodec for RecommendedRanNodeItem {
 	}
 }
 // RedCapIndication
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum RedCapIndication {
+	#[default]
 	Redcap,
 }
 
@@ -42894,9 +43113,10 @@ impl PerCodec for RedCapIndication {
 	}
 }
 // RedirectionVoiceFallback
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum RedirectionVoiceFallback {
+	#[default]
 	Possible,
 	NotPossible,
 }
@@ -42936,7 +43156,7 @@ impl PerCodec for RedirectionVoiceFallback {
 	}
 }
 // RedundantPduSessionInformation
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct RedundantPduSessionInformation {
 	pub rsn: Rsn,
 	pub pdu_session_pair_id: Option<PduSessionPairId>,
@@ -43016,9 +43236,10 @@ impl PerCodec for RedundantPduSessionInformation {
 	}
 }
 // RedundantQosFlowIndicator
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum RedundantQosFlowIndicator {
+	#[default]
 	True,
 	False,
 }
@@ -43058,9 +43279,10 @@ impl PerCodec for RedundantQosFlowIndicator {
 	}
 }
 // ReflectiveQosAttribute
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum ReflectiveQosAttribute {
+	#[default]
 	SubjectTo,
 }
 
@@ -43099,7 +43321,7 @@ impl PerCodec for ReflectiveQosAttribute {
 	}
 }
 // RelativeAmfCapacity
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct RelativeAmfCapacity(pub u8);
 
 impl RelativeAmfCapacity {
@@ -43135,9 +43357,10 @@ impl PerCodec for RelativeAmfCapacity {
 	}
 }
 // ReportArea
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum ReportArea {
+	#[default]
 	Cell,
 }
 
@@ -43176,7 +43399,7 @@ impl PerCodec for ReportArea {
 	}
 }
 // RepetitionPeriod
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct RepetitionPeriod(pub u32);
 
 impl RepetitionPeriod {
@@ -43212,9 +43435,10 @@ impl PerCodec for RepetitionPeriod {
 	}
 }
 // ResetAll
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum ResetAll {
+	#[default]
 	ResetAll,
 }
 
@@ -43253,9 +43477,10 @@ impl PerCodec for ResetAll {
 	}
 }
 // ReportAmountMdt
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum ReportAmountMdt {
+	#[default]
 	R1,
 	R2,
 	R4,
@@ -43301,9 +43526,10 @@ impl PerCodec for ReportAmountMdt {
 	}
 }
 // ReportIntervalMdt
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum ReportIntervalMdt {
+	#[default]
 	Ms120,
 	Ms240,
 	Ms480,
@@ -43354,9 +43580,10 @@ impl PerCodec for ReportIntervalMdt {
 	}
 }
 // ExtendedReportIntervalMdt
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum ExtendedReportIntervalMdt {
+	#[default]
 	Ms20480,
 	Ms40960,
 }
@@ -43396,8 +43623,9 @@ impl PerCodec for ExtendedReportIntervalMdt {
 	}
 }
 // ResetType
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum ResetType {
+	#[default]
 	NgInterface(ResetAll),
 	PartOfNgInterface(UeAssociatedLogicalNgConnectionList),
 }
@@ -43462,7 +43690,7 @@ impl PerCodec for ResetType {
 	}
 }
 // RgLevelWirelineAccessCharacteristics
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct RgLevelWirelineAccessCharacteristics(pub Vec<u8>);
 
 impl RgLevelWirelineAccessCharacteristics {
@@ -43496,7 +43724,7 @@ impl PerCodec for RgLevelWirelineAccessCharacteristics {
 	}
 }
 // RncId
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct RncId(pub u16);
 
 impl RncId {
@@ -43532,7 +43760,7 @@ impl PerCodec for RncId {
 	}
 }
 // RoutingId
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct RoutingId(pub Vec<u8>);
 
 impl RoutingId {
@@ -43566,7 +43794,7 @@ impl PerCodec for RoutingId {
 	}
 }
 // RrcContainer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct RrcContainer(pub Vec<u8>);
 
 impl RrcContainer {
@@ -43600,9 +43828,10 @@ impl PerCodec for RrcContainer {
 	}
 }
 // RrcEstablishmentCause
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum RrcEstablishmentCause {
+	#[default]
 	Emergency,
 	HighPriorityAccess,
 	MtAccess,
@@ -43650,9 +43879,10 @@ impl PerCodec for RrcEstablishmentCause {
 	}
 }
 // RrcInactiveTransitionReportRequest
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum RrcInactiveTransitionReportRequest {
+	#[default]
 	SubsequentStateTransitionReport,
 	SingleRrcConnectedStateReport,
 	CancelReport,
@@ -43693,9 +43923,10 @@ impl PerCodec for RrcInactiveTransitionReportRequest {
 	}
 }
 // RrcState
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum RrcState {
+	#[default]
 	Inactive,
 	Connected,
 }
@@ -43735,9 +43966,10 @@ impl PerCodec for RrcState {
 	}
 }
 // Rsn
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum Rsn {
+	#[default]
 	V1,
 	V2,
 }
@@ -43777,7 +44009,7 @@ impl PerCodec for Rsn {
 	}
 }
 // RimInformationTransfer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct RimInformationTransfer {
 	pub target_ran_node_id_rim: TargetRanNodeIdRim,
 	pub source_ran_node_id: SourceRanNodeId,
@@ -43846,7 +44078,7 @@ impl PerCodec for RimInformationTransfer {
 	}
 }
 // RimInformation
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct RimInformation {
 	pub target_gnb_set_id: GnbSetId,
 	pub rim_rs_detection: RimRsDetection,
@@ -43911,7 +44143,7 @@ impl PerCodec for RimInformation {
 	}
 }
 // GnbSetId
-#[derive(Clone, Debug)]
+#[derive(Clone, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct GnbSetId(pub BitString);
 
 impl GnbSetId {
@@ -43950,7 +44182,7 @@ impl PerCodec for GnbSetId {
 	}
 }
 // ScheduledCommunicationTime
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct ScheduledCommunicationTime {
 	pub dayof_week: Option<BitString>,
 	pub timeof_day_start: Option<u32>,
@@ -44040,7 +44272,7 @@ impl PerCodec for ScheduledCommunicationTime {
 	}
 }
 // SctpTlAs
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct SctpTlAs(pub NonEmpty<TransportLayerAddress>);
 
 impl SctpTlAs {
@@ -44087,7 +44319,15 @@ impl PerCodec for SctpTlAs {
 // Sd
 #[derive(Clone, Debug)]
 pub struct Sd(pub [u8; 3]);
-
+impl Default for Sd {
+	fn default() -> Sd {
+		let init = std::mem::MaybeUninit::<[u8; 3]>::zeroed();
+		// SAFETY: No pointers present for the assume init here
+		// TODO: Evaluate the performance issues: "https://users.rust-lang.org/t/unnecessary-performance-penalty-for-mem-maybeuninit/84063"
+		let default_value = unsafe { init.assume_init() };
+		Sd(default_value)
+	}
+}
 impl Sd {
 	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
 		Ok(Self(
@@ -44123,7 +44363,7 @@ impl PerCodec for Sd {
 	}
 }
 // SecondaryRatUsageInformation
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct SecondaryRatUsageInformation {
 	pub pdu_session_usage_report: Option<PduSessionUsageReport>,
 	pub qos_flows_usage_report_list: Option<QosFlowsUsageReportList>,
@@ -44202,7 +44442,7 @@ impl PerCodec for SecondaryRatUsageInformation {
 	}
 }
 // SecondaryRatDataUsageReportTransfer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct SecondaryRatDataUsageReportTransfer {
 	pub secondary_rat_usage_information: Option<SecondaryRatUsageInformation>,
 }
@@ -44270,7 +44510,7 @@ impl PerCodec for SecondaryRatDataUsageReportTransfer {
 	}
 }
 // SecurityContext
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct SecurityContext {
 	pub next_hop_chaining_count: NextHopChainingCount,
 	pub next_hop_nh: SecurityKey,
@@ -44335,7 +44575,7 @@ impl PerCodec for SecurityContext {
 	}
 }
 // SecurityIndication
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct SecurityIndication {
 	pub integrity_protection_indication: IntegrityProtectionIndication,
 	pub confidentiality_protection_indication: ConfidentialityProtectionIndication,
@@ -44436,7 +44676,7 @@ impl PerCodec for SecurityIndication {
 	}
 }
 // SecurityKey
-#[derive(Clone, Debug)]
+#[derive(Clone, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct SecurityKey(pub BitString);
 
 impl SecurityKey {
@@ -44475,7 +44715,7 @@ impl PerCodec for SecurityKey {
 	}
 }
 // SecurityResult
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct SecurityResult {
 	pub integrity_protection_result: IntegrityProtectionResult,
 	pub confidentiality_protection_result: ConfidentialityProtectionResult,
@@ -44540,7 +44780,7 @@ impl PerCodec for SecurityResult {
 	}
 }
 // SensorMeasurementConfiguration
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct SensorMeasurementConfiguration {
 	pub sensor_meas_config: SensorMeasConfig,
 	pub sensor_meas_config_name_list: Option<SensorMeasConfigNameList>,
@@ -44612,7 +44852,7 @@ impl PerCodec for SensorMeasurementConfiguration {
 	}
 }
 // SensorMeasConfigNameList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct SensorMeasConfigNameList(pub NonEmpty<SensorMeasConfigNameItem>);
 
 impl SensorMeasConfigNameList {
@@ -44657,7 +44897,7 @@ impl PerCodec for SensorMeasConfigNameList {
 	}
 }
 // SensorMeasConfigNameItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct SensorMeasConfigNameItem {
 	pub sensor_name_config: SensorNameConfig,
 }
@@ -44716,9 +44956,10 @@ impl PerCodec for SensorMeasConfigNameItem {
 	}
 }
 // SensorMeasConfig
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum SensorMeasConfig {
+	#[default]
 	Setup,
 }
 
@@ -44757,8 +44998,9 @@ impl PerCodec for SensorMeasConfig {
 	}
 }
 // SensorNameConfig
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum SensorNameConfig {
+	#[default]
 	UncompensatedBarometricConfig(UncompensatedBarometricConfig),
 	UeSpeedConfig(UeSpeedConfig),
 	UeOrientationConfig(UeOrientationConfig),
@@ -44831,7 +45073,7 @@ impl PerCodec for SensorNameConfig {
 	}
 }
 // SerialNumber
-#[derive(Clone, Debug)]
+#[derive(Clone, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct SerialNumber(pub BitString);
 
 impl SerialNumber {
@@ -44870,7 +45112,7 @@ impl PerCodec for SerialNumber {
 	}
 }
 // ServedGuamiList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct ServedGuamiList(pub NonEmpty<ServedGuamiItem>);
 
 impl ServedGuamiList {
@@ -44915,7 +45157,7 @@ impl PerCodec for ServedGuamiList {
 	}
 }
 // ServedGuamiItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct ServedGuamiItem {
 	pub guami: Guami,
 	pub backup_amf_name: Option<AmfName>,
@@ -45006,7 +45248,7 @@ impl PerCodec for ServedGuamiItem {
 	}
 }
 // ServiceAreaInformation
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct ServiceAreaInformation(pub NonEmpty<ServiceAreaInformationItem>);
 
 impl ServiceAreaInformation {
@@ -45051,7 +45293,7 @@ impl PerCodec for ServiceAreaInformation {
 	}
 }
 // ServiceAreaInformationItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct ServiceAreaInformationItem {
 	pub plmn_identity: PlmnIdentity,
 	pub allowed_ta_cs: Option<AllowedTaCs>,
@@ -45134,9 +45376,10 @@ impl PerCodec for ServiceAreaInformationItem {
 	}
 }
 // ServiceType
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum ServiceType {
+	#[default]
 	Streaming,
 	Mtsi,
 	Vr,
@@ -45177,7 +45420,7 @@ impl PerCodec for ServiceType {
 	}
 }
 // SGnbUeX2apId
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct SGnbUeX2apId(pub u32);
 
 impl SGnbUeX2apId {
@@ -45220,7 +45463,7 @@ impl PerCodec for SGnbUeX2apId {
 	}
 }
 // SharedNguMulticastTnlInformation
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct SharedNguMulticastTnlInformation {
 	pub ip_multicast_address: TransportLayerAddress,
 	pub ip_source_address: TransportLayerAddress,
@@ -45289,7 +45532,7 @@ impl PerCodec for SharedNguMulticastTnlInformation {
 	}
 }
 // SliceOverloadList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct SliceOverloadList(pub NonEmpty<SliceOverloadItem>);
 
 impl SliceOverloadList {
@@ -45334,7 +45577,7 @@ impl PerCodec for SliceOverloadList {
 	}
 }
 // SliceOverloadItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct SliceOverloadItem {
 	pub snssai: Snssai,
 }
@@ -45393,7 +45636,7 @@ impl PerCodec for SliceOverloadItem {
 	}
 }
 // SliceSupportList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct SliceSupportList(pub NonEmpty<SliceSupportItem>);
 
 impl SliceSupportList {
@@ -45438,7 +45681,7 @@ impl PerCodec for SliceSupportList {
 	}
 }
 // SliceSupportItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct SliceSupportItem {
 	pub snssai: Snssai,
 }
@@ -45497,7 +45740,7 @@ impl PerCodec for SliceSupportItem {
 	}
 }
 // SliceSupportListQmc
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct SliceSupportListQmc(pub NonEmpty<SliceSupportQmcItem>);
 
 impl SliceSupportListQmc {
@@ -45542,7 +45785,7 @@ impl PerCodec for SliceSupportListQmc {
 	}
 }
 // SliceSupportQmcItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct SliceSupportQmcItem {
 	pub snssai: Snssai,
 }
@@ -45601,7 +45844,7 @@ impl PerCodec for SliceSupportQmcItem {
 	}
 }
 // SnpnMobilityInformation
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct SnpnMobilityInformation {
 	pub serving_nid: Nid,
 }
@@ -45660,7 +45903,7 @@ impl PerCodec for SnpnMobilityInformation {
 	}
 }
 // Snssai
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct Snssai {
 	pub sst: Sst,
 	pub sd: Option<Sd>,
@@ -45729,7 +45972,7 @@ impl PerCodec for Snssai {
 	}
 }
 // SonConfigurationTransfer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct SonConfigurationTransfer {
 	pub target_ran_node_id_son: TargetRanNodeIdSon,
 	pub source_ran_node_id: SourceRanNodeId,
@@ -45809,8 +46052,9 @@ impl PerCodec for SonConfigurationTransfer {
 	}
 }
 // SonInformation
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum SonInformation {
+	#[default]
 	SonInformationRequest(SonInformationRequest),
 	SonInformationReply(SonInformationReply),
 	SonInformationReport(SonInformationReport),
@@ -45890,7 +46134,7 @@ impl PerCodec for SonInformation {
 	}
 }
 // SonInformationReply
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct SonInformationReply {
 	pub xn_tnl_configuration_info: Option<XnTnlConfigurationInfo>,
 }
@@ -45958,8 +46202,9 @@ impl PerCodec for SonInformationReply {
 	}
 }
 // SonInformationReport
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum SonInformationReport {
+	#[default]
 	FailureIndicationInformation(FailureIndication),
 	HoReportInformation(HoReport),
 	SuccessfulHandoverReportList(SuccessfulHandoverReportList),
@@ -46037,7 +46282,7 @@ impl PerCodec for SonInformationReport {
 	}
 }
 // SuccessfulHandoverReportList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct SuccessfulHandoverReportList(pub NonEmpty<SuccessfulHandoverReportItem>);
 
 impl SuccessfulHandoverReportList {
@@ -46082,7 +46327,7 @@ impl PerCodec for SuccessfulHandoverReportList {
 	}
 }
 // SuccessfulHandoverReportItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct SuccessfulHandoverReportItem {
 	pub successful_ho_report_container: Vec<u8>,
 }
@@ -46150,9 +46395,10 @@ impl PerCodec for SuccessfulHandoverReportItem {
 	}
 }
 // SonInformationRequest
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum SonInformationRequest {
+	#[default]
 	XnTnlConfigurationInfo,
 }
 
@@ -46191,7 +46437,7 @@ impl PerCodec for SonInformationRequest {
 	}
 }
 // SourceNgranNodeToTargetNgranNodeTransparentContainer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct SourceNgranNodeToTargetNgranNodeTransparentContainer {
 	pub rrc_container: RrcContainer,
 	pub pdu_session_resource_information_list: Option<PduSessionResourceInformationList>,
@@ -46412,8 +46658,9 @@ impl PerCodec for SourceNgranNodeToTargetNgranNodeTransparentContainer {
 	}
 }
 // SourceNodeId
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum SourceNodeId {
+	#[default]
 	SourceenGnbId(GlobalGnbId),
 }
 
@@ -46470,9 +46717,10 @@ impl PerCodec for SourceNodeId {
 	}
 }
 // SourceOfUeActivityBehaviourInformation
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum SourceOfUeActivityBehaviourInformation {
+	#[default]
 	SubscriptionInformation,
 	Statistics,
 }
@@ -46514,7 +46762,7 @@ impl PerCodec for SourceOfUeActivityBehaviourInformation {
 	}
 }
 // SourceRanNodeId
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct SourceRanNodeId {
 	pub global_ran_node_id: GlobalRanNodeId,
 	pub selected_tai: Tai,
@@ -46579,7 +46827,7 @@ impl PerCodec for SourceRanNodeId {
 	}
 }
 // SourceToTargetTransparentContainer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct SourceToTargetTransparentContainer(pub Vec<u8>);
 
 impl SourceToTargetTransparentContainer {
@@ -46613,7 +46861,7 @@ impl PerCodec for SourceToTargetTransparentContainer {
 	}
 }
 // SourceToTargetAmfInformationReroute
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct SourceToTargetAmfInformationReroute {
 	pub configured_nssai: Option<ConfiguredNssai>,
 	pub rejected_nssa_iin_plmn: Option<RejectedNssaIinPlmn>,
@@ -46703,9 +46951,10 @@ impl PerCodec for SourceToTargetAmfInformationReroute {
 	}
 }
 // SrvccOperationPossible
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum SrvccOperationPossible {
+	#[default]
 	Possible,
 	NotPossible,
 }
@@ -46747,7 +46996,15 @@ impl PerCodec for SrvccOperationPossible {
 // ConfiguredNssai
 #[derive(Clone, Debug)]
 pub struct ConfiguredNssai(pub [u8; 128]);
-
+impl Default for ConfiguredNssai {
+	fn default() -> ConfiguredNssai {
+		let init = std::mem::MaybeUninit::<[u8; 128]>::zeroed();
+		// SAFETY: No pointers present for the assume init here
+		// TODO: Evaluate the performance issues: "https://users.rust-lang.org/t/unnecessary-performance-penalty-for-mem-maybeuninit/84063"
+		let default_value = unsafe { init.assume_init() };
+		ConfiguredNssai(default_value)
+	}
+}
 impl ConfiguredNssai {
 	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
 		Ok(Self(
@@ -46785,7 +47042,15 @@ impl PerCodec for ConfiguredNssai {
 // RejectedNssaIinPlmn
 #[derive(Clone, Debug)]
 pub struct RejectedNssaIinPlmn(pub [u8; 32]);
-
+impl Default for RejectedNssaIinPlmn {
+	fn default() -> RejectedNssaIinPlmn {
+		let init = std::mem::MaybeUninit::<[u8; 32]>::zeroed();
+		// SAFETY: No pointers present for the assume init here
+		// TODO: Evaluate the performance issues: "https://users.rust-lang.org/t/unnecessary-performance-penalty-for-mem-maybeuninit/84063"
+		let default_value = unsafe { init.assume_init() };
+		RejectedNssaIinPlmn(default_value)
+	}
+}
 impl RejectedNssaIinPlmn {
 	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
 		Ok(Self(
@@ -46823,7 +47088,15 @@ impl PerCodec for RejectedNssaIinPlmn {
 // RejectedNssaIinTa
 #[derive(Clone, Debug)]
 pub struct RejectedNssaIinTa(pub [u8; 32]);
-
+impl Default for RejectedNssaIinTa {
+	fn default() -> RejectedNssaIinTa {
+		let init = std::mem::MaybeUninit::<[u8; 32]>::zeroed();
+		// SAFETY: No pointers present for the assume init here
+		// TODO: Evaluate the performance issues: "https://users.rust-lang.org/t/unnecessary-performance-penalty-for-mem-maybeuninit/84063"
+		let default_value = unsafe { init.assume_init() };
+		RejectedNssaIinTa(default_value)
+	}
+}
 impl RejectedNssaIinTa {
 	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
 		Ok(Self(
@@ -46861,7 +47134,15 @@ impl PerCodec for RejectedNssaIinTa {
 // Sst
 #[derive(Clone, Debug)]
 pub struct Sst(pub [u8; 1]);
-
+impl Default for Sst {
+	fn default() -> Sst {
+		let init = std::mem::MaybeUninit::<[u8; 1]>::zeroed();
+		// SAFETY: No pointers present for the assume init here
+		// TODO: Evaluate the performance issues: "https://users.rust-lang.org/t/unnecessary-performance-penalty-for-mem-maybeuninit/84063"
+		let default_value = unsafe { init.assume_init() };
+		Sst(default_value)
+	}
+}
 impl Sst {
 	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
 		Ok(Self(
@@ -46897,7 +47178,7 @@ impl PerCodec for Sst {
 	}
 }
 // SupportedTaList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct SupportedTaList(pub NonEmpty<SupportedTaItem>);
 
 impl SupportedTaList {
@@ -46942,7 +47223,7 @@ impl PerCodec for SupportedTaList {
 	}
 }
 // SupportedTaItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct SupportedTaItem {
 	pub tac: Tac,
 	pub broadcast_plmn_list: BroadcastPlmnList,
@@ -47040,9 +47321,10 @@ impl PerCodec for SupportedTaItem {
 	}
 }
 // SuspendIndicator
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum SuspendIndicator {
+	#[default]
 	True,
 }
 
@@ -47081,9 +47363,10 @@ impl PerCodec for SuspendIndicator {
 	}
 }
 // SuspendRequestIndication
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum SuspendRequestIndication {
+	#[default]
 	SuspendRequested,
 }
 
@@ -47122,9 +47405,10 @@ impl PerCodec for SuspendRequestIndication {
 	}
 }
 // SuspendResponseIndication
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum SuspendResponseIndication {
+	#[default]
 	SuspendIndicated,
 }
 
@@ -47163,7 +47447,7 @@ impl PerCodec for SuspendResponseIndication {
 	}
 }
 // SurvivalTime
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct SurvivalTime(pub u32);
 
 impl SurvivalTime {
@@ -47201,7 +47485,15 @@ impl PerCodec for SurvivalTime {
 // Tac
 #[derive(Clone, Debug)]
 pub struct Tac(pub [u8; 3]);
-
+impl Default for Tac {
+	fn default() -> Tac {
+		let init = std::mem::MaybeUninit::<[u8; 3]>::zeroed();
+		// SAFETY: No pointers present for the assume init here
+		// TODO: Evaluate the performance issues: "https://users.rust-lang.org/t/unnecessary-performance-penalty-for-mem-maybeuninit/84063"
+		let default_value = unsafe { init.assume_init() };
+		Tac(default_value)
+	}
+}
 impl Tac {
 	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
 		Ok(Self(
@@ -47237,7 +47529,7 @@ impl PerCodec for Tac {
 	}
 }
 // TacListInNrNtn
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct TacListInNrNtn(pub NonEmpty<Tac>);
 
 impl TacListInNrNtn {
@@ -47282,7 +47574,7 @@ impl PerCodec for TacListInNrNtn {
 	}
 }
 // Tai
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct Tai {
 	pub plmn_identity: PlmnIdentity,
 	pub tac: Tac,
@@ -47344,7 +47636,7 @@ impl PerCodec for Tai {
 	}
 }
 // TaiBroadcastEutra
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct TaiBroadcastEutra(pub NonEmpty<TaiBroadcastEutraItem>);
 
 impl TaiBroadcastEutra {
@@ -47389,7 +47681,7 @@ impl PerCodec for TaiBroadcastEutra {
 	}
 }
 // TaiBroadcastEutraItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct TaiBroadcastEutraItem {
 	pub tai: Tai,
 	pub completed_cells_in_tai_eutra: CompletedCellsInTaiEutra,
@@ -47454,7 +47746,7 @@ impl PerCodec for TaiBroadcastEutraItem {
 	}
 }
 // TaiBroadcastNr
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct TaiBroadcastNr(pub NonEmpty<TaiBroadcastNrItem>);
 
 impl TaiBroadcastNr {
@@ -47499,7 +47791,7 @@ impl PerCodec for TaiBroadcastNr {
 	}
 }
 // TaiBroadcastNrItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct TaiBroadcastNrItem {
 	pub tai: Tai,
 	pub completed_cells_in_tai_nr: CompletedCellsInTaiNr,
@@ -47564,7 +47856,7 @@ impl PerCodec for TaiBroadcastNrItem {
 	}
 }
 // TaiCancelledEutra
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct TaiCancelledEutra(pub NonEmpty<TaiCancelledEutraItem>);
 
 impl TaiCancelledEutra {
@@ -47609,7 +47901,7 @@ impl PerCodec for TaiCancelledEutra {
 	}
 }
 // TaiCancelledEutraItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct TaiCancelledEutraItem {
 	pub tai: Tai,
 	pub cancelled_cells_in_tai_eutra: CancelledCellsInTaiEutra,
@@ -47674,7 +47966,7 @@ impl PerCodec for TaiCancelledEutraItem {
 	}
 }
 // TaiCancelledNr
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct TaiCancelledNr(pub NonEmpty<TaiCancelledNrItem>);
 
 impl TaiCancelledNr {
@@ -47719,7 +48011,7 @@ impl PerCodec for TaiCancelledNr {
 	}
 }
 // TaiCancelledNrItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct TaiCancelledNrItem {
 	pub tai: Tai,
 	pub cancelled_cells_in_tai_nr: CancelledCellsInTaiNr,
@@ -47784,7 +48076,7 @@ impl PerCodec for TaiCancelledNrItem {
 	}
 }
 // TaiListForInactive
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct TaiListForInactive(pub NonEmpty<TaiListForInactiveItem>);
 
 impl TaiListForInactive {
@@ -47829,7 +48121,7 @@ impl PerCodec for TaiListForInactive {
 	}
 }
 // TaiListForInactiveItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct TaiListForInactiveItem {
 	pub tai: Tai,
 }
@@ -47888,7 +48180,7 @@ impl PerCodec for TaiListForInactiveItem {
 	}
 }
 // TaiListForPaging
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct TaiListForPaging(pub NonEmpty<TaiListForPagingItem>);
 
 impl TaiListForPaging {
@@ -47933,7 +48225,7 @@ impl PerCodec for TaiListForPaging {
 	}
 }
 // TaiListForPagingItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct TaiListForPagingItem {
 	pub tai: Tai,
 }
@@ -47992,7 +48284,7 @@ impl PerCodec for TaiListForPagingItem {
 	}
 }
 // TaiListForRestart
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct TaiListForRestart(pub NonEmpty<Tai>);
 
 impl TaiListForRestart {
@@ -48037,7 +48329,7 @@ impl PerCodec for TaiListForRestart {
 	}
 }
 // TaiListForWarning
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct TaiListForWarning(pub NonEmpty<Tai>);
 
 impl TaiListForWarning {
@@ -48082,7 +48374,7 @@ impl PerCodec for TaiListForWarning {
 	}
 }
 // TainsagSupportList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct TainsagSupportList(pub NonEmpty<TainsagSupportItem>);
 
 impl TainsagSupportList {
@@ -48127,7 +48419,7 @@ impl PerCodec for TainsagSupportList {
 	}
 }
 // TainsagSupportItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct TainsagSupportItem {
 	pub nsag_id: NsagId,
 	pub nsag_slice_support_list: ExtendedSliceSupportList,
@@ -48192,7 +48484,7 @@ impl PerCodec for TainsagSupportItem {
 	}
 }
 // TargetEnbId
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct TargetEnbId {
 	pub global_enb_id: GlobalNgEnbId,
 	pub selected_eps_tai: EpsTai,
@@ -48257,7 +48549,7 @@ impl PerCodec for TargetEnbId {
 	}
 }
 // TargetHomeEnbId
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct TargetHomeEnbId {
 	pub plmn_identity: PlmnIdentity,
 	pub home_enb_id: BitString,
@@ -48326,8 +48618,9 @@ impl PerCodec for TargetHomeEnbId {
 	}
 }
 // TargetId
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum TargetId {
+	#[default]
 	TargetRanNodeId(TargetRanNodeId),
 	TargetEnbId(TargetEnbId),
 	TargetRncId(TargetRncId),
@@ -48412,7 +48705,7 @@ impl PerCodec for TargetId {
 	}
 }
 // TargetNgranNodeToSourceNgranNodeTransparentContainer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct TargetNgranNodeToSourceNgranNodeTransparentContainer {
 	pub rrc_container: RrcContainer,
 	pub daps_response_info_list: Option<DapsResponseInfoList>,
@@ -48551,7 +48844,7 @@ impl PerCodec for TargetNgranNodeToSourceNgranNodeTransparentContainer {
 	}
 }
 // TargetNgranNodeToSourceNgranNodeFailureTransparentContainer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct TargetNgranNodeToSourceNgranNodeFailureTransparentContainer {
 	pub cell_cag_information: Option<CellCagInformation>,
 	pub ngapie_support_information_response_list: Option<NgapieSupportInformationResponseList>,
@@ -48645,7 +48938,7 @@ impl PerCodec for TargetNgranNodeToSourceNgranNodeFailureTransparentContainer {
 	}
 }
 // TargetNssai
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct TargetNssai(pub NonEmpty<TargetNssaiItem>);
 
 impl TargetNssai {
@@ -48690,7 +48983,7 @@ impl PerCodec for TargetNssai {
 	}
 }
 // TargetNssaiItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct TargetNssaiItem {
 	pub snssai: Snssai,
 }
@@ -48749,7 +49042,7 @@ impl PerCodec for TargetNssaiItem {
 	}
 }
 // TargetNssaiInformation
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct TargetNssaiInformation {
 	pub target_nssai: TargetNssai,
 	pub index_to_rfsp: IndexToRfsp,
@@ -48814,7 +49107,7 @@ impl PerCodec for TargetNssaiInformation {
 	}
 }
 // TargetRanNodeId
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct TargetRanNodeId {
 	pub global_ran_node_id: GlobalRanNodeId,
 	pub selected_tai: Tai,
@@ -48879,7 +49172,7 @@ impl PerCodec for TargetRanNodeId {
 	}
 }
 // TargetRanNodeIdRim
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct TargetRanNodeIdRim {
 	pub global_ran_node_id: GlobalRanNodeId,
 	pub selected_tai: Tai,
@@ -48944,7 +49237,7 @@ impl PerCodec for TargetRanNodeIdRim {
 	}
 }
 // TargetRanNodeIdSon
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct TargetRanNodeIdSon {
 	pub global_ran_node_id: GlobalRanNodeId,
 	pub selected_tai: Tai,
@@ -49028,7 +49321,7 @@ impl PerCodec for TargetRanNodeIdSon {
 	}
 }
 // TargetRncId
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct TargetRncId {
 	pub lai: Lai,
 	pub rnc_id: RncId,
@@ -49104,7 +49397,7 @@ impl PerCodec for TargetRncId {
 	}
 }
 // TargetToSourceTransparentContainer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct TargetToSourceTransparentContainer(pub Vec<u8>);
 
 impl TargetToSourceTransparentContainer {
@@ -49138,7 +49431,7 @@ impl PerCodec for TargetToSourceTransparentContainer {
 	}
 }
 // TargettoSourceFailureTransparentContainer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct TargettoSourceFailureTransparentContainer(pub Vec<u8>);
 
 impl TargettoSourceFailureTransparentContainer {
@@ -49174,9 +49467,10 @@ impl PerCodec for TargettoSourceFailureTransparentContainer {
 	}
 }
 // TimerApproachForGuamiRemoval
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum TimerApproachForGuamiRemoval {
+	#[default]
 	ApplyTimer,
 }
 
@@ -49217,7 +49511,15 @@ impl PerCodec for TimerApproachForGuamiRemoval {
 // TimeStamp
 #[derive(Clone, Debug)]
 pub struct TimeStamp(pub [u8; 4]);
-
+impl Default for TimeStamp {
+	fn default() -> TimeStamp {
+		let init = std::mem::MaybeUninit::<[u8; 4]>::zeroed();
+		// SAFETY: No pointers present for the assume init here
+		// TODO: Evaluate the performance issues: "https://users.rust-lang.org/t/unnecessary-performance-penalty-for-mem-maybeuninit/84063"
+		let default_value = unsafe { init.assume_init() };
+		TimeStamp(default_value)
+	}
+}
 impl TimeStamp {
 	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
 		Ok(Self(
@@ -49253,7 +49555,7 @@ impl PerCodec for TimeStamp {
 	}
 }
 // TimeSyncAssistanceInfo
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct TimeSyncAssistanceInfo {
 	pub time_distribution_indication: TimeDistributionIndication,
 	pub uu_time_sync_error_budget: Option<u32>,
@@ -49325,9 +49627,10 @@ impl PerCodec for TimeSyncAssistanceInfo {
 	}
 }
 // TimeToWait
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum TimeToWait {
+	#[default]
 	V1s,
 	V2s,
 	V5s,
@@ -49371,7 +49674,7 @@ impl PerCodec for TimeToWait {
 	}
 }
 // TimeUeStayedInCell
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct TimeUeStayedInCell(pub u16);
 
 impl TimeUeStayedInCell {
@@ -49407,7 +49710,7 @@ impl PerCodec for TimeUeStayedInCell {
 	}
 }
 // TimeUeStayedInCellEnhancedGranularity
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct TimeUeStayedInCellEnhancedGranularity(pub u16);
 
 impl TimeUeStayedInCellEnhancedGranularity {
@@ -49445,7 +49748,15 @@ impl PerCodec for TimeUeStayedInCellEnhancedGranularity {
 // Tmgi
 #[derive(Clone, Debug)]
 pub struct Tmgi(pub [u8; 6]);
-
+impl Default for Tmgi {
+	fn default() -> Tmgi {
+		let init = std::mem::MaybeUninit::<[u8; 6]>::zeroed();
+		// SAFETY: No pointers present for the assume init here
+		// TODO: Evaluate the performance issues: "https://users.rust-lang.org/t/unnecessary-performance-penalty-for-mem-maybeuninit/84063"
+		let default_value = unsafe { init.assume_init() };
+		Tmgi(default_value)
+	}
+}
 impl Tmgi {
 	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
 		Ok(Self(
@@ -49481,7 +49792,7 @@ impl PerCodec for Tmgi {
 	}
 }
 // TnapId
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct TnapId(pub Vec<u8>);
 
 impl TnapId {
@@ -49515,8 +49826,9 @@ impl PerCodec for TnapId {
 	}
 }
 // TngfId
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum TngfId {
+	#[default]
 	TngfId(BitString),
 }
 
@@ -49578,7 +49890,7 @@ impl PerCodec for TngfId {
 	}
 }
 // TnlAddressWeightFactor
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct TnlAddressWeightFactor(pub u8);
 
 impl TnlAddressWeightFactor {
@@ -49614,7 +49926,7 @@ impl PerCodec for TnlAddressWeightFactor {
 	}
 }
 // TnlAssociationList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct TnlAssociationList(pub NonEmpty<TnlAssociationItem>);
 
 impl TnlAssociationList {
@@ -49659,7 +49971,7 @@ impl PerCodec for TnlAssociationList {
 	}
 }
 // TnlAssociationItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct TnlAssociationItem {
 	pub tnl_association_address: CpTransportLayerInformation,
 	pub cause: Cause,
@@ -49724,9 +50036,10 @@ impl PerCodec for TnlAssociationItem {
 	}
 }
 // TnlAssociationUsage
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum TnlAssociationUsage {
+	#[default]
 	Ue,
 	NonUe,
 	Both,
@@ -49767,7 +50080,7 @@ impl PerCodec for TnlAssociationUsage {
 	}
 }
 // TooearlyIntersystemHo
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct TooearlyIntersystemHo {
 	pub sourcecell_id: EutraCgi,
 	pub failurecell_id: NgranCgi,
@@ -49843,7 +50156,7 @@ impl PerCodec for TooearlyIntersystemHo {
 	}
 }
 // TraceActivation
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct TraceActivation {
 	pub ngran_trace_id: NgranTraceId,
 	pub interfaces_to_trace: InterfacesToTrace,
@@ -49949,9 +50262,10 @@ impl PerCodec for TraceActivation {
 	}
 }
 // TraceDepth
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum TraceDepth {
+	#[default]
 	Minimum,
 	Medium,
 	Maximum,
@@ -49995,7 +50309,7 @@ impl PerCodec for TraceDepth {
 	}
 }
 // TrafficLoadReductionIndication
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct TrafficLoadReductionIndication(pub u8);
 
 impl TrafficLoadReductionIndication {
@@ -50031,9 +50345,10 @@ impl PerCodec for TrafficLoadReductionIndication {
 	}
 }
 // TypeOfError
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum TypeOfError {
+	#[default]
 	NotUnderstood,
 	Missing,
 }
@@ -50073,7 +50388,7 @@ impl PerCodec for TypeOfError {
 	}
 }
 // TaiBasedMdt
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct TaiBasedMdt {
 	pub tai_listfor_mdt: TaiListforMdt,
 }
@@ -50132,7 +50447,7 @@ impl PerCodec for TaiBasedMdt {
 	}
 }
 // TaiListforMdt
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct TaiListforMdt(pub NonEmpty<Tai>);
 
 impl TaiListforMdt {
@@ -50177,7 +50492,7 @@ impl PerCodec for TaiListforMdt {
 	}
 }
 // TaiBasedQmc
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct TaiBasedQmc {
 	pub tai_listfor_qmc: TaiListforQmc,
 }
@@ -50236,7 +50551,7 @@ impl PerCodec for TaiBasedQmc {
 	}
 }
 // TaiListforQmc
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct TaiListforQmc(pub NonEmpty<Tai>);
 
 impl TaiListforQmc {
@@ -50281,7 +50596,7 @@ impl PerCodec for TaiListforQmc {
 	}
 }
 // TaBasedQmc
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct TaBasedQmc {
 	pub ta_listfor_qmc: TaListforQmc,
 }
@@ -50340,7 +50655,7 @@ impl PerCodec for TaBasedQmc {
 	}
 }
 // TaListforQmc
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct TaListforQmc(pub NonEmpty<Tac>);
 
 impl TaListforQmc {
@@ -50385,7 +50700,7 @@ impl PerCodec for TaListforQmc {
 	}
 }
 // TaBasedMdt
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct TaBasedMdt {
 	pub ta_listfor_mdt: TaListforMdt,
 }
@@ -50444,7 +50759,7 @@ impl PerCodec for TaBasedMdt {
 	}
 }
 // TaListforMdt
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct TaListforMdt(pub NonEmpty<Tac>);
 
 impl TaListforMdt {
@@ -50489,7 +50804,7 @@ impl PerCodec for TaListforMdt {
 	}
 }
 // ThresholdRsrp
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct ThresholdRsrp(pub u8);
 
 impl ThresholdRsrp {
@@ -50525,7 +50840,7 @@ impl PerCodec for ThresholdRsrp {
 	}
 }
 // ThresholdRsrq
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct ThresholdRsrq(pub u8);
 
 impl ThresholdRsrq {
@@ -50561,7 +50876,7 @@ impl PerCodec for ThresholdRsrq {
 	}
 }
 // ThresholdSiNr
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct ThresholdSiNr(pub u8);
 
 impl ThresholdSiNr {
@@ -50597,9 +50912,10 @@ impl PerCodec for ThresholdSiNr {
 	}
 }
 // TimeToTrigger
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum TimeToTrigger {
+	#[default]
 	Ms0,
 	Ms40,
 	Ms64,
@@ -50653,7 +50969,7 @@ impl PerCodec for TimeToTrigger {
 	}
 }
 // TwapId
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct TwapId(pub Vec<u8>);
 
 impl TwapId {
@@ -50687,8 +51003,9 @@ impl PerCodec for TwapId {
 	}
 }
 // TwifId
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum TwifId {
+	#[default]
 	TwifId(BitString),
 }
 
@@ -50750,7 +51067,7 @@ impl PerCodec for TwifId {
 	}
 }
 // TscAssistanceInformation
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct TscAssistanceInformation {
 	pub periodicity: Periodicity,
 	pub burst_arrival_time: Option<BurstArrivalTime>,
@@ -50841,7 +51158,7 @@ impl PerCodec for TscAssistanceInformation {
 	}
 }
 // TscTrafficCharacteristics
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct TscTrafficCharacteristics {
 	pub tsc_assistance_information_dl: Option<TscAssistanceInformation>,
 	pub tsc_assistance_information_ul: Option<TscAssistanceInformation>,
@@ -50920,7 +51237,7 @@ impl PerCodec for TscTrafficCharacteristics {
 	}
 }
 // UeAggregateMaximumBitRate
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UeAggregateMaximumBitRate {
 	pub ue_aggregate_maximum_bit_rate_dl: BitRate,
 	pub ue_aggregate_maximum_bit_rate_ul: BitRate,
@@ -50985,7 +51302,7 @@ impl PerCodec for UeAggregateMaximumBitRate {
 	}
 }
 // UeAppLayerMeasInfoList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UeAppLayerMeasInfoList(pub NonEmpty<UeAppLayerMeasInfoItem>);
 
 impl UeAppLayerMeasInfoList {
@@ -51030,7 +51347,7 @@ impl PerCodec for UeAppLayerMeasInfoList {
 	}
 }
 // UeAppLayerMeasInfoItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UeAppLayerMeasInfoItem {
 	pub ue_app_layer_meas_config_info: UeAppLayerMeasConfigInfo,
 }
@@ -51091,7 +51408,7 @@ impl PerCodec for UeAppLayerMeasInfoItem {
 	}
 }
 // UeAppLayerMeasConfigInfo
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UeAppLayerMeasConfigInfo {
 	pub qo_e_reference: QoEReference,
 	pub service_type: ServiceType,
@@ -51242,7 +51559,7 @@ impl PerCodec for UeAppLayerMeasConfigInfo {
 	}
 }
 // UeAssociatedLogicalNgConnectionList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UeAssociatedLogicalNgConnectionList(pub NonEmpty<UeAssociatedLogicalNgConnectionItem>);
 
 impl UeAssociatedLogicalNgConnectionList {
@@ -51287,7 +51604,7 @@ impl PerCodec for UeAssociatedLogicalNgConnectionList {
 	}
 }
 // UeAssociatedLogicalNgConnectionItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UeAssociatedLogicalNgConnectionItem {
 	pub amf_ue_ngap_id: Option<AmfUeNgapId>,
 	pub ran_ue_ngap_id: Option<RanUeNgapId>,
@@ -51366,9 +51683,10 @@ impl PerCodec for UeAssociatedLogicalNgConnectionItem {
 	}
 }
 // UeCapabilityInfoRequest
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum UeCapabilityInfoRequest {
+	#[default]
 	Requested,
 }
 
@@ -51407,9 +51725,10 @@ impl PerCodec for UeCapabilityInfoRequest {
 	}
 }
 // UeContextRequest
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum UeContextRequest {
+	#[default]
 	Requested,
 }
 
@@ -51448,7 +51767,7 @@ impl PerCodec for UeContextRequest {
 	}
 }
 // UeContextResumeRequestTransfer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UeContextResumeRequestTransfer {
 	pub qos_flow_failed_to_resume_list: Option<QosFlowListWithCause>,
 }
@@ -51516,7 +51835,7 @@ impl PerCodec for UeContextResumeRequestTransfer {
 	}
 }
 // UeContextResumeResponseTransfer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UeContextResumeResponseTransfer {
 	pub qos_flow_failed_to_resume_list: Option<QosFlowListWithCause>,
 }
@@ -51584,7 +51903,7 @@ impl PerCodec for UeContextResumeResponseTransfer {
 	}
 }
 // UeContextSuspendRequestTransfer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UeContextSuspendRequestTransfer {
 	pub suspend_indicator: Option<SuspendIndicator>,
 }
@@ -51650,7 +51969,7 @@ impl PerCodec for UeContextSuspendRequestTransfer {
 	}
 }
 // UeDifferentiationInfo
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UeDifferentiationInfo {
 	pub periodic_communication_indicator: Option<PeriodicCommunicationIndicator>,
 	pub periodic_time: Option<u16>,
@@ -51773,7 +52092,7 @@ impl PerCodec for UeDifferentiationInfo {
 	}
 }
 // UeHistoryInformation
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UeHistoryInformation(pub NonEmpty<LastVisitedCellItem>);
 
 impl UeHistoryInformation {
@@ -51818,8 +52137,9 @@ impl PerCodec for UeHistoryInformation {
 	}
 }
 // UeHistoryInformationFromTheUe
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum UeHistoryInformationFromTheUe {
+	#[default]
 	Nr(NrMobilityHistoryReport),
 }
 
@@ -51876,8 +52196,9 @@ impl PerCodec for UeHistoryInformationFromTheUe {
 	}
 }
 // UeIdentityIndexValue
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum UeIdentityIndexValue {
+	#[default]
 	IndexLength10(BitString),
 }
 
@@ -51939,8 +52260,9 @@ impl PerCodec for UeIdentityIndexValue {
 	}
 }
 // UeNgapIDs
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum UeNgapIDs {
+	#[default]
 	UeNgapIdPair(UeNgapIdPair),
 	AmfUeNgapId(AmfUeNgapId),
 }
@@ -52003,7 +52325,7 @@ impl PerCodec for UeNgapIDs {
 	}
 }
 // UeNgapIdPair
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UeNgapIdPair {
 	pub amf_ue_ngap_id: AmfUeNgapId,
 	pub ran_ue_ngap_id: RanUeNgapId,
@@ -52068,8 +52390,9 @@ impl PerCodec for UeNgapIdPair {
 	}
 }
 // UePagingIdentity
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum UePagingIdentity {
+	#[default]
 	FiveGSTmsi(FiveGSTmsi),
 }
 
@@ -52126,9 +52449,10 @@ impl PerCodec for UePagingIdentity {
 	}
 }
 // UePresence
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum UePresence {
+	#[default]
 	In,
 	Out,
 	Unknown,
@@ -52169,7 +52493,7 @@ impl PerCodec for UePresence {
 	}
 }
 // UePresenceInAreaOfInterestList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UePresenceInAreaOfInterestList(pub NonEmpty<UePresenceInAreaOfInterestItem>);
 
 impl UePresenceInAreaOfInterestList {
@@ -52214,7 +52538,7 @@ impl PerCodec for UePresenceInAreaOfInterestList {
 	}
 }
 // UePresenceInAreaOfInterestItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UePresenceInAreaOfInterestItem {
 	pub location_reporting_reference_id: LocationReportingReferenceId,
 	pub ue_presence: UePresence,
@@ -52279,7 +52603,7 @@ impl PerCodec for UePresenceInAreaOfInterestItem {
 	}
 }
 // UeRadioCapability
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UeRadioCapability(pub Vec<u8>);
 
 impl UeRadioCapability {
@@ -52313,7 +52637,7 @@ impl PerCodec for UeRadioCapability {
 	}
 }
 // UeRadioCapabilityForPaging
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UeRadioCapabilityForPaging {
 	pub ue_radio_capability_for_paging_of_nr: Option<UeRadioCapabilityForPagingOfNr>,
 	pub ue_radio_capability_for_paging_of_eutra: Option<UeRadioCapabilityForPagingOfEutra>,
@@ -52416,7 +52740,7 @@ impl PerCodec for UeRadioCapabilityForPaging {
 	}
 }
 // UeRadioCapabilityForPagingOfNbIot
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UeRadioCapabilityForPagingOfNbIot(pub Vec<u8>);
 
 impl UeRadioCapabilityForPagingOfNbIot {
@@ -52450,7 +52774,7 @@ impl PerCodec for UeRadioCapabilityForPagingOfNbIot {
 	}
 }
 // UeRadioCapabilityForPagingOfNr
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UeRadioCapabilityForPagingOfNr(pub Vec<u8>);
 
 impl UeRadioCapabilityForPagingOfNr {
@@ -52484,7 +52808,7 @@ impl PerCodec for UeRadioCapabilityForPagingOfNr {
 	}
 }
 // UeRadioCapabilityForPagingOfEutra
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UeRadioCapabilityForPagingOfEutra(pub Vec<u8>);
 
 impl UeRadioCapabilityForPagingOfEutra {
@@ -52518,7 +52842,7 @@ impl PerCodec for UeRadioCapabilityForPagingOfEutra {
 	}
 }
 // UeRadioCapabilityId
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UeRadioCapabilityId(pub Vec<u8>);
 
 impl UeRadioCapabilityId {
@@ -52552,9 +52876,10 @@ impl PerCodec for UeRadioCapabilityId {
 	}
 }
 // UeRetentionInformation
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum UeRetentionInformation {
+	#[default]
 	UesRetained,
 }
 
@@ -52593,8 +52918,9 @@ impl PerCodec for UeRetentionInformation {
 	}
 }
 // UeRlfReportContainer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum UeRlfReportContainer {
+	#[default]
 	Nr(NrUeRlfReportContainer),
 	Lte(LteUeRlfReportContainer),
 }
@@ -52657,7 +52983,7 @@ impl PerCodec for UeRlfReportContainer {
 	}
 }
 // UeSecurityCapabilities
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UeSecurityCapabilities {
 	pub nr_encryption_algorithms: NrEncryptionAlgorithms,
 	pub nr_integrity_protection_algorithms: NrIntegrityProtectionAlgorithms,
@@ -52731,7 +53057,7 @@ impl PerCodec for UeSecurityCapabilities {
 	}
 }
 // UeSliceMaximumBitRateList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UeSliceMaximumBitRateList(pub NonEmpty<UeSliceMaximumBitRateItem>);
 
 impl UeSliceMaximumBitRateList {
@@ -52776,7 +53102,7 @@ impl PerCodec for UeSliceMaximumBitRateList {
 	}
 }
 // UeSliceMaximumBitRateItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UeSliceMaximumBitRateItem {
 	pub snssai: Snssai,
 	pub ue_slice_maximum_bit_rate_dl: BitRate,
@@ -52845,9 +53171,10 @@ impl PerCodec for UeSliceMaximumBitRateItem {
 	}
 }
 // UeUpCIotSupport
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum UeUpCIotSupport {
+	#[default]
 	Supported,
 }
 
@@ -52886,7 +53213,7 @@ impl PerCodec for UeUpCIotSupport {
 	}
 }
 // UlCpSecurityInformation
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UlCpSecurityInformation {
 	pub ul_nas_mac: UlNasMac,
 	pub ul_nas_count: UlNasCount,
@@ -52951,7 +53278,7 @@ impl PerCodec for UlCpSecurityInformation {
 	}
 }
 // UlNasMac
-#[derive(Clone, Debug)]
+#[derive(Clone, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct UlNasMac(pub BitString);
 
 impl UlNasMac {
@@ -52990,7 +53317,7 @@ impl PerCodec for UlNasMac {
 	}
 }
 // UlNasCount
-#[derive(Clone, Debug)]
+#[derive(Clone, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct UlNasCount(pub BitString);
 
 impl UlNasCount {
@@ -53029,7 +53356,7 @@ impl PerCodec for UlNasCount {
 	}
 }
 // UlNguUpTnlModifyList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UlNguUpTnlModifyList(pub NonEmpty<UlNguUpTnlModifyItem>);
 
 impl UlNguUpTnlModifyList {
@@ -53074,7 +53401,7 @@ impl PerCodec for UlNguUpTnlModifyList {
 	}
 }
 // UlNguUpTnlModifyItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UlNguUpTnlModifyItem {
 	pub ul_ngu_up_tnl_information: UpTransportLayerInformation,
 	pub dl_ngu_up_tnl_information: UpTransportLayerInformation,
@@ -53178,7 +53505,7 @@ impl PerCodec for UlNguUpTnlModifyItem {
 	}
 }
 // UnavailableGuamiList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UnavailableGuamiList(pub NonEmpty<UnavailableGuamiItem>);
 
 impl UnavailableGuamiList {
@@ -53223,7 +53550,7 @@ impl PerCodec for UnavailableGuamiList {
 	}
 }
 // UnavailableGuamiItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UnavailableGuamiItem {
 	pub guami: Guami,
 	pub timer_approach_for_guami_removal: Option<TimerApproachForGuamiRemoval>,
@@ -53306,9 +53633,10 @@ impl PerCodec for UnavailableGuamiItem {
 	}
 }
 // UlForwarding
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum UlForwarding {
+	#[default]
 	UlForwardingProposed,
 }
 
@@ -53347,7 +53675,7 @@ impl PerCodec for UlForwarding {
 	}
 }
 // UpdateFeedback
-#[derive(Clone, Debug)]
+#[derive(Clone, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct UpdateFeedback(pub BitString);
 
 impl UpdateFeedback {
@@ -53386,8 +53714,9 @@ impl PerCodec for UpdateFeedback {
 	}
 }
 // UpTransportLayerInformation
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum UpTransportLayerInformation {
+	#[default]
 	GtpTunnel(GtpTunnel),
 }
 
@@ -53444,7 +53773,7 @@ impl PerCodec for UpTransportLayerInformation {
 	}
 }
 // UpTransportLayerInformationList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UpTransportLayerInformationList(pub NonEmpty<UpTransportLayerInformationItem>);
 
 impl UpTransportLayerInformationList {
@@ -53489,7 +53818,7 @@ impl PerCodec for UpTransportLayerInformationList {
 	}
 }
 // UpTransportLayerInformationItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UpTransportLayerInformationItem {
 	pub ngu_up_tnl_information: UpTransportLayerInformation,
 	pub common_network_instance: Option<CommonNetworkInstance>,
@@ -53569,7 +53898,7 @@ impl PerCodec for UpTransportLayerInformationItem {
 	}
 }
 // UpTransportLayerInformationPairList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UpTransportLayerInformationPairList(pub NonEmpty<UpTransportLayerInformationPairItem>);
 
 impl UpTransportLayerInformationPairList {
@@ -53614,7 +53943,7 @@ impl PerCodec for UpTransportLayerInformationPairList {
 	}
 }
 // UpTransportLayerInformationPairItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UpTransportLayerInformationPairItem {
 	pub ul_ngu_up_tnl_information: UpTransportLayerInformation,
 	pub dl_ngu_up_tnl_information: UpTransportLayerInformation,
@@ -53679,7 +54008,7 @@ impl PerCodec for UpTransportLayerInformationPairItem {
 	}
 }
 // UriAddress
-#[derive(Clone, Debug)]
+#[derive(Clone, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct UriAddress(pub String);
 
 impl UriAddress {
@@ -53715,8 +54044,9 @@ impl PerCodec for UriAddress {
 	}
 }
 // UserLocationInformation
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum UserLocationInformation {
+	#[default]
 	UserLocationInformationEutra(UserLocationInformationEutra),
 	UserLocationInformationNr(UserLocationInformationNr),
 	UserLocationInformationN3Iwf(UserLocationInformationN3Iwf),
@@ -53830,7 +54160,7 @@ impl PerCodec for UserLocationInformation {
 	}
 }
 // UserLocationInformationEutra
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UserLocationInformationEutra {
 	pub eutra_cgi: EutraCgi,
 	pub tai: Tai,
@@ -53925,7 +54255,7 @@ impl PerCodec for UserLocationInformationEutra {
 	}
 }
 // UserLocationInformationN3Iwf
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UserLocationInformationN3Iwf {
 	pub ip_address: TransportLayerAddress,
 	pub port_number: PortNumber,
@@ -54009,7 +54339,7 @@ impl PerCodec for UserLocationInformationN3Iwf {
 	}
 }
 // UserLocationInformationTngf
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UserLocationInformationTngf {
 	pub tnap_id: TnapId,
 	pub ip_address: TransportLayerAddress,
@@ -54104,7 +54434,7 @@ impl PerCodec for UserLocationInformationTngf {
 	}
 }
 // UserLocationInformationTwif
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UserLocationInformationTwif {
 	pub twap_id: TwapId,
 	pub ip_address: TransportLayerAddress,
@@ -54199,8 +54529,9 @@ impl PerCodec for UserLocationInformationTwif {
 	}
 }
 // UserLocationInformationWAgf
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum UserLocationInformationWAgf {
+	#[default]
 	GlobalLineId(GlobalLineId),
 	HfcNodeId(HfcNodeId),
 	GlobalCableId(GlobalCableId),
@@ -54296,7 +54627,7 @@ impl PerCodec for UserLocationInformationWAgf {
 	}
 }
 // UserLocationInformationNr
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UserLocationInformationNr {
 	pub nr_cgi: NrCgi,
 	pub tai: Tai,
@@ -54419,7 +54750,7 @@ impl PerCodec for UserLocationInformationNr {
 	}
 }
 // UserPlaneSecurityInformation
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct UserPlaneSecurityInformation {
 	pub security_result: SecurityResult,
 	pub security_indication: SecurityIndication,
@@ -54484,7 +54815,7 @@ impl PerCodec for UserPlaneSecurityInformation {
 	}
 }
 // VolumeTimedReportList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct VolumeTimedReportList(pub NonEmpty<VolumeTimedReportItem>);
 
 impl VolumeTimedReportList {
@@ -54529,7 +54860,7 @@ impl PerCodec for VolumeTimedReportList {
 	}
 }
 // VolumeTimedReportItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct VolumeTimedReportItem {
 	pub start_time_stamp: [u8; 4],
 	pub end_time_stamp: [u8; 4],
@@ -54634,8 +54965,9 @@ impl PerCodec for VolumeTimedReportItem {
 	}
 }
 // WAgfId
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum WAgfId {
+	#[default]
 	WAgfId(BitString),
 }
 
@@ -54697,7 +55029,7 @@ impl PerCodec for WAgfId {
 	}
 }
 // WarningAreaCoordinates
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct WarningAreaCoordinates(pub Vec<u8>);
 
 impl WarningAreaCoordinates {
@@ -54736,8 +55068,9 @@ impl PerCodec for WarningAreaCoordinates {
 	}
 }
 // WarningAreaList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum WarningAreaList {
+	#[default]
 	EutraCgiListForWarning(EutraCgiListForWarning),
 	NrCgiListForWarning(NrCgiListForWarning),
 	TaiListForWarning(TaiListForWarning),
@@ -54818,7 +55151,7 @@ impl PerCodec for WarningAreaList {
 	}
 }
 // WarningMessageContents
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct WarningMessageContents(pub Vec<u8>);
 
 impl WarningMessageContents {
@@ -54859,7 +55192,15 @@ impl PerCodec for WarningMessageContents {
 // WarningSecurityInfo
 #[derive(Clone, Debug)]
 pub struct WarningSecurityInfo(pub [u8; 50]);
-
+impl Default for WarningSecurityInfo {
+	fn default() -> WarningSecurityInfo {
+		let init = std::mem::MaybeUninit::<[u8; 50]>::zeroed();
+		// SAFETY: No pointers present for the assume init here
+		// TODO: Evaluate the performance issues: "https://users.rust-lang.org/t/unnecessary-performance-penalty-for-mem-maybeuninit/84063"
+		let default_value = unsafe { init.assume_init() };
+		WarningSecurityInfo(default_value)
+	}
+}
 impl WarningSecurityInfo {
 	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
 		Ok(Self(
@@ -54897,7 +55238,15 @@ impl PerCodec for WarningSecurityInfo {
 // WarningType
 #[derive(Clone, Debug)]
 pub struct WarningType(pub [u8; 2]);
-
+impl Default for WarningType {
+	fn default() -> WarningType {
+		let init = std::mem::MaybeUninit::<[u8; 2]>::zeroed();
+		// SAFETY: No pointers present for the assume init here
+		// TODO: Evaluate the performance issues: "https://users.rust-lang.org/t/unnecessary-performance-penalty-for-mem-maybeuninit/84063"
+		let default_value = unsafe { init.assume_init() };
+		WarningType(default_value)
+	}
+}
 impl WarningType {
 	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
 		Ok(Self(
@@ -54933,7 +55282,7 @@ impl PerCodec for WarningType {
 	}
 }
 // WlanMeasurementConfiguration
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct WlanMeasurementConfiguration {
 	pub wlan_meas_config: WlanMeasConfig,
 	pub wlan_meas_config_name_list: Option<WlanMeasConfigNameList>,
@@ -55027,7 +55376,7 @@ impl PerCodec for WlanMeasurementConfiguration {
 	}
 }
 // WlanMeasConfigNameList
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct WlanMeasConfigNameList(pub NonEmpty<WlanMeasConfigNameItem>);
 
 impl WlanMeasConfigNameList {
@@ -55072,7 +55421,7 @@ impl PerCodec for WlanMeasConfigNameList {
 	}
 }
 // WlanMeasConfigNameItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct WlanMeasConfigNameItem {
 	pub wlan_name: WlanName,
 }
@@ -55131,9 +55480,10 @@ impl PerCodec for WlanMeasConfigNameItem {
 	}
 }
 // WlanMeasConfig
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum WlanMeasConfig {
+	#[default]
 	Setup,
 }
 
@@ -55172,7 +55522,7 @@ impl PerCodec for WlanMeasConfig {
 	}
 }
 // WlanName
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct WlanName(pub Vec<u8>);
 
 impl WlanName {
@@ -55211,7 +55561,7 @@ impl PerCodec for WlanName {
 	}
 }
 // WusAssistanceInformation
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct WusAssistanceInformation {
 	pub paging_probability_information: PagingProbabilityInformation,
 }
@@ -55272,7 +55622,7 @@ impl PerCodec for WusAssistanceInformation {
 	}
 }
 // XnExtTlAs
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct XnExtTlAs(pub NonEmpty<XnExtTlaItem>);
 
 impl XnExtTlAs {
@@ -55317,7 +55667,7 @@ impl PerCodec for XnExtTlAs {
 	}
 }
 // XnExtTlaItem
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct XnExtTlaItem {
 	pub i_psec_tla: Option<TransportLayerAddress>,
 	pub gtp_tl_as: Option<XnGtpTlAs>,
@@ -55415,7 +55765,7 @@ impl PerCodec for XnExtTlaItem {
 	}
 }
 // XnGtpTlAs
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct XnGtpTlAs(pub NonEmpty<TransportLayerAddress>);
 
 impl XnGtpTlAs {
@@ -55460,7 +55810,7 @@ impl PerCodec for XnGtpTlAs {
 	}
 }
 // XnTlAs
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct XnTlAs(pub NonEmpty<TransportLayerAddress>);
 
 impl XnTlAs {
@@ -55505,7 +55855,7 @@ impl PerCodec for XnTlAs {
 	}
 }
 // XnTnlConfigurationInfo
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct XnTnlConfigurationInfo {
 	pub xn_transport_layer_addresses: XnTlAs,
 	pub xn_extended_transport_layer_addresses: Option<XnExtTlAs>,
@@ -55577,9 +55927,10 @@ impl PerCodec for XnTnlConfigurationInfo {
 	}
 }
 // PniNpnRestricted
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum PniNpnRestricted {
+	#[default]
 	Restricted,
 	NotRestricted,
 }
@@ -55619,9 +55970,10 @@ impl PerCodec for PniNpnRestricted {
 	}
 }
 // QosFlowMappingIndication
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum QosFlowMappingIndication {
+	#[default]
 	Ul,
 	Dl,
 }
@@ -55661,9 +56013,10 @@ impl PerCodec for QosFlowMappingIndication {
 	}
 }
 // ApplicationLayerBufferLevelList
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum ApplicationLayerBufferLevelList {
+	#[default]
 	True,
 }
 
@@ -55702,9 +56055,10 @@ impl PerCodec for ApplicationLayerBufferLevelList {
 	}
 }
 // PlayoutDelayForMediaStartup
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum PlayoutDelayForMediaStartup {
+	#[default]
 	True,
 }
 
@@ -55743,9 +56097,10 @@ impl PerCodec for PlayoutDelayForMediaStartup {
 	}
 }
 // Rsrp
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum Rsrp {
+	#[default]
 	True,
 }
 
@@ -55784,9 +56139,10 @@ impl PerCodec for Rsrp {
 	}
 }
 // Rsrq
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum Rsrq {
+	#[default]
 	True,
 }
 
@@ -55825,9 +56181,10 @@ impl PerCodec for Rsrq {
 	}
 }
 // SiNr
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum SiNr {
+	#[default]
 	True,
 }
 
@@ -55866,9 +56223,10 @@ impl PerCodec for SiNr {
 	}
 }
 // BtRssi
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum BtRssi {
+	#[default]
 	True,
 }
 
@@ -55907,9 +56265,10 @@ impl PerCodec for BtRssi {
 	}
 }
 // CnType
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum CnType {
+	#[default]
 	EpcForbidden,
 	FiveGcForbidden,
 }
@@ -55949,9 +56308,10 @@ impl PerCodec for CnType {
 	}
 }
 // DapsIndicator
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum DapsIndicator {
+	#[default]
 	DapsHoRequired,
 }
 
@@ -55990,9 +56350,10 @@ impl PerCodec for DapsIndicator {
 	}
 }
 // Dapsresponseindicator
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum Dapsresponseindicator {
+	#[default]
 	DapsHoAccepted,
 	DapsHoNotAccepted,
 }
@@ -56032,9 +56393,10 @@ impl PerCodec for Dapsresponseindicator {
 	}
 }
 // OutOfCoverage
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum OutOfCoverage {
+	#[default]
 	True,
 }
 
@@ -56073,9 +56435,10 @@ impl PerCodec for OutOfCoverage {
 	}
 }
 // HandoverReportType
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum HandoverReportType {
+	#[default]
 	HoTooEarly,
 	HoToWrongCell,
 	IntersystemPingPong,
@@ -56116,9 +56479,10 @@ impl PerCodec for HandoverReportType {
 	}
 }
 // NotifyFlag
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum NotifyFlag {
+	#[default]
 	Activated,
 	Deactivated,
 }
@@ -56158,9 +56522,10 @@ impl PerCodec for NotifyFlag {
 	}
 }
 // EarlyIratho
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum EarlyIratho {
+	#[default]
 	True,
 	False,
 }
@@ -56200,9 +56565,10 @@ impl PerCodec for EarlyIratho {
 	}
 }
 // NgapProtocolIeSupportInfo
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum NgapProtocolIeSupportInfo {
+	#[default]
 	Supported,
 	NotSupported,
 }
@@ -56242,9 +56608,10 @@ impl PerCodec for NgapProtocolIeSupportInfo {
 	}
 }
 // NgapProtocolIePresenceInfo
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum NgapProtocolIePresenceInfo {
+	#[default]
 	Present,
 	NotPresent,
 }
@@ -56284,9 +56651,10 @@ impl PerCodec for NgapProtocolIePresenceInfo {
 	}
 }
 // RatType
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum RatType {
+	#[default]
 	Nr,
 	Eutra,
 }
@@ -56326,9 +56694,10 @@ impl PerCodec for RatType {
 	}
 }
 // RatType1
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum RatType1 {
+	#[default]
 	Nr,
 	Eutra,
 }
@@ -56368,9 +56737,10 @@ impl PerCodec for RatType1 {
 	}
 }
 // RimRsDetection
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum RimRsDetection {
+	#[default]
 	RsDetected,
 	RsDisappeared,
 }
@@ -56410,9 +56780,10 @@ impl PerCodec for RimRsDetection {
 	}
 }
 // UncompensatedBarometricConfig
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum UncompensatedBarometricConfig {
+	#[default]
 	True,
 }
 
@@ -56451,9 +56822,10 @@ impl PerCodec for UncompensatedBarometricConfig {
 	}
 }
 // UeSpeedConfig
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum UeSpeedConfig {
+	#[default]
 	True,
 }
 
@@ -56492,9 +56864,10 @@ impl PerCodec for UeSpeedConfig {
 	}
 }
 // UeOrientationConfig
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum UeOrientationConfig {
+	#[default]
 	True,
 }
 
@@ -56533,9 +56906,10 @@ impl PerCodec for UeOrientationConfig {
 	}
 }
 // TimeDistributionIndication
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum TimeDistributionIndication {
+	#[default]
 	Enabled,
 	Disabled,
 }
@@ -56575,9 +56949,10 @@ impl PerCodec for TimeDistributionIndication {
 	}
 }
 // QoEMeasurementStatus
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum QoEMeasurementStatus {
+	#[default]
 	Ongoing,
 }
 
@@ -56616,9 +56991,10 @@ impl PerCodec for QoEMeasurementStatus {
 	}
 }
 // PeriodicCommunicationIndicator
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum PeriodicCommunicationIndicator {
+	#[default]
 	Periodically,
 	Ondemand,
 }
@@ -56658,9 +57034,10 @@ impl PerCodec for PeriodicCommunicationIndicator {
 	}
 }
 // StationaryIndication
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum StationaryIndication {
+	#[default]
 	Stationary,
 	Mobile,
 }
@@ -56700,9 +57077,10 @@ impl PerCodec for StationaryIndication {
 	}
 }
 // TrafficProfile
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum TrafficProfile {
+	#[default]
 	SinglePacket,
 	DualPackets,
 	MultiplePackets,
@@ -56743,9 +57121,10 @@ impl PerCodec for TrafficProfile {
 	}
 }
 // BatteryIndication
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum BatteryIndication {
+	#[default]
 	BatteryPowered,
 	BatteryPoweredNotRechargeableOrReplaceable,
 	NotBatteryPowered,
@@ -56786,9 +57165,10 @@ impl PerCodec for BatteryIndication {
 	}
 }
 // WlanRssi
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum WlanRssi {
+	#[default]
 	True,
 }
 
@@ -56827,9 +57207,10 @@ impl PerCodec for WlanRssi {
 	}
 }
 // WlanRtt
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum WlanRtt {
+	#[default]
 	True,
 }
 

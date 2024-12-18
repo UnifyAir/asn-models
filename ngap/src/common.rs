@@ -3,9 +3,10 @@
 use asn1_per::{aper::*, *};
 
 // Criticality
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum Criticality {
+	#[default]
 	Reject,
 	Ignore,
 	Notify,
@@ -46,9 +47,10 @@ impl PerCodec for Criticality {
 	}
 }
 // Presence
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum Presence {
+	#[default]
 	Optional,
 	Conditional,
 	Mandatory,
@@ -89,8 +91,9 @@ impl PerCodec for Presence {
 	}
 }
 // PrivateIeId
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, smart_default::SmartDefault)]
 pub enum PrivateIeId {
+	#[default]
 	Local(u16),
 	Global(Vec<u8>),
 }
@@ -147,7 +150,7 @@ impl PerCodec for PrivateIeId {
 	}
 }
 // ProcedureCode
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct ProcedureCode(pub u8);
 
 impl ProcedureCode {
@@ -183,7 +186,7 @@ impl PerCodec for ProcedureCode {
 	}
 }
 // ProtocolExtensionId
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct ProtocolExtensionId(pub u16);
 
 impl ProtocolExtensionId {
@@ -219,7 +222,7 @@ impl PerCodec for ProtocolExtensionId {
 	}
 }
 // ProtocolIeId
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, Debug, smart_default::SmartDefault)]
 pub struct ProtocolIeId(pub u16);
 
 impl ProtocolIeId {
@@ -255,9 +258,10 @@ impl PerCodec for ProtocolIeId {
 	}
 }
 // TriggeringMessage
-#[derive(Clone, Debug, Copy, TryFromPrimitive)]
+#[derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
 #[repr(u8)]
 pub enum TriggeringMessage {
+	#[default]
 	InitiatingMessage,
 	SuccessfulOutcome,
 	UnsuccessfulOutcome,
