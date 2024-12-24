@@ -1,6 +1,4 @@
-use super::ies::*;
-use super::pdu::*;
-use super::top_pdu::*;
+use ngap::*;
 use asn1_per::*;
 use xxap::Snssai;
 
@@ -96,3 +94,5 @@ fn test_ran_ue_ngap_id() -> Result<(), PerCodecError> {
 
     Ok(())
 }
+
+

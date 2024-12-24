@@ -9,5 +9,3 @@ mod top_pdu;
 pub use top_pdu::*;
 mod conversion;
 
-#[cfg(test)]
-mod test;
