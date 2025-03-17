@@ -12664,6 +12664,7 @@ impl PerCodec for ExtendedPacketDelayBudget {
 		})
 	}
 }
+
 // ExtendedRanNodeName
 #[derive(Clone, Debug, smart_default::SmartDefault)]
 pub struct ExtendedRanNodeName {
@@ -14525,7 +14526,7 @@ impl PerCodec for GlobalEnbId {
 	}
 }
 // GlobalGnbId
-#[derive(Clone, Debug, smart_default::SmartDefault)]
+#[derive(Clone, Debug, smart_default::SmartDefault, Eq, PartialEq, Hash)]
 pub struct GlobalGnbId {
 	pub plmn_identity: PlmnIdentity,
 	pub gnb_id: GnbId,
@@ -15144,7 +15145,7 @@ impl PerCodec for GlobalWAgfId {
 	}
 }
 // GnbId
-#[derive(Clone, Debug, smart_default::SmartDefault)]
+#[derive(Clone, Debug, smart_default::SmartDefault, Eq, PartialEq, Hash)]
 pub enum GnbId {
 	#[default]
 	GnbId(BitString),
@@ -39067,7 +39068,7 @@ impl PerCodec for PeriodicRegistrationUpdateTimer {
 	}
 }
 // PlmnIdentity
-#[derive(Clone, Debug)]
+#[derive(Clone, Eq, PartialEq, Hash, Debug)]
 pub struct PlmnIdentity(pub [u8; 3]);
 impl Default for PlmnIdentity {
 	fn default() -> PlmnIdentity {

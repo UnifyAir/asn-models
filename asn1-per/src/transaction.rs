@@ -15,8 +15,12 @@ pub trait Procedure {
     type Request: Send + Sync + 'static + Debug;
     type Success;
     type Failure;
+    #[cfg(feature = "gnb")]
     fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError>;
+    #[cfg(feature = "gnb")]
     fn decode_response(bytes: &[u8]) -> Result<Self::Success, RequestError<Self::Failure>>;
+    #[cfg(feature = "amf")]
+    fn decode_request(bytes: &[u8]) -> Result<Self::Request, PerCodecError>;
     async fn call_provider<T: RequestProvider<Self>>(
         provider: &T,
         req: Self::Request,
@@ -28,7 +32,10 @@ pub trait Indication {
     const CODE: u8;
     type TopPdu: SerDes + Send + Sync + 'static;
     type Request: Send + Sync + 'static + Debug;
+    #[cfg(feature = "gnb")]
     fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError>;
+    #[cfg(feature = "amf")]
+    fn decode_request(bytes: &[u8]) -> Result<Self::Request, PerCodecError>;
     async fn call_provider<T: IndicationHandler<Self>>(
         provider: &T,
         req: Self::Request,

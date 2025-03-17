@@ -5,7 +5,7 @@ resolver = "2"
 [workspace.package]
 name = "asn-models"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 authors = ["UnifyAir Maintainers <maintainers@unifyair.com>"]
 repository = "https://bitbucket.org/blocknet/open-api"
 homepage = "https://unifyair.com/"

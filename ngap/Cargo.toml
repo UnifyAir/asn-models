@@ -1,20 +1,25 @@
 [package]
 name = "ngap"
-version = "0.1.0"
-edition = "2021"
+version.workspace = true
+edition.workspace = true
 
 [lib]
 doctest = false
 
 [dependencies]
-asn1-per = { path = "../asn1-per" }
+asn1-per = { path = "../asn1-per", default-features = false, optional = true }
+xxap = { path = "../xxap", default-features = false, optional = true }
 hex.workspace = true
-xxap = { path = "../xxap" }
 slog.workspace = true
 anyhow.workspace = true
 num_enum.workspace = true
 async-trait.workspace = true
 smart-default.workspace = true
 
-[tests]
-path = "tests/"
+# [tests]
+# path = "tests/"
+
+[features]
+default = ["gnb"]
+amf = ["asn1-per/amf", "xxap/amf"]
+gnb = ["asn1-per/gnb", "xxap/gnb"]

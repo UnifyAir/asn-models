@@ -568,6 +568,15 @@ class IeFieldsFrom(Interpreter):
         name = self.common(tree)
         self.optionals_presence_list += f"self.{name}.is_some(),"
 
+def additional_traits_from_config(name, config={}):
+    # Check if the struct name is in the config
+    additional_traits = ""
+    for op in config: 
+            op_name = op.get('operation', '')
+            traits = op.get('additional_traits', [])
+            if op_name == 'derive-macros' and len(traits) > 0 and name in op.get('asn1-fields', []):
+                additional_traits = traits
+    return additional_traits
 
 def is_non_i128_int_type(t):
     return t in ["i8", "u8", "i16", "u16", "i32", "u32", "i64", "u64"]
@@ -824,9 +833,10 @@ def added_variant(name):
 
 class RustInterpreter(Interpreter):
 
-    def __init__(self):
+    def __init__(self, config={}):
         self.outfile = ""
         self.top_level_enums = None
+        self.config = config
 
     def extended_items(self, tree):
         pass
@@ -882,10 +892,12 @@ impl Procedure for {p.name} {{
         }}
     }}
 
+    #[cfg(feature = "gnb")]
     fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {{
         {top_pdu}::InitiatingMessage(InitiatingMessage::{p.initiating}(r)).into_bytes()
     }}
 
+    #[cfg(feature = "gnb")]
     fn decode_response(bytes: &[u8]) -> Result<Self::Success, RequestError<Self::Failure>> {{
         let response_pdu = Self::TopPdu::from_bytes(bytes)?;
         match response_pdu {{
@@ -895,7 +907,26 @@ impl Procedure for {p.name} {{
         }}
     }}
 }}
+
+    #[cfg(feature = "amf")]
+    fn decode_request(bytes: &[u8]) -> Result<Self::Request, PerCodecError> {{
+        let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+        match response_pdu {{
+            {top_pdu}::InitiatingMessage(InitiatingMessage::{p.initiating}(x)) => Ok(x),
+            _ => Err(PerCodecError::new("Unexpected pdu contents")),
+        }}
+    }}
+
 """
+
+    #[cfg(feature = "gnb")]
+    # fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError>;
+    # #[cfg(feature = "gnb")]
+    # fn decode_response(bytes: &[u8]) -> Result<Self::Success, RequestError<Self::Failure>>;
+    # #[cfg(feature = "amf")]
+    # fn encode_response(r: Self::Request) -> Result<Vec<u8>, PerCodecError>;
+    # #[cfg(feature = "amf")]
+    # fn decode_request(bytes: &[u8]) -> Result<Self::Request, PerCodecError>;
 
     def output_indication(self, p):
         top_pdu = p.family[0] + p.family[1:4].lower() + "Pdu"
@@ -919,6 +950,15 @@ impl Indication for {p.name} {{
     fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {{
         {top_pdu}::InitiatingMessage(InitiatingMessage::{p.initiating}(r)).into_bytes()
     }}
+
+    #[cfg(feature = "amf")]
+    fn decode_request(bytes: &[u8]) -> Result<Self::Request, PerCodecError> {{
+        let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+        match response_pdu {{
+            {top_pdu}::InitiatingMessage(InitiatingMessage::{p.initiating}(x)) => Ok(x),
+            _ => Err(PerCodecError::new("Unexpected pdu contents")),
+        }}
+    }}
 }}
 """
 
@@ -928,10 +968,17 @@ impl Indication for {p.name} {{
         name = orig_name
         field_interpreter = EnumFields()
         field_interpreter.visit(tree.children[1])
-
+        additional_traits = (
+            ["Eq", "Hash", "Ord", "PartialEq", "PartialOrd"]
+            if any(is_additional_traits_type(field.strip()) for field in field_interpreter.enum_fields.split(","))
+            else []
+        )
+        additional_traits += additional_traits_from_config(name, self.config)
+        additional_traits = list(dict.fromkeys(additional_traits))
+        additional_traits = ", ".join(additional_traits) + ", " if len(additional_traits) > 0 else ""
         self.outfile += f"""
 // {orig_name}
-# [derive(Clone, Debug, Copy, TryFromPrimitive, smart_default::SmartDefault)]
+# [derive(Clone, Debug, Copy, TryFromPrimitive, {additional_traits}smart_default::SmartDefault)]
 # [repr(u8)]
 pub enum {name} {{
 #[default]
@@ -974,10 +1021,12 @@ impl {name} {{
             if not (is_ngap_pdu(orig_name))
             else ["", ""]
         )
-
+        additional_traits = additional_traits_from_config(name, self.config)
+        additional_traits = list(dict.fromkeys(additional_traits))
+        additional_traits = ", " + ", ".join(additional_traits) if len(additional_traits) > 0 else ""
         self.outfile += f"""
 // {orig_name}
-# [derive(Clone, Debug{default_trait})]
+# [derive(Clone, Debug{default_trait}{additional_traits})]
 pub enum {name} {{
 {default_key}
 {field_interpreter.choice_fields}\
@@ -1007,16 +1056,19 @@ impl {name} {{
 
     def primitive_def(self, tree):
         orig_name = tree.children[0]
-        print(orig_name)
+        print("primitive-def", orig_name)
         name = orig_name
         inner = type_and_constraints(tree.children[1])
         assert inner.rust_type != "OctetString"
         clone_copy = "Copy, " if is_copy_type(inner.rust_type) else ""
         additional_traits = (
-            "Eq, Hash, Ord, PartialEq, PartialOrd, "
+            ["Eq", "Hash", "Ord", "PartialEq", "PartialOrd"]
             if is_additional_traits_type(inner.rust_type)
-            else ""
+            else []
         )
+        additional_traits += additional_traits_from_config(name, self.config)
+        additional_traits = list(dict.fromkeys(additional_traits))
+        additional_traits = ", ".join(additional_traits) + ", " if len(additional_traits) > 0 else ""
         [default_trait, default_impl] = (
             [", smart_default::SmartDefault", ""]
             if not (is_static_array(inner.rust_type))
@@ -1055,7 +1107,7 @@ impl {name} {{
 
     def protocol_ie_container2(self, tree, is_sequence):
         orig_name = tree.children[0]
-        print(orig_name)
+        print("protocol-ie-container", orig_name)
         name = orig_name
 
         fields = IeFields()
@@ -1138,10 +1190,9 @@ impl {orig_name} {{
         if tree.children[1].data == "ie_container_sequence":
             self.pdu(tree)
             return
-
         orig_name = tree.children[0]
-        print(orig_name)
         name = orig_name
+        print("ContainerSequence", orig_name)
 
         # fields = [
         #     child for child in tree.children[1].children if child.data in ["field", "optional_field", "extension_container"]]
@@ -1165,9 +1216,13 @@ impl {orig_name} {{
         ):
             optionals_var = "_optionals"
 
+        # Check if this struct should have additional traits from config
+        additional_traits = additional_traits_from_config(name, self.config)
+        additional_traits = list(dict.fromkeys(additional_traits))
+        additional_traits = ", " + ", ".join(additional_traits) if len(additional_traits) > 0 else ""
         self.outfile += f"""
 // {orig_name}
-# [derive(Clone, Debug, smart_default::SmartDefault)]
+# [derive(Clone, Debug, smart_default::SmartDefault{additional_traits})]
 pub struct {name} {{
 {field_interpreter.struct_fields}\
 }}
@@ -1230,11 +1285,11 @@ def decode_ies_string(fields_from):
         }}"""
 
 
-def generate(tree, constants=dict(), verbose=False, strip_xxap=False):
+def generate(tree, constants=dict(), verbose=False, strip_xxap=False, config={}):
     tree = transform(tree, constants, strip_xxap)
     if verbose:
         print(tree.pretty())
-    visited = RustInterpreter()
+    visited = RustInterpreter(config=config)
     print("---- Generating ----")
     visited.visit(tree)
     visited.generate_top_level_enums()
