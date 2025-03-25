@@ -4,6 +4,7 @@ config = {
             "operation": "derive-macros",
             "additional_traits": ["Eq" , "PartialEq", "Hash"],
             "asn1-fields": [
+                "GlobalRanNodeId",
                 "GlobalNgEnbId",
                 "GlobalN3IwfId",
                 "GlobalTngfId",

@@ -575,7 +575,7 @@ def additional_traits_from_config(name, config={}):
             op_name = op.get('operation', '')
             traits = op.get('additional_traits', [])
             if op_name == 'derive-macros' and len(traits) > 0 and name in op.get('asn1-fields', []):
-                additional_traits = traits
+               additional_traits = traits
     return additional_traits
 
 def is_non_i128_int_type(t):
@@ -918,15 +918,6 @@ impl Procedure for {p.name} {{
     }}
 
 """
-
-    #[cfg(feature = "gnb")]
-    # fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError>;
-    # #[cfg(feature = "gnb")]
-    # fn decode_response(bytes: &[u8]) -> Result<Self::Success, RequestError<Self::Failure>>;
-    # #[cfg(feature = "amf")]
-    # fn encode_response(r: Self::Request) -> Result<Vec<u8>, PerCodecError>;
-    # #[cfg(feature = "amf")]
-    # fn decode_request(bytes: &[u8]) -> Result<Self::Request, PerCodecError>;
 
     def output_indication(self, p):
         top_pdu = p.family[0] + p.family[1:4].lower() + "Pdu"
