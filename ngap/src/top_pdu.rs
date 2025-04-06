@@ -16,10 +16,12 @@ pub enum NgapPdu {
 }
 
 impl NgapPdu {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let (idx, extended) = decode::decode_choice_idx(data, 0, 2, true)?;
 		if extended {
-			return Err(PerCodecError::new("CHOICE additions not implemented"));
+			return Err(ThreeGppAsn1PerError::new(
+				"CHOICE additions not implemented",
+			));
 		}
 		match idx {
 			0 => Ok(Self::InitiatingMessage(InitiatingMessage::decode(data)?)),
@@ -27,25 +29,25 @@ impl NgapPdu {
 			2 => Ok(Self::UnsuccessfulOutcome(UnsuccessfulOutcome::decode(
 				data,
 			)?)),
-			_ => Err(PerCodecError::new("Unknown choice idx")),
+			_ => Err(ThreeGppAsn1PerError::new("Unknown choice idx")),
 		}
 	}
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		match self {
 			Self::InitiatingMessage(x) => {
 				encode::encode_choice_idx(data, 0, 2, true, 0, false)?;
-				x.encode(data)
+				x.encode(data).map_err(ThreeGppAsn1PerError::from)
 			}
 			Self::SuccessfulOutcome(x) => {
 				encode::encode_choice_idx(data, 0, 2, true, 1, false)?;
-				x.encode(data)
+				x.encode(data).map_err(ThreeGppAsn1PerError::from)
 			}
 			Self::UnsuccessfulOutcome(x) => {
 				encode::encode_choice_idx(data, 0, 2, true, 2, false)?;
-				x.encode(data)
+				x.encode(data).map_err(ThreeGppAsn1PerError::from)
 			}
 		}
 	}
@@ -53,22 +55,27 @@ impl NgapPdu {
 
 impl PerCodec for NgapPdu {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		NgapPdu::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("NgapPdu");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		NgapPdu::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("NgapPdu");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("NgapPdu");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("NgapPdu");
+				e
+			})
 	}
 }
+pub trait ToNgapPdu {
+	fn to_pdu(self) -> NgapPdu;
+}
+
 pub struct AmfConfigurationUpdateProcedure {}
 
 #[async_trait]
@@ -93,10 +100,12 @@ impl Procedure for AmfConfigurationUpdateProcedure {
 		}
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	#[cfg(feature = "gnb")]
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::AmfConfigurationUpdate(r)).into_bytes()
 	}
 
+	#[cfg(feature = "gnb")]
 	fn decode_response(bytes: &[u8]) -> Result<Self::Success, RequestError<Self::Failure>> {
 		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
 		match response_pdu {
@@ -108,6 +117,36 @@ impl Procedure for AmfConfigurationUpdateProcedure {
 			}
 			_ => Err(RequestError::Other("Unexpected pdu contents".to_string())),
 		}
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::AmfConfigurationUpdate(x)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for AmfConfigurationUpdate {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::AmfConfigurationUpdate(self))
+	}
+}
+
+impl ToNgapPdu for AmfConfigurationUpdateAcknowledge {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::SuccessfulOutcome(SuccessfulOutcome::AmfConfigurationUpdateAcknowledge(self))
+	}
+}
+
+impl ToNgapPdu for AmfConfigurationUpdateFailure {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::UnsuccessfulOutcome(UnsuccessfulOutcome::AmfConfigurationUpdateFailure(self))
 	}
 }
 
@@ -126,8 +165,23 @@ impl Indication for AmfcpRelocationIndicationProcedure {
 		<T as IndicationHandler<AmfcpRelocationIndicationProcedure>>::handle(provider, req).await;
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::AmfcpRelocationIndication(r)).into_bytes()
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::AmfcpRelocationIndication(x)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for AmfcpRelocationIndication {
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::AmfcpRelocationIndication(self))
 	}
 }
 
@@ -146,8 +200,23 @@ impl Indication for AmfStatusIndicationProcedure {
 		<T as IndicationHandler<AmfStatusIndicationProcedure>>::handle(provider, req).await;
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::AmfStatusIndication(r)).into_bytes()
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::AmfStatusIndication(x)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for AmfStatusIndication {
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::AmfStatusIndication(self))
 	}
 }
 
@@ -178,11 +247,13 @@ impl Procedure for BroadcastSessionModificationProcedure {
 		}
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	#[cfg(feature = "gnb")]
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::BroadcastSessionModificationRequest(r))
 			.into_bytes()
 	}
 
+	#[cfg(feature = "gnb")]
 	fn decode_response(bytes: &[u8]) -> Result<Self::Success, RequestError<Self::Failure>> {
 		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
 		match response_pdu {
@@ -194,6 +265,42 @@ impl Procedure for BroadcastSessionModificationProcedure {
 			) => Err(RequestError::UnsuccessfulOutcome(x)),
 			_ => Err(RequestError::Other("Unexpected pdu contents".to_string())),
 		}
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::BroadcastSessionModificationRequest(
+				x,
+			)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for BroadcastSessionModificationRequest {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::BroadcastSessionModificationRequest(self))
+	}
+}
+
+impl ToNgapPdu for BroadcastSessionModificationResponse {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::SuccessfulOutcome(SuccessfulOutcome::BroadcastSessionModificationResponse(
+			self,
+		))
+	}
+}
+
+impl ToNgapPdu for BroadcastSessionModificationFailure {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::UnsuccessfulOutcome(UnsuccessfulOutcome::BroadcastSessionModificationFailure(
+			self,
+		))
 	}
 }
 
@@ -221,11 +328,13 @@ impl Procedure for BroadcastSessionReleaseProcedure {
 		}
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	#[cfg(feature = "gnb")]
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::BroadcastSessionReleaseRequest(r))
 			.into_bytes()
 	}
 
+	#[cfg(feature = "gnb")]
 	fn decode_response(bytes: &[u8]) -> Result<Self::Success, RequestError<Self::Failure>> {
 		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
 		match response_pdu {
@@ -235,6 +344,31 @@ impl Procedure for BroadcastSessionReleaseProcedure {
 
 			_ => Err(RequestError::Other("Unexpected pdu contents".to_string())),
 		}
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::BroadcastSessionReleaseRequest(x)) => {
+				Ok(x)
+			}
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for BroadcastSessionReleaseRequest {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::BroadcastSessionReleaseRequest(self))
+	}
+}
+
+impl ToNgapPdu for BroadcastSessionReleaseResponse {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::SuccessfulOutcome(SuccessfulOutcome::BroadcastSessionReleaseResponse(self))
 	}
 }
 
@@ -254,9 +388,26 @@ impl Indication for BroadcastSessionReleaseRequiredProcedure {
 			.await;
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::BroadcastSessionReleaseRequired(r))
 			.into_bytes()
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::BroadcastSessionReleaseRequired(x)) => {
+				Ok(x)
+			}
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for BroadcastSessionReleaseRequired {
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::BroadcastSessionReleaseRequired(self))
 	}
 }
 
@@ -283,10 +434,12 @@ impl Procedure for BroadcastSessionSetupProcedure {
 		}
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	#[cfg(feature = "gnb")]
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::BroadcastSessionSetupRequest(r)).into_bytes()
 	}
 
+	#[cfg(feature = "gnb")]
 	fn decode_response(bytes: &[u8]) -> Result<Self::Success, RequestError<Self::Failure>> {
 		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
 		match response_pdu {
@@ -298,6 +451,36 @@ impl Procedure for BroadcastSessionSetupProcedure {
 			}
 			_ => Err(RequestError::Other("Unexpected pdu contents".to_string())),
 		}
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::BroadcastSessionSetupRequest(x)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for BroadcastSessionSetupRequest {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::BroadcastSessionSetupRequest(self))
+	}
+}
+
+impl ToNgapPdu for BroadcastSessionSetupResponse {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::SuccessfulOutcome(SuccessfulOutcome::BroadcastSessionSetupResponse(self))
+	}
+}
+
+impl ToNgapPdu for BroadcastSessionSetupFailure {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::UnsuccessfulOutcome(UnsuccessfulOutcome::BroadcastSessionSetupFailure(self))
 	}
 }
 
@@ -316,8 +499,23 @@ impl Indication for CellTrafficTraceProcedure {
 		<T as IndicationHandler<CellTrafficTraceProcedure>>::handle(provider, req).await;
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::CellTrafficTrace(r)).into_bytes()
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::CellTrafficTrace(x)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for CellTrafficTrace {
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::CellTrafficTrace(self))
 	}
 }
 
@@ -337,9 +535,26 @@ impl Indication for ConnectionEstablishmentIndicationProcedure {
 			.await;
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::ConnectionEstablishmentIndication(r))
 			.into_bytes()
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::ConnectionEstablishmentIndication(x)) => {
+				Ok(x)
+			}
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for ConnectionEstablishmentIndication {
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::ConnectionEstablishmentIndication(self))
 	}
 }
 
@@ -358,8 +573,23 @@ impl Indication for DeactivateTraceProcedure {
 		<T as IndicationHandler<DeactivateTraceProcedure>>::handle(provider, req).await;
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::DeactivateTrace(r)).into_bytes()
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::DeactivateTrace(x)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for DeactivateTrace {
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::DeactivateTrace(self))
 	}
 }
 
@@ -386,10 +616,12 @@ impl Procedure for DistributionSetupProcedure {
 		}
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	#[cfg(feature = "gnb")]
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::DistributionSetupRequest(r)).into_bytes()
 	}
 
+	#[cfg(feature = "gnb")]
 	fn decode_response(bytes: &[u8]) -> Result<Self::Success, RequestError<Self::Failure>> {
 		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
 		match response_pdu {
@@ -399,6 +631,36 @@ impl Procedure for DistributionSetupProcedure {
 			}
 			_ => Err(RequestError::Other("Unexpected pdu contents".to_string())),
 		}
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::DistributionSetupRequest(x)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for DistributionSetupRequest {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::DistributionSetupRequest(self))
+	}
+}
+
+impl ToNgapPdu for DistributionSetupResponse {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::SuccessfulOutcome(SuccessfulOutcome::DistributionSetupResponse(self))
+	}
+}
+
+impl ToNgapPdu for DistributionSetupFailure {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::UnsuccessfulOutcome(UnsuccessfulOutcome::DistributionSetupFailure(self))
 	}
 }
 
@@ -425,10 +687,12 @@ impl Procedure for DistributionReleaseProcedure {
 		}
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	#[cfg(feature = "gnb")]
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::DistributionReleaseRequest(r)).into_bytes()
 	}
 
+	#[cfg(feature = "gnb")]
 	fn decode_response(bytes: &[u8]) -> Result<Self::Success, RequestError<Self::Failure>> {
 		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
 		match response_pdu {
@@ -436,6 +700,29 @@ impl Procedure for DistributionReleaseProcedure {
 
 			_ => Err(RequestError::Other("Unexpected pdu contents".to_string())),
 		}
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::DistributionReleaseRequest(x)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for DistributionReleaseRequest {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::DistributionReleaseRequest(self))
+	}
+}
+
+impl ToNgapPdu for DistributionReleaseResponse {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::SuccessfulOutcome(SuccessfulOutcome::DistributionReleaseResponse(self))
 	}
 }
 
@@ -454,8 +741,23 @@ impl Indication for DownlinkNasTransportProcedure {
 		<T as IndicationHandler<DownlinkNasTransportProcedure>>::handle(provider, req).await;
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::DownlinkNasTransport(r)).into_bytes()
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::DownlinkNasTransport(x)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for DownlinkNasTransport {
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::DownlinkNasTransport(self))
 	}
 }
 
@@ -477,9 +779,28 @@ impl Indication for DownlinkNonUeAssociatedNrPPaTransportProcedure {
 		.await;
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::DownlinkNonUeAssociatedNrPPaTransport(r))
 			.into_bytes()
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(
+				InitiatingMessage::DownlinkNonUeAssociatedNrPPaTransport(x),
+			) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for DownlinkNonUeAssociatedNrPPaTransport {
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::DownlinkNonUeAssociatedNrPPaTransport(
+			self,
+		))
 	}
 }
 
@@ -499,9 +820,26 @@ impl Indication for DownlinkRanConfigurationTransferProcedure {
 			.await;
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::DownlinkRanConfigurationTransfer(r))
 			.into_bytes()
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::DownlinkRanConfigurationTransfer(x)) => {
+				Ok(x)
+			}
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for DownlinkRanConfigurationTransfer {
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::DownlinkRanConfigurationTransfer(self))
 	}
 }
 
@@ -521,9 +859,26 @@ impl Indication for DownlinkRanEarlyStatusTransferProcedure {
 			.await;
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::DownlinkRanEarlyStatusTransfer(r))
 			.into_bytes()
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::DownlinkRanEarlyStatusTransfer(x)) => {
+				Ok(x)
+			}
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for DownlinkRanEarlyStatusTransfer {
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::DownlinkRanEarlyStatusTransfer(self))
 	}
 }
 
@@ -542,8 +897,23 @@ impl Indication for DownlinkRanStatusTransferProcedure {
 		<T as IndicationHandler<DownlinkRanStatusTransferProcedure>>::handle(provider, req).await;
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::DownlinkRanStatusTransfer(r)).into_bytes()
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::DownlinkRanStatusTransfer(x)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for DownlinkRanStatusTransfer {
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::DownlinkRanStatusTransfer(self))
 	}
 }
 
@@ -565,9 +935,26 @@ impl Indication for DownlinkUeAssociatedNrPPaTransportProcedure {
 		.await;
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::DownlinkUeAssociatedNrPPaTransport(r))
 			.into_bytes()
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::DownlinkUeAssociatedNrPPaTransport(
+				x,
+			)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for DownlinkUeAssociatedNrPPaTransport {
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::DownlinkUeAssociatedNrPPaTransport(self))
 	}
 }
 
@@ -586,8 +973,23 @@ impl Indication for ErrorIndicationProcedure {
 		<T as IndicationHandler<ErrorIndicationProcedure>>::handle(provider, req).await;
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::ErrorIndication(r)).into_bytes()
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::ErrorIndication(x)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for ErrorIndication {
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::ErrorIndication(self))
 	}
 }
 
@@ -614,10 +1016,12 @@ impl Procedure for HandoverCancelProcedure {
 		}
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	#[cfg(feature = "gnb")]
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::HandoverCancel(r)).into_bytes()
 	}
 
+	#[cfg(feature = "gnb")]
 	fn decode_response(bytes: &[u8]) -> Result<Self::Success, RequestError<Self::Failure>> {
 		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
 		match response_pdu {
@@ -625,6 +1029,29 @@ impl Procedure for HandoverCancelProcedure {
 
 			_ => Err(RequestError::Other("Unexpected pdu contents".to_string())),
 		}
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::HandoverCancel(x)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for HandoverCancel {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::HandoverCancel(self))
+	}
+}
+
+impl ToNgapPdu for HandoverCancelAcknowledge {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::SuccessfulOutcome(SuccessfulOutcome::HandoverCancelAcknowledge(self))
 	}
 }
 
@@ -643,8 +1070,23 @@ impl Indication for HandoverNotificationProcedure {
 		<T as IndicationHandler<HandoverNotificationProcedure>>::handle(provider, req).await;
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::HandoverNotify(r)).into_bytes()
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::HandoverNotify(x)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for HandoverNotify {
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::HandoverNotify(self))
 	}
 }
 
@@ -671,10 +1113,12 @@ impl Procedure for HandoverPreparationProcedure {
 		}
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	#[cfg(feature = "gnb")]
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::HandoverRequired(r)).into_bytes()
 	}
 
+	#[cfg(feature = "gnb")]
 	fn decode_response(bytes: &[u8]) -> Result<Self::Success, RequestError<Self::Failure>> {
 		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
 		match response_pdu {
@@ -684,6 +1128,36 @@ impl Procedure for HandoverPreparationProcedure {
 			}
 			_ => Err(RequestError::Other("Unexpected pdu contents".to_string())),
 		}
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::HandoverRequired(x)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for HandoverRequired {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::HandoverRequired(self))
+	}
+}
+
+impl ToNgapPdu for HandoverCommand {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::SuccessfulOutcome(SuccessfulOutcome::HandoverCommand(self))
+	}
+}
+
+impl ToNgapPdu for HandoverPreparationFailure {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::UnsuccessfulOutcome(UnsuccessfulOutcome::HandoverPreparationFailure(self))
 	}
 }
 
@@ -712,10 +1186,12 @@ impl Procedure for HandoverResourceAllocationProcedure {
 		}
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	#[cfg(feature = "gnb")]
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::HandoverRequest(r)).into_bytes()
 	}
 
+	#[cfg(feature = "gnb")]
 	fn decode_response(bytes: &[u8]) -> Result<Self::Success, RequestError<Self::Failure>> {
 		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
 		match response_pdu {
@@ -725,6 +1201,36 @@ impl Procedure for HandoverResourceAllocationProcedure {
 			}
 			_ => Err(RequestError::Other("Unexpected pdu contents".to_string())),
 		}
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::HandoverRequest(x)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for HandoverRequest {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::HandoverRequest(self))
+	}
+}
+
+impl ToNgapPdu for HandoverRequestAcknowledge {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::SuccessfulOutcome(SuccessfulOutcome::HandoverRequestAcknowledge(self))
+	}
+}
+
+impl ToNgapPdu for HandoverFailure {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::UnsuccessfulOutcome(UnsuccessfulOutcome::HandoverFailure(self))
 	}
 }
 
@@ -743,8 +1249,23 @@ impl Indication for HandoverSuccessProcedure {
 		<T as IndicationHandler<HandoverSuccessProcedure>>::handle(provider, req).await;
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::HandoverSuccess(r)).into_bytes()
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::HandoverSuccess(x)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for HandoverSuccess {
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::HandoverSuccess(self))
 	}
 }
 
@@ -771,10 +1292,12 @@ impl Procedure for InitialContextSetupProcedure {
 		}
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	#[cfg(feature = "gnb")]
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::InitialContextSetupRequest(r)).into_bytes()
 	}
 
+	#[cfg(feature = "gnb")]
 	fn decode_response(bytes: &[u8]) -> Result<Self::Success, RequestError<Self::Failure>> {
 		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
 		match response_pdu {
@@ -784,6 +1307,36 @@ impl Procedure for InitialContextSetupProcedure {
 			}
 			_ => Err(RequestError::Other("Unexpected pdu contents".to_string())),
 		}
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::InitialContextSetupRequest(x)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for InitialContextSetupRequest {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::InitialContextSetupRequest(self))
+	}
+}
+
+impl ToNgapPdu for InitialContextSetupResponse {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::SuccessfulOutcome(SuccessfulOutcome::InitialContextSetupResponse(self))
+	}
+}
+
+impl ToNgapPdu for InitialContextSetupFailure {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::UnsuccessfulOutcome(UnsuccessfulOutcome::InitialContextSetupFailure(self))
 	}
 }
 
@@ -802,8 +1355,23 @@ impl Indication for InitialUeMessageProcedure {
 		<T as IndicationHandler<InitialUeMessageProcedure>>::handle(provider, req).await;
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::InitialUeMessage(r)).into_bytes()
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::InitialUeMessage(x)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for InitialUeMessage {
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::InitialUeMessage(self))
 	}
 }
 
@@ -822,8 +1390,23 @@ impl Indication for LocationReportProcedure {
 		<T as IndicationHandler<LocationReportProcedure>>::handle(provider, req).await;
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::LocationReport(r)).into_bytes()
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::LocationReport(x)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for LocationReport {
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::LocationReport(self))
 	}
 }
 
@@ -842,8 +1425,23 @@ impl Indication for LocationReportingControlProcedure {
 		<T as IndicationHandler<LocationReportingControlProcedure>>::handle(provider, req).await;
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::LocationReportingControl(r)).into_bytes()
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::LocationReportingControl(x)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for LocationReportingControl {
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::LocationReportingControl(self))
 	}
 }
 
@@ -865,9 +1463,26 @@ impl Indication for LocationReportingFailureIndicationProcedure {
 		.await;
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::LocationReportingFailureIndication(r))
 			.into_bytes()
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::LocationReportingFailureIndication(
+				x,
+			)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for LocationReportingFailureIndication {
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::LocationReportingFailureIndication(self))
 	}
 }
 
@@ -898,11 +1513,13 @@ impl Procedure for MulticastSessionActivationProcedure {
 		}
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	#[cfg(feature = "gnb")]
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::MulticastSessionActivationRequest(r))
 			.into_bytes()
 	}
 
+	#[cfg(feature = "gnb")]
 	fn decode_response(bytes: &[u8]) -> Result<Self::Success, RequestError<Self::Failure>> {
 		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
 		match response_pdu {
@@ -914,6 +1531,38 @@ impl Procedure for MulticastSessionActivationProcedure {
 			) => Err(RequestError::UnsuccessfulOutcome(x)),
 			_ => Err(RequestError::Other("Unexpected pdu contents".to_string())),
 		}
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::MulticastSessionActivationRequest(x)) => {
+				Ok(x)
+			}
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for MulticastSessionActivationRequest {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::MulticastSessionActivationRequest(self))
+	}
+}
+
+impl ToNgapPdu for MulticastSessionActivationResponse {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::SuccessfulOutcome(SuccessfulOutcome::MulticastSessionActivationResponse(self))
+	}
+}
+
+impl ToNgapPdu for MulticastSessionActivationFailure {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::UnsuccessfulOutcome(UnsuccessfulOutcome::MulticastSessionActivationFailure(self))
 	}
 }
 
@@ -944,11 +1593,13 @@ impl Procedure for MulticastSessionDeactivationProcedure {
 		}
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	#[cfg(feature = "gnb")]
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::MulticastSessionDeactivationRequest(r))
 			.into_bytes()
 	}
 
+	#[cfg(feature = "gnb")]
 	fn decode_response(bytes: &[u8]) -> Result<Self::Success, RequestError<Self::Failure>> {
 		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
 		match response_pdu {
@@ -958,6 +1609,33 @@ impl Procedure for MulticastSessionDeactivationProcedure {
 
 			_ => Err(RequestError::Other("Unexpected pdu contents".to_string())),
 		}
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::MulticastSessionDeactivationRequest(
+				x,
+			)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for MulticastSessionDeactivationRequest {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::MulticastSessionDeactivationRequest(self))
+	}
+}
+
+impl ToNgapPdu for MulticastSessionDeactivationResponse {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::SuccessfulOutcome(SuccessfulOutcome::MulticastSessionDeactivationResponse(
+			self,
+		))
 	}
 }
 
@@ -985,10 +1663,12 @@ impl Procedure for MulticastSessionUpdateProcedure {
 		}
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	#[cfg(feature = "gnb")]
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::MulticastSessionUpdateRequest(r)).into_bytes()
 	}
 
+	#[cfg(feature = "gnb")]
 	fn decode_response(bytes: &[u8]) -> Result<Self::Success, RequestError<Self::Failure>> {
 		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
 		match response_pdu {
@@ -1000,6 +1680,38 @@ impl Procedure for MulticastSessionUpdateProcedure {
 			}
 			_ => Err(RequestError::Other("Unexpected pdu contents".to_string())),
 		}
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::MulticastSessionUpdateRequest(x)) => {
+				Ok(x)
+			}
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for MulticastSessionUpdateRequest {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::MulticastSessionUpdateRequest(self))
+	}
+}
+
+impl ToNgapPdu for MulticastSessionUpdateResponse {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::SuccessfulOutcome(SuccessfulOutcome::MulticastSessionUpdateResponse(self))
+	}
+}
+
+impl ToNgapPdu for MulticastSessionUpdateFailure {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::UnsuccessfulOutcome(UnsuccessfulOutcome::MulticastSessionUpdateFailure(self))
 	}
 }
 
@@ -1018,8 +1730,23 @@ impl Indication for MulticastGroupPagingProcedure {
 		<T as IndicationHandler<MulticastGroupPagingProcedure>>::handle(provider, req).await;
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::MulticastGroupPaging(r)).into_bytes()
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::MulticastGroupPaging(x)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for MulticastGroupPaging {
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::MulticastGroupPaging(self))
 	}
 }
 
@@ -1038,8 +1765,23 @@ impl Indication for NasNonDeliveryIndicationProcedure {
 		<T as IndicationHandler<NasNonDeliveryIndicationProcedure>>::handle(provider, req).await;
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::NasNonDeliveryIndication(r)).into_bytes()
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::NasNonDeliveryIndication(x)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for NasNonDeliveryIndication {
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::NasNonDeliveryIndication(self))
 	}
 }
 
@@ -1066,10 +1808,12 @@ impl Procedure for NgResetProcedure {
 		}
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	#[cfg(feature = "gnb")]
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::NgReset(r)).into_bytes()
 	}
 
+	#[cfg(feature = "gnb")]
 	fn decode_response(bytes: &[u8]) -> Result<Self::Success, RequestError<Self::Failure>> {
 		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
 		match response_pdu {
@@ -1077,6 +1821,29 @@ impl Procedure for NgResetProcedure {
 
 			_ => Err(RequestError::Other("Unexpected pdu contents".to_string())),
 		}
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::NgReset(x)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for NgReset {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::NgReset(self))
+	}
+}
+
+impl ToNgapPdu for NgResetAcknowledge {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::SuccessfulOutcome(SuccessfulOutcome::NgResetAcknowledge(self))
 	}
 }
 
@@ -1103,10 +1870,12 @@ impl Procedure for NgSetupProcedure {
 		}
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	#[cfg(feature = "gnb")]
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::NgSetupRequest(r)).into_bytes()
 	}
 
+	#[cfg(feature = "gnb")]
 	fn decode_response(bytes: &[u8]) -> Result<Self::Success, RequestError<Self::Failure>> {
 		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
 		match response_pdu {
@@ -1116,6 +1885,36 @@ impl Procedure for NgSetupProcedure {
 			}
 			_ => Err(RequestError::Other("Unexpected pdu contents".to_string())),
 		}
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::NgSetupRequest(x)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for NgSetupRequest {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::NgSetupRequest(self))
+	}
+}
+
+impl ToNgapPdu for NgSetupResponse {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::SuccessfulOutcome(SuccessfulOutcome::NgSetupResponse(self))
+	}
+}
+
+impl ToNgapPdu for NgSetupFailure {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::UnsuccessfulOutcome(UnsuccessfulOutcome::NgSetupFailure(self))
 	}
 }
 
@@ -1134,8 +1933,23 @@ impl Indication for OverloadStartProcedure {
 		<T as IndicationHandler<OverloadStartProcedure>>::handle(provider, req).await;
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::OverloadStart(r)).into_bytes()
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::OverloadStart(x)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for OverloadStart {
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::OverloadStart(self))
 	}
 }
 
@@ -1154,8 +1968,23 @@ impl Indication for OverloadStopProcedure {
 		<T as IndicationHandler<OverloadStopProcedure>>::handle(provider, req).await;
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::OverloadStop(r)).into_bytes()
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::OverloadStop(x)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for OverloadStop {
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::OverloadStop(self))
 	}
 }
 
@@ -1174,8 +2003,23 @@ impl Indication for PagingProcedure {
 		<T as IndicationHandler<PagingProcedure>>::handle(provider, req).await;
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::Paging(r)).into_bytes()
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::Paging(x)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for Paging {
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::Paging(self))
 	}
 }
 
@@ -1202,10 +2046,12 @@ impl Procedure for PathSwitchRequestProcedure {
 		}
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	#[cfg(feature = "gnb")]
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::PathSwitchRequest(r)).into_bytes()
 	}
 
+	#[cfg(feature = "gnb")]
 	fn decode_response(bytes: &[u8]) -> Result<Self::Success, RequestError<Self::Failure>> {
 		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
 		match response_pdu {
@@ -1215,6 +2061,36 @@ impl Procedure for PathSwitchRequestProcedure {
 			}
 			_ => Err(RequestError::Other("Unexpected pdu contents".to_string())),
 		}
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::PathSwitchRequest(x)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for PathSwitchRequest {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::PathSwitchRequest(self))
+	}
+}
+
+impl ToNgapPdu for PathSwitchRequestAcknowledge {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::SuccessfulOutcome(SuccessfulOutcome::PathSwitchRequestAcknowledge(self))
+	}
+}
+
+impl ToNgapPdu for PathSwitchRequestFailure {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::UnsuccessfulOutcome(UnsuccessfulOutcome::PathSwitchRequestFailure(self))
 	}
 }
 
@@ -1243,11 +2119,13 @@ impl Procedure for PduSessionResourceModifyProcedure {
 		}
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	#[cfg(feature = "gnb")]
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::PduSessionResourceModifyRequest(r))
 			.into_bytes()
 	}
 
+	#[cfg(feature = "gnb")]
 	fn decode_response(bytes: &[u8]) -> Result<Self::Success, RequestError<Self::Failure>> {
 		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
 		match response_pdu {
@@ -1257,6 +2135,31 @@ impl Procedure for PduSessionResourceModifyProcedure {
 
 			_ => Err(RequestError::Other("Unexpected pdu contents".to_string())),
 		}
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::PduSessionResourceModifyRequest(x)) => {
+				Ok(x)
+			}
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for PduSessionResourceModifyRequest {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::PduSessionResourceModifyRequest(self))
+	}
+}
+
+impl ToNgapPdu for PduSessionResourceModifyResponse {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::SuccessfulOutcome(SuccessfulOutcome::PduSessionResourceModifyResponse(self))
 	}
 }
 
@@ -1287,11 +2190,13 @@ impl Procedure for PduSessionResourceModifyIndicationProcedure {
 		}
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	#[cfg(feature = "gnb")]
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::PduSessionResourceModifyIndication(r))
 			.into_bytes()
 	}
 
+	#[cfg(feature = "gnb")]
 	fn decode_response(bytes: &[u8]) -> Result<Self::Success, RequestError<Self::Failure>> {
 		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
 		match response_pdu {
@@ -1301,6 +2206,31 @@ impl Procedure for PduSessionResourceModifyIndicationProcedure {
 
 			_ => Err(RequestError::Other("Unexpected pdu contents".to_string())),
 		}
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::PduSessionResourceModifyIndication(
+				x,
+			)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for PduSessionResourceModifyIndication {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::PduSessionResourceModifyIndication(self))
+	}
+}
+
+impl ToNgapPdu for PduSessionResourceModifyConfirm {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::SuccessfulOutcome(SuccessfulOutcome::PduSessionResourceModifyConfirm(self))
 	}
 }
 
@@ -1319,8 +2249,23 @@ impl Indication for PduSessionResourceNotifyProcedure {
 		<T as IndicationHandler<PduSessionResourceNotifyProcedure>>::handle(provider, req).await;
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::PduSessionResourceNotify(r)).into_bytes()
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::PduSessionResourceNotify(x)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for PduSessionResourceNotify {
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::PduSessionResourceNotify(self))
 	}
 }
 
@@ -1349,11 +2294,13 @@ impl Procedure for PduSessionResourceReleaseProcedure {
 		}
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	#[cfg(feature = "gnb")]
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::PduSessionResourceReleaseCommand(r))
 			.into_bytes()
 	}
 
+	#[cfg(feature = "gnb")]
 	fn decode_response(bytes: &[u8]) -> Result<Self::Success, RequestError<Self::Failure>> {
 		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
 		match response_pdu {
@@ -1363,6 +2310,31 @@ impl Procedure for PduSessionResourceReleaseProcedure {
 
 			_ => Err(RequestError::Other("Unexpected pdu contents".to_string())),
 		}
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::PduSessionResourceReleaseCommand(x)) => {
+				Ok(x)
+			}
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for PduSessionResourceReleaseCommand {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::PduSessionResourceReleaseCommand(self))
+	}
+}
+
+impl ToNgapPdu for PduSessionResourceReleaseResponse {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::SuccessfulOutcome(SuccessfulOutcome::PduSessionResourceReleaseResponse(self))
 	}
 }
 
@@ -1390,11 +2362,13 @@ impl Procedure for PduSessionResourceSetupProcedure {
 		}
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	#[cfg(feature = "gnb")]
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::PduSessionResourceSetupRequest(r))
 			.into_bytes()
 	}
 
+	#[cfg(feature = "gnb")]
 	fn decode_response(bytes: &[u8]) -> Result<Self::Success, RequestError<Self::Failure>> {
 		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
 		match response_pdu {
@@ -1404,6 +2378,31 @@ impl Procedure for PduSessionResourceSetupProcedure {
 
 			_ => Err(RequestError::Other("Unexpected pdu contents".to_string())),
 		}
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::PduSessionResourceSetupRequest(x)) => {
+				Ok(x)
+			}
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for PduSessionResourceSetupRequest {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::PduSessionResourceSetupRequest(self))
+	}
+}
+
+impl ToNgapPdu for PduSessionResourceSetupResponse {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::SuccessfulOutcome(SuccessfulOutcome::PduSessionResourceSetupResponse(self))
 	}
 }
 
@@ -1430,10 +2429,12 @@ impl Procedure for PwsCancelProcedure {
 		}
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	#[cfg(feature = "gnb")]
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::PwsCancelRequest(r)).into_bytes()
 	}
 
+	#[cfg(feature = "gnb")]
 	fn decode_response(bytes: &[u8]) -> Result<Self::Success, RequestError<Self::Failure>> {
 		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
 		match response_pdu {
@@ -1441,6 +2442,29 @@ impl Procedure for PwsCancelProcedure {
 
 			_ => Err(RequestError::Other("Unexpected pdu contents".to_string())),
 		}
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::PwsCancelRequest(x)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for PwsCancelRequest {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::PwsCancelRequest(self))
+	}
+}
+
+impl ToNgapPdu for PwsCancelResponse {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::SuccessfulOutcome(SuccessfulOutcome::PwsCancelResponse(self))
 	}
 }
 
@@ -1459,8 +2483,23 @@ impl Indication for PwsFailureIndicationProcedure {
 		<T as IndicationHandler<PwsFailureIndicationProcedure>>::handle(provider, req).await;
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::PwsFailureIndication(r)).into_bytes()
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::PwsFailureIndication(x)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for PwsFailureIndication {
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::PwsFailureIndication(self))
 	}
 }
 
@@ -1479,8 +2518,23 @@ impl Indication for PwsRestartIndicationProcedure {
 		<T as IndicationHandler<PwsRestartIndicationProcedure>>::handle(provider, req).await;
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::PwsRestartIndication(r)).into_bytes()
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::PwsRestartIndication(x)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for PwsRestartIndication {
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::PwsRestartIndication(self))
 	}
 }
 
@@ -1508,10 +2562,12 @@ impl Procedure for RanConfigurationUpdateProcedure {
 		}
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	#[cfg(feature = "gnb")]
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::RanConfigurationUpdate(r)).into_bytes()
 	}
 
+	#[cfg(feature = "gnb")]
 	fn decode_response(bytes: &[u8]) -> Result<Self::Success, RequestError<Self::Failure>> {
 		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
 		match response_pdu {
@@ -1523,6 +2579,36 @@ impl Procedure for RanConfigurationUpdateProcedure {
 			}
 			_ => Err(RequestError::Other("Unexpected pdu contents".to_string())),
 		}
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::RanConfigurationUpdate(x)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for RanConfigurationUpdate {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::RanConfigurationUpdate(self))
+	}
+}
+
+impl ToNgapPdu for RanConfigurationUpdateAcknowledge {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::SuccessfulOutcome(SuccessfulOutcome::RanConfigurationUpdateAcknowledge(self))
+	}
+}
+
+impl ToNgapPdu for RanConfigurationUpdateFailure {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::UnsuccessfulOutcome(UnsuccessfulOutcome::RanConfigurationUpdateFailure(self))
 	}
 }
 
@@ -1541,8 +2627,23 @@ impl Indication for RancpRelocationIndicationProcedure {
 		<T as IndicationHandler<RancpRelocationIndicationProcedure>>::handle(provider, req).await;
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::RancpRelocationIndication(r)).into_bytes()
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::RancpRelocationIndication(x)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for RancpRelocationIndication {
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::RancpRelocationIndication(self))
 	}
 }
 
@@ -1561,8 +2662,23 @@ impl Indication for RerouteNasRequestProcedure {
 		<T as IndicationHandler<RerouteNasRequestProcedure>>::handle(provider, req).await;
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::RerouteNasRequest(r)).into_bytes()
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::RerouteNasRequest(x)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for RerouteNasRequest {
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::RerouteNasRequest(self))
 	}
 }
 
@@ -1581,8 +2697,23 @@ impl Indication for RetrieveUeInformationProcedure {
 		<T as IndicationHandler<RetrieveUeInformationProcedure>>::handle(provider, req).await;
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::RetrieveUeInformation(r)).into_bytes()
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::RetrieveUeInformation(x)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for RetrieveUeInformation {
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::RetrieveUeInformation(self))
 	}
 }
 
@@ -1601,8 +2732,23 @@ impl Indication for RrcInactiveTransitionReportProcedure {
 		<T as IndicationHandler<RrcInactiveTransitionReportProcedure>>::handle(provider, req).await;
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::RrcInactiveTransitionReport(r)).into_bytes()
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::RrcInactiveTransitionReport(x)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for RrcInactiveTransitionReport {
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::RrcInactiveTransitionReport(self))
 	}
 }
 
@@ -1621,8 +2767,23 @@ impl Indication for SecondaryRatDataUsageReportProcedure {
 		<T as IndicationHandler<SecondaryRatDataUsageReportProcedure>>::handle(provider, req).await;
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::SecondaryRatDataUsageReport(r)).into_bytes()
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::SecondaryRatDataUsageReport(x)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for SecondaryRatDataUsageReport {
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::SecondaryRatDataUsageReport(self))
 	}
 }
 
@@ -1641,8 +2802,23 @@ impl Indication for TraceFailureIndicationProcedure {
 		<T as IndicationHandler<TraceFailureIndicationProcedure>>::handle(provider, req).await;
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::TraceFailureIndication(r)).into_bytes()
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::TraceFailureIndication(x)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for TraceFailureIndication {
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::TraceFailureIndication(self))
 	}
 }
 
@@ -1661,8 +2837,23 @@ impl Indication for TraceStartProcedure {
 		<T as IndicationHandler<TraceStartProcedure>>::handle(provider, req).await;
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::TraceStart(r)).into_bytes()
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::TraceStart(x)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for TraceStart {
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::TraceStart(self))
 	}
 }
 
@@ -1689,10 +2880,12 @@ impl Procedure for UeContextModificationProcedure {
 		}
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	#[cfg(feature = "gnb")]
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::UeContextModificationRequest(r)).into_bytes()
 	}
 
+	#[cfg(feature = "gnb")]
 	fn decode_response(bytes: &[u8]) -> Result<Self::Success, RequestError<Self::Failure>> {
 		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
 		match response_pdu {
@@ -1704,6 +2897,36 @@ impl Procedure for UeContextModificationProcedure {
 			}
 			_ => Err(RequestError::Other("Unexpected pdu contents".to_string())),
 		}
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::UeContextModificationRequest(x)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for UeContextModificationRequest {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::UeContextModificationRequest(self))
+	}
+}
+
+impl ToNgapPdu for UeContextModificationResponse {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::SuccessfulOutcome(SuccessfulOutcome::UeContextModificationResponse(self))
+	}
+}
+
+impl ToNgapPdu for UeContextModificationFailure {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::UnsuccessfulOutcome(UnsuccessfulOutcome::UeContextModificationFailure(self))
 	}
 }
 
@@ -1730,10 +2953,12 @@ impl Procedure for UeContextReleaseProcedure {
 		}
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	#[cfg(feature = "gnb")]
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::UeContextReleaseCommand(r)).into_bytes()
 	}
 
+	#[cfg(feature = "gnb")]
 	fn decode_response(bytes: &[u8]) -> Result<Self::Success, RequestError<Self::Failure>> {
 		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
 		match response_pdu {
@@ -1741,6 +2966,29 @@ impl Procedure for UeContextReleaseProcedure {
 
 			_ => Err(RequestError::Other("Unexpected pdu contents".to_string())),
 		}
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::UeContextReleaseCommand(x)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for UeContextReleaseCommand {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::UeContextReleaseCommand(self))
+	}
+}
+
+impl ToNgapPdu for UeContextReleaseComplete {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::SuccessfulOutcome(SuccessfulOutcome::UeContextReleaseComplete(self))
 	}
 }
 
@@ -1759,8 +3007,23 @@ impl Indication for UeContextReleaseRequestProcedure {
 		<T as IndicationHandler<UeContextReleaseRequestProcedure>>::handle(provider, req).await;
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::UeContextReleaseRequest(r)).into_bytes()
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::UeContextReleaseRequest(x)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for UeContextReleaseRequest {
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::UeContextReleaseRequest(self))
 	}
 }
 
@@ -1787,10 +3050,12 @@ impl Procedure for UeContextResumeProcedure {
 		}
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	#[cfg(feature = "gnb")]
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::UeContextResumeRequest(r)).into_bytes()
 	}
 
+	#[cfg(feature = "gnb")]
 	fn decode_response(bytes: &[u8]) -> Result<Self::Success, RequestError<Self::Failure>> {
 		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
 		match response_pdu {
@@ -1800,6 +3065,36 @@ impl Procedure for UeContextResumeProcedure {
 			}
 			_ => Err(RequestError::Other("Unexpected pdu contents".to_string())),
 		}
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::UeContextResumeRequest(x)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for UeContextResumeRequest {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::UeContextResumeRequest(self))
+	}
+}
+
+impl ToNgapPdu for UeContextResumeResponse {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::SuccessfulOutcome(SuccessfulOutcome::UeContextResumeResponse(self))
+	}
+}
+
+impl ToNgapPdu for UeContextResumeFailure {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::UnsuccessfulOutcome(UnsuccessfulOutcome::UeContextResumeFailure(self))
 	}
 }
 
@@ -1826,10 +3121,12 @@ impl Procedure for UeContextSuspendProcedure {
 		}
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	#[cfg(feature = "gnb")]
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::UeContextSuspendRequest(r)).into_bytes()
 	}
 
+	#[cfg(feature = "gnb")]
 	fn decode_response(bytes: &[u8]) -> Result<Self::Success, RequestError<Self::Failure>> {
 		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
 		match response_pdu {
@@ -1839,6 +3136,36 @@ impl Procedure for UeContextSuspendProcedure {
 			}
 			_ => Err(RequestError::Other("Unexpected pdu contents".to_string())),
 		}
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::UeContextSuspendRequest(x)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for UeContextSuspendRequest {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::UeContextSuspendRequest(self))
+	}
+}
+
+impl ToNgapPdu for UeContextSuspendResponse {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::SuccessfulOutcome(SuccessfulOutcome::UeContextSuspendResponse(self))
+	}
+}
+
+impl ToNgapPdu for UeContextSuspendFailure {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::UnsuccessfulOutcome(UnsuccessfulOutcome::UeContextSuspendFailure(self))
 	}
 }
 
@@ -1857,8 +3184,23 @@ impl Indication for UeInformationTransferProcedure {
 		<T as IndicationHandler<UeInformationTransferProcedure>>::handle(provider, req).await;
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::UeInformationTransfer(r)).into_bytes()
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::UeInformationTransfer(x)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for UeInformationTransfer {
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::UeInformationTransfer(self))
 	}
 }
 
@@ -1886,10 +3228,12 @@ impl Procedure for UeRadioCapabilityCheckProcedure {
 		}
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	#[cfg(feature = "gnb")]
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::UeRadioCapabilityCheckRequest(r)).into_bytes()
 	}
 
+	#[cfg(feature = "gnb")]
 	fn decode_response(bytes: &[u8]) -> Result<Self::Success, RequestError<Self::Failure>> {
 		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
 		match response_pdu {
@@ -1899,6 +3243,31 @@ impl Procedure for UeRadioCapabilityCheckProcedure {
 
 			_ => Err(RequestError::Other("Unexpected pdu contents".to_string())),
 		}
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::UeRadioCapabilityCheckRequest(x)) => {
+				Ok(x)
+			}
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for UeRadioCapabilityCheckRequest {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::UeRadioCapabilityCheckRequest(self))
+	}
+}
+
+impl ToNgapPdu for UeRadioCapabilityCheckResponse {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::SuccessfulOutcome(SuccessfulOutcome::UeRadioCapabilityCheckResponse(self))
 	}
 }
 
@@ -1929,11 +3298,13 @@ impl Procedure for UeRadioCapabilityIdMappingProcedure {
 		}
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	#[cfg(feature = "gnb")]
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::UeRadioCapabilityIdMappingRequest(r))
 			.into_bytes()
 	}
 
+	#[cfg(feature = "gnb")]
 	fn decode_response(bytes: &[u8]) -> Result<Self::Success, RequestError<Self::Failure>> {
 		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
 		match response_pdu {
@@ -1943,6 +3314,31 @@ impl Procedure for UeRadioCapabilityIdMappingProcedure {
 
 			_ => Err(RequestError::Other("Unexpected pdu contents".to_string())),
 		}
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::UeRadioCapabilityIdMappingRequest(x)) => {
+				Ok(x)
+			}
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for UeRadioCapabilityIdMappingRequest {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::UeRadioCapabilityIdMappingRequest(self))
+	}
+}
+
+impl ToNgapPdu for UeRadioCapabilityIdMappingResponse {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::SuccessfulOutcome(SuccessfulOutcome::UeRadioCapabilityIdMappingResponse(self))
 	}
 }
 
@@ -1962,9 +3358,26 @@ impl Indication for UeRadioCapabilityInfoIndicationProcedure {
 			.await;
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::UeRadioCapabilityInfoIndication(r))
 			.into_bytes()
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::UeRadioCapabilityInfoIndication(x)) => {
+				Ok(x)
+			}
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for UeRadioCapabilityInfoIndication {
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::UeRadioCapabilityInfoIndication(self))
 	}
 }
 
@@ -1983,8 +3396,23 @@ impl Indication for UeTnlaBindingReleaseProcedure {
 		<T as IndicationHandler<UeTnlaBindingReleaseProcedure>>::handle(provider, req).await;
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::UeTnlaBindingReleaseRequest(r)).into_bytes()
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::UeTnlaBindingReleaseRequest(x)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for UeTnlaBindingReleaseRequest {
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::UeTnlaBindingReleaseRequest(self))
 	}
 }
 
@@ -2003,8 +3431,23 @@ impl Indication for UplinkNasTransportProcedure {
 		<T as IndicationHandler<UplinkNasTransportProcedure>>::handle(provider, req).await;
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::UplinkNasTransport(r)).into_bytes()
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::UplinkNasTransport(x)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for UplinkNasTransport {
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::UplinkNasTransport(self))
 	}
 }
 
@@ -2026,9 +3469,26 @@ impl Indication for UplinkNonUeAssociatedNrPPaTransportProcedure {
 		.await;
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::UplinkNonUeAssociatedNrPPaTransport(r))
 			.into_bytes()
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::UplinkNonUeAssociatedNrPPaTransport(
+				x,
+			)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for UplinkNonUeAssociatedNrPPaTransport {
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::UplinkNonUeAssociatedNrPPaTransport(self))
 	}
 }
 
@@ -2048,9 +3508,26 @@ impl Indication for UplinkRanConfigurationTransferProcedure {
 			.await;
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::UplinkRanConfigurationTransfer(r))
 			.into_bytes()
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::UplinkRanConfigurationTransfer(x)) => {
+				Ok(x)
+			}
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for UplinkRanConfigurationTransfer {
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::UplinkRanConfigurationTransfer(self))
 	}
 }
 
@@ -2070,8 +3547,23 @@ impl Indication for UplinkRanEarlyStatusTransferProcedure {
 			.await;
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::UplinkRanEarlyStatusTransfer(r)).into_bytes()
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::UplinkRanEarlyStatusTransfer(x)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for UplinkRanEarlyStatusTransfer {
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::UplinkRanEarlyStatusTransfer(self))
 	}
 }
 
@@ -2090,8 +3582,23 @@ impl Indication for UplinkRanStatusTransferProcedure {
 		<T as IndicationHandler<UplinkRanStatusTransferProcedure>>::handle(provider, req).await;
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::UplinkRanStatusTransfer(r)).into_bytes()
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::UplinkRanStatusTransfer(x)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for UplinkRanStatusTransfer {
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::UplinkRanStatusTransfer(self))
 	}
 }
 
@@ -2111,9 +3618,26 @@ impl Indication for UplinkUeAssociatedNrPPaTransportProcedure {
 			.await;
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::UplinkUeAssociatedNrPPaTransport(r))
 			.into_bytes()
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::UplinkUeAssociatedNrPPaTransport(x)) => {
+				Ok(x)
+			}
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for UplinkUeAssociatedNrPPaTransport {
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::UplinkUeAssociatedNrPPaTransport(self))
 	}
 }
 
@@ -2140,10 +3664,12 @@ impl Procedure for WriteReplaceWarningProcedure {
 		}
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	#[cfg(feature = "gnb")]
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::WriteReplaceWarningRequest(r)).into_bytes()
 	}
 
+	#[cfg(feature = "gnb")]
 	fn decode_response(bytes: &[u8]) -> Result<Self::Success, RequestError<Self::Failure>> {
 		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
 		match response_pdu {
@@ -2151,6 +3677,29 @@ impl Procedure for WriteReplaceWarningProcedure {
 
 			_ => Err(RequestError::Other("Unexpected pdu contents".to_string())),
 		}
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::WriteReplaceWarningRequest(x)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for WriteReplaceWarningRequest {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::WriteReplaceWarningRequest(self))
+	}
+}
+
+impl ToNgapPdu for WriteReplaceWarningResponse {
+	#[inline(always)]
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::SuccessfulOutcome(SuccessfulOutcome::WriteReplaceWarningResponse(self))
 	}
 }
 
@@ -2170,8 +3719,23 @@ impl Indication for UplinkRimInformationTransferProcedure {
 			.await;
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::UplinkRimInformationTransfer(r)).into_bytes()
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::UplinkRimInformationTransfer(x)) => Ok(x),
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for UplinkRimInformationTransfer {
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::UplinkRimInformationTransfer(self))
 	}
 }
 
@@ -2191,9 +3755,26 @@ impl Indication for DownlinkRimInformationTransferProcedure {
 			.await;
 	}
 
-	fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {
+	fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {
 		NgapPdu::InitiatingMessage(InitiatingMessage::DownlinkRimInformationTransfer(r))
 			.into_bytes()
+	}
+
+	#[cfg(feature = "amf")]
+	fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {
+		let response_pdu = Self::TopPdu::from_bytes(bytes)?;
+		match response_pdu {
+			NgapPdu::InitiatingMessage(InitiatingMessage::DownlinkRimInformationTransfer(x)) => {
+				Ok(x)
+			}
+			_ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
+		}
+	}
+}
+
+impl ToNgapPdu for DownlinkRimInformationTransfer {
+	fn to_pdu(self) -> NgapPdu {
+		NgapPdu::InitiatingMessage(InitiatingMessage::DownlinkRimInformationTransfer(self))
 	}
 }
 
@@ -2277,7 +3858,7 @@ pub enum InitiatingMessage {
 }
 
 impl InitiatingMessage {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let (id, _ext) = decode::decode_integer(data, Some(0), Some(255), false)?;
 		let _ = Criticality::decode(data)?;
 		let _ = decode::decode_length_determinent(data, None, None, false)?;
@@ -2468,7 +4049,7 @@ impl InitiatingMessage {
 				DownlinkRimInformationTransfer::decode(data)?,
 			)),
 			x => {
-				return Err(PerCodecError::new(format!(
+				return Err(ThreeGppAsn1PerError::new(format!(
 					"Unrecognised procedure code {}",
 					x
 				)));
@@ -2478,7 +4059,7 @@ impl InitiatingMessage {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		match self {
 			Self::AmfConfigurationUpdate(x) => {
 				encode::encode_integer(data, Some(0), Some(255), false, 0, false)?;
@@ -3537,20 +5118,21 @@ impl InitiatingMessage {
 
 impl PerCodec for InitiatingMessage {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		InitiatingMessage::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("InitiatingMessage");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		InitiatingMessage::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("InitiatingMessage");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("InitiatingMessage");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("InitiatingMessage");
+				e
+			})
 	}
 }
 
@@ -3588,7 +5170,7 @@ pub enum SuccessfulOutcome {
 }
 
 impl SuccessfulOutcome {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let (id, _ext) = decode::decode_integer(data, Some(0), Some(255), false)?;
 		let _ = Criticality::decode(data)?;
 		let _ = decode::decode_length_determinent(data, None, None, false)?;
@@ -3673,7 +5255,7 @@ impl SuccessfulOutcome {
 				WriteReplaceWarningResponse::decode(data)?,
 			)),
 			x => {
-				return Err(PerCodecError::new(format!(
+				return Err(ThreeGppAsn1PerError::new(format!(
 					"Unrecognised procedure code {}",
 					x
 				)));
@@ -3683,7 +5265,7 @@ impl SuccessfulOutcome {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		match self {
 			Self::AmfConfigurationUpdateAcknowledge(x) => {
 				encode::encode_integer(data, Some(0), Some(255), false, 0, false)?;
@@ -4098,20 +5680,21 @@ impl SuccessfulOutcome {
 
 impl PerCodec for SuccessfulOutcome {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		SuccessfulOutcome::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("SuccessfulOutcome");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		SuccessfulOutcome::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("SuccessfulOutcome");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("SuccessfulOutcome");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("SuccessfulOutcome");
+				e
+			})
 	}
 }
 
@@ -4135,7 +5718,7 @@ pub enum UnsuccessfulOutcome {
 }
 
 impl UnsuccessfulOutcome {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let (id, _ext) = decode::decode_integer(data, Some(0), Some(255), false)?;
 		let _ = Criticality::decode(data)?;
 		let _ = decode::decode_length_determinent(data, None, None, false)?;
@@ -4182,7 +5765,7 @@ impl UnsuccessfulOutcome {
 				UeContextSuspendFailure::decode(data)?,
 			)),
 			x => {
-				return Err(PerCodecError::new(format!(
+				return Err(ThreeGppAsn1PerError::new(format!(
 					"Unrecognised procedure code {}",
 					x
 				)));
@@ -4192,7 +5775,7 @@ impl UnsuccessfulOutcome {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		match self {
 			Self::AmfConfigurationUpdateFailure(x) => {
 				encode::encode_integer(data, Some(0), Some(255), false, 0, false)?;
@@ -4411,19 +5994,20 @@ impl UnsuccessfulOutcome {
 
 impl PerCodec for UnsuccessfulOutcome {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		UnsuccessfulOutcome::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("UnsuccessfulOutcome");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		UnsuccessfulOutcome::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("UnsuccessfulOutcome");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("UnsuccessfulOutcome");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("UnsuccessfulOutcome");
+				e
+			})
 	}
 }

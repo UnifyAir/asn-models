@@ -6,8 +6,8 @@ use bitvec::prelude::*;
 impl From<IpAddr> for TransportLayerAddress {
     fn from(ip: IpAddr) -> Self {
         TransportLayerAddress(match ip {
-            IpAddr::V4(x) => BitVec::<_, Msb0>::from_slice(&x.octets()),
-            IpAddr::V6(x) => BitVec::<_, Msb0>::from_slice(&x.octets()),
+            IpAddr::V4(x) => BitVec::<_, Msb0>::from_slice(&x.octets()).into(),
+            IpAddr::V6(x) => BitVec::<_, Msb0>::from_slice(&x.octets()).into(),
         })
     }
 }
@@ -29,7 +29,7 @@ impl TryFrom<&String> for TransportLayerAddress {
 impl TryFrom<TransportLayerAddress> for IpAddr {
     type Error = anyhow::Error;
     fn try_from(addr: TransportLayerAddress) -> Result<Self, anyhow::Error> {
-        let v = addr.0.into_vec();
+        let v = addr.0.into_inner().into_vec();
         match v.len() {
             4 => {
                 let arr: [u8; 4] = v.try_into().unwrap();

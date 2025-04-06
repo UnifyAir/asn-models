@@ -26,4 +26,5 @@ nonempty = "0.8.1"
 hex = "0.4.3"
 async-net = "1.6.1"
 smart-default = "0.7.1"
-
+valuable = { version = "0.1", features = ["derive"] }
+faster-hex = "0.10.0"

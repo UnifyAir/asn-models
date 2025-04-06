@@ -19,7 +19,7 @@ pub struct PduSessionResourceSetupRequest {
 }
 
 impl PduSessionResourceSetupRequest {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -51,18 +51,23 @@ impl PduSessionResourceSetupRequest {
 				335 => {
 					ue_slice_maximum_bit_rate_list = Some(UeSliceMaximumBitRateList::decode(data)?)
 				}
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
 		let pdu_session_resource_setup_list_su_req =
-			pdu_session_resource_setup_list_su_req.ok_or(PerCodecError::new(format!(
+			pdu_session_resource_setup_list_su_req.ok_or(ThreeGppAsn1PerError::new(format!(
 				"Missing mandatory IE pdu_session_resource_setup_list_su_req"
 			)))?;
 		Ok(Self {
@@ -78,12 +83,14 @@ impl PduSessionResourceSetupRequest {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -91,7 +98,9 @@ impl PduSessionResourceSetupRequest {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -100,7 +109,7 @@ impl PduSessionResourceSetupRequest {
 
 		if let Some(x) = &self.ran_paging_priority {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 83, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -110,7 +119,7 @@ impl PduSessionResourceSetupRequest {
 
 		if let Some(x) = &self.nas_pdu {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 38, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -119,7 +128,9 @@ impl PduSessionResourceSetupRequest {
 		}
 
 		let ie = &mut Allocator::new_codec_data();
-		self.pdu_session_resource_setup_list_su_req.encode(ie)?;
+		self.pdu_session_resource_setup_list_su_req
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 74, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -128,7 +139,7 @@ impl PduSessionResourceSetupRequest {
 
 		if let Some(x) = &self.ue_aggregate_maximum_bit_rate {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 110, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -138,7 +149,7 @@ impl PduSessionResourceSetupRequest {
 
 		if let Some(x) = &self.ue_slice_maximum_bit_rate_list {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 335, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -155,20 +166,21 @@ impl PduSessionResourceSetupRequest {
 
 impl PerCodec for PduSessionResourceSetupRequest {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		PduSessionResourceSetupRequest::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("PduSessionResourceSetupRequest");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		PduSessionResourceSetupRequest::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("PduSessionResourceSetupRequest");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("PduSessionResourceSetupRequest");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("PduSessionResourceSetupRequest");
+				e
+			})
 	}
 }
 // PduSessionResourceSetupResponse
@@ -184,7 +196,7 @@ pub struct PduSessionResourceSetupResponse {
 }
 
 impl PduSessionResourceSetupResponse {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -215,14 +227,19 @@ impl PduSessionResourceSetupResponse {
 				}
 				19 => criticality_diagnostics = Some(CriticalityDiagnostics::decode(data)?),
 				121 => user_location_information = Some(UserLocationInformation::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
 		Ok(Self {
@@ -237,12 +254,14 @@ impl PduSessionResourceSetupResponse {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -250,7 +269,9 @@ impl PduSessionResourceSetupResponse {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -259,7 +280,7 @@ impl PduSessionResourceSetupResponse {
 
 		if let Some(x) = &self.pdu_session_resource_setup_list_su_res {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 75, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -269,7 +290,7 @@ impl PduSessionResourceSetupResponse {
 
 		if let Some(x) = &self.pdu_session_resource_failed_to_setup_list_su_res {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 58, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -279,7 +300,7 @@ impl PduSessionResourceSetupResponse {
 
 		if let Some(x) = &self.criticality_diagnostics {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 19, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -289,7 +310,7 @@ impl PduSessionResourceSetupResponse {
 
 		if let Some(x) = &self.user_location_information {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 121, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -306,20 +327,25 @@ impl PduSessionResourceSetupResponse {
 
 impl PerCodec for PduSessionResourceSetupResponse {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		PduSessionResourceSetupResponse::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("PduSessionResourceSetupResponse");
-			e
-		})
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		PduSessionResourceSetupResponse::decode_inner(data).map_err(
+			|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("PduSessionResourceSetupResponse");
+				e
+			},
+		)
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("PduSessionResourceSetupResponse");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("PduSessionResourceSetupResponse");
+				e
+			})
 	}
 }
 // PduSessionResourceReleaseCommand
@@ -333,7 +359,7 @@ pub struct PduSessionResourceReleaseCommand {
 }
 
 impl PduSessionResourceReleaseCommand {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -358,20 +384,25 @@ impl PduSessionResourceReleaseCommand {
 					pdu_session_resource_to_release_list_rel_cmd =
 						Some(PduSessionResourceToReleaseListRelCmd::decode(data)?)
 				}
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
 		let pdu_session_resource_to_release_list_rel_cmd =
-			pdu_session_resource_to_release_list_rel_cmd.ok_or(PerCodecError::new(format!(
-				"Missing mandatory IE pdu_session_resource_to_release_list_rel_cmd"
-			)))?;
+			pdu_session_resource_to_release_list_rel_cmd.ok_or(ThreeGppAsn1PerError::new(
+				format!("Missing mandatory IE pdu_session_resource_to_release_list_rel_cmd"),
+			))?;
 		Ok(Self {
 			amf_ue_ngap_id,
 			ran_ue_ngap_id,
@@ -383,12 +414,14 @@ impl PduSessionResourceReleaseCommand {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -396,7 +429,9 @@ impl PduSessionResourceReleaseCommand {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -405,7 +440,7 @@ impl PduSessionResourceReleaseCommand {
 
 		if let Some(x) = &self.ran_paging_priority {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 83, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -415,7 +450,7 @@ impl PduSessionResourceReleaseCommand {
 
 		if let Some(x) = &self.nas_pdu {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 38, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -425,7 +460,8 @@ impl PduSessionResourceReleaseCommand {
 
 		let ie = &mut Allocator::new_codec_data();
 		self.pdu_session_resource_to_release_list_rel_cmd
-			.encode(ie)?;
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 79, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -441,20 +477,25 @@ impl PduSessionResourceReleaseCommand {
 
 impl PerCodec for PduSessionResourceReleaseCommand {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		PduSessionResourceReleaseCommand::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("PduSessionResourceReleaseCommand");
-			e
-		})
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		PduSessionResourceReleaseCommand::decode_inner(data).map_err(
+			|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("PduSessionResourceReleaseCommand");
+				e
+			},
+		)
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("PduSessionResourceReleaseCommand");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("PduSessionResourceReleaseCommand");
+				e
+			})
 	}
 }
 // PduSessionResourceReleaseResponse
@@ -468,7 +509,7 @@ pub struct PduSessionResourceReleaseResponse {
 }
 
 impl PduSessionResourceReleaseResponse {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -493,18 +534,23 @@ impl PduSessionResourceReleaseResponse {
 				}
 				121 => user_location_information = Some(UserLocationInformation::decode(data)?),
 				19 => criticality_diagnostics = Some(CriticalityDiagnostics::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
 		let pdu_session_resource_released_list_rel_res = pdu_session_resource_released_list_rel_res
-			.ok_or(PerCodecError::new(format!(
+			.ok_or(ThreeGppAsn1PerError::new(format!(
 				"Missing mandatory IE pdu_session_resource_released_list_rel_res"
 			)))?;
 		Ok(Self {
@@ -518,12 +564,14 @@ impl PduSessionResourceReleaseResponse {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -531,7 +579,9 @@ impl PduSessionResourceReleaseResponse {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -539,7 +589,9 @@ impl PduSessionResourceReleaseResponse {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.pdu_session_resource_released_list_rel_res.encode(ie)?;
+		self.pdu_session_resource_released_list_rel_res
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 70, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -548,7 +600,7 @@ impl PduSessionResourceReleaseResponse {
 
 		if let Some(x) = &self.user_location_information {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 121, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -558,7 +610,7 @@ impl PduSessionResourceReleaseResponse {
 
 		if let Some(x) = &self.criticality_diagnostics {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 19, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -575,20 +627,25 @@ impl PduSessionResourceReleaseResponse {
 
 impl PerCodec for PduSessionResourceReleaseResponse {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		PduSessionResourceReleaseResponse::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("PduSessionResourceReleaseResponse");
-			e
-		})
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		PduSessionResourceReleaseResponse::decode_inner(data).map_err(
+			|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("PduSessionResourceReleaseResponse");
+				e
+			},
+		)
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("PduSessionResourceReleaseResponse");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("PduSessionResourceReleaseResponse");
+				e
+			})
 	}
 }
 // PduSessionResourceModifyRequest
@@ -601,7 +658,7 @@ pub struct PduSessionResourceModifyRequest {
 }
 
 impl PduSessionResourceModifyRequest {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -624,18 +681,23 @@ impl PduSessionResourceModifyRequest {
 					pdu_session_resource_modify_list_mod_req =
 						Some(PduSessionResourceModifyListModReq::decode(data)?)
 				}
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
 		let pdu_session_resource_modify_list_mod_req = pdu_session_resource_modify_list_mod_req
-			.ok_or(PerCodecError::new(format!(
+			.ok_or(ThreeGppAsn1PerError::new(format!(
 				"Missing mandatory IE pdu_session_resource_modify_list_mod_req"
 			)))?;
 		Ok(Self {
@@ -648,12 +710,14 @@ impl PduSessionResourceModifyRequest {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -661,7 +725,9 @@ impl PduSessionResourceModifyRequest {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -670,7 +736,7 @@ impl PduSessionResourceModifyRequest {
 
 		if let Some(x) = &self.ran_paging_priority {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 83, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -679,7 +745,9 @@ impl PduSessionResourceModifyRequest {
 		}
 
 		let ie = &mut Allocator::new_codec_data();
-		self.pdu_session_resource_modify_list_mod_req.encode(ie)?;
+		self.pdu_session_resource_modify_list_mod_req
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 64, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -695,20 +763,25 @@ impl PduSessionResourceModifyRequest {
 
 impl PerCodec for PduSessionResourceModifyRequest {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		PduSessionResourceModifyRequest::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("PduSessionResourceModifyRequest");
-			e
-		})
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		PduSessionResourceModifyRequest::decode_inner(data).map_err(
+			|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("PduSessionResourceModifyRequest");
+				e
+			},
+		)
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("PduSessionResourceModifyRequest");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("PduSessionResourceModifyRequest");
+				e
+			})
 	}
 }
 // PduSessionResourceModifyResponse
@@ -724,7 +797,7 @@ pub struct PduSessionResourceModifyResponse {
 }
 
 impl PduSessionResourceModifyResponse {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -756,14 +829,19 @@ impl PduSessionResourceModifyResponse {
 				}
 				121 => user_location_information = Some(UserLocationInformation::decode(data)?),
 				19 => criticality_diagnostics = Some(CriticalityDiagnostics::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
 		Ok(Self {
@@ -778,12 +856,14 @@ impl PduSessionResourceModifyResponse {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -791,7 +871,9 @@ impl PduSessionResourceModifyResponse {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -800,7 +882,7 @@ impl PduSessionResourceModifyResponse {
 
 		if let Some(x) = &self.pdu_session_resource_modify_list_mod_res {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 65, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -810,7 +892,7 @@ impl PduSessionResourceModifyResponse {
 
 		if let Some(x) = &self.pdu_session_resource_failed_to_modify_list_mod_res {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 54, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -820,7 +902,7 @@ impl PduSessionResourceModifyResponse {
 
 		if let Some(x) = &self.user_location_information {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 121, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -830,7 +912,7 @@ impl PduSessionResourceModifyResponse {
 
 		if let Some(x) = &self.criticality_diagnostics {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 19, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -847,20 +929,25 @@ impl PduSessionResourceModifyResponse {
 
 impl PerCodec for PduSessionResourceModifyResponse {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		PduSessionResourceModifyResponse::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("PduSessionResourceModifyResponse");
-			e
-		})
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		PduSessionResourceModifyResponse::decode_inner(data).map_err(
+			|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("PduSessionResourceModifyResponse");
+				e
+			},
+		)
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("PduSessionResourceModifyResponse");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("PduSessionResourceModifyResponse");
+				e
+			})
 	}
 }
 // PduSessionResourceNotify
@@ -874,7 +961,7 @@ pub struct PduSessionResourceNotify {
 }
 
 impl PduSessionResourceNotify {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -901,14 +988,19 @@ impl PduSessionResourceNotify {
 						Some(PduSessionResourceReleasedListNot::decode(data)?)
 				}
 				121 => user_location_information = Some(UserLocationInformation::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
 		Ok(Self {
@@ -922,12 +1014,14 @@ impl PduSessionResourceNotify {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -935,7 +1029,9 @@ impl PduSessionResourceNotify {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -944,7 +1040,7 @@ impl PduSessionResourceNotify {
 
 		if let Some(x) = &self.pdu_session_resource_notify_list {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 66, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -954,7 +1050,7 @@ impl PduSessionResourceNotify {
 
 		if let Some(x) = &self.pdu_session_resource_released_list_not {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 67, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -964,7 +1060,7 @@ impl PduSessionResourceNotify {
 
 		if let Some(x) = &self.user_location_information {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 121, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -981,20 +1077,21 @@ impl PduSessionResourceNotify {
 
 impl PerCodec for PduSessionResourceNotify {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		PduSessionResourceNotify::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("PduSessionResourceNotify");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		PduSessionResourceNotify::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("PduSessionResourceNotify");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("PduSessionResourceNotify");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("PduSessionResourceNotify");
+				e
+			})
 	}
 }
 // PduSessionResourceModifyIndication
@@ -1007,7 +1104,7 @@ pub struct PduSessionResourceModifyIndication {
 }
 
 impl PduSessionResourceModifyIndication {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -1030,18 +1127,23 @@ impl PduSessionResourceModifyIndication {
 						Some(PduSessionResourceModifyListModInd::decode(data)?)
 				}
 				121 => user_location_information = Some(UserLocationInformation::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
 		let pdu_session_resource_modify_list_mod_ind = pdu_session_resource_modify_list_mod_ind
-			.ok_or(PerCodecError::new(format!(
+			.ok_or(ThreeGppAsn1PerError::new(format!(
 				"Missing mandatory IE pdu_session_resource_modify_list_mod_ind"
 			)))?;
 		Ok(Self {
@@ -1054,12 +1156,14 @@ impl PduSessionResourceModifyIndication {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -1067,7 +1171,9 @@ impl PduSessionResourceModifyIndication {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -1075,7 +1181,9 @@ impl PduSessionResourceModifyIndication {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.pdu_session_resource_modify_list_mod_ind.encode(ie)?;
+		self.pdu_session_resource_modify_list_mod_ind
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 63, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -1084,7 +1192,7 @@ impl PduSessionResourceModifyIndication {
 
 		if let Some(x) = &self.user_location_information {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 121, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -1101,20 +1209,25 @@ impl PduSessionResourceModifyIndication {
 
 impl PerCodec for PduSessionResourceModifyIndication {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		PduSessionResourceModifyIndication::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("PduSessionResourceModifyIndication");
-			e
-		})
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		PduSessionResourceModifyIndication::decode_inner(data).map_err(
+			|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("PduSessionResourceModifyIndication");
+				e
+			},
+		)
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("PduSessionResourceModifyIndication");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("PduSessionResourceModifyIndication");
+				e
+			})
 	}
 }
 // PduSessionResourceModifyConfirm
@@ -1129,7 +1242,7 @@ pub struct PduSessionResourceModifyConfirm {
 }
 
 impl PduSessionResourceModifyConfirm {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -1159,14 +1272,19 @@ impl PduSessionResourceModifyConfirm {
 						Some(PduSessionResourceFailedToModifyListModCfm::decode(data)?)
 				}
 				19 => criticality_diagnostics = Some(CriticalityDiagnostics::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
 		Ok(Self {
@@ -1180,12 +1298,14 @@ impl PduSessionResourceModifyConfirm {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -1193,7 +1313,9 @@ impl PduSessionResourceModifyConfirm {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -1202,7 +1324,7 @@ impl PduSessionResourceModifyConfirm {
 
 		if let Some(x) = &self.pdu_session_resource_modify_list_mod_cfm {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 62, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -1212,7 +1334,7 @@ impl PduSessionResourceModifyConfirm {
 
 		if let Some(x) = &self.pdu_session_resource_failed_to_modify_list_mod_cfm {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 131, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -1222,7 +1344,7 @@ impl PduSessionResourceModifyConfirm {
 
 		if let Some(x) = &self.criticality_diagnostics {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 19, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -1239,20 +1361,25 @@ impl PduSessionResourceModifyConfirm {
 
 impl PerCodec for PduSessionResourceModifyConfirm {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		PduSessionResourceModifyConfirm::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("PduSessionResourceModifyConfirm");
-			e
-		})
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		PduSessionResourceModifyConfirm::decode_inner(data).map_err(
+			|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("PduSessionResourceModifyConfirm");
+				e
+			},
+		)
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("PduSessionResourceModifyConfirm");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("PduSessionResourceModifyConfirm");
+				e
+			})
 	}
 }
 // InitialContextSetupRequest
@@ -1307,7 +1434,7 @@ pub struct InitialContextSetupRequest {
 }
 
 impl InitialContextSetupRequest {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -1454,24 +1581,31 @@ impl InitialContextSetupRequest {
 					five_g_pro_se_pc5_qos_parameters =
 						Some(FiveGProSePc5QosParameters::decode(data)?)
 				}
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
-		let guami = guami.ok_or(PerCodecError::new(format!("Missing mandatory IE guami")))?;
-		let allowed_nssai = allowed_nssai.ok_or(PerCodecError::new(format!(
+		let guami = guami.ok_or(ThreeGppAsn1PerError::new(format!(
+			"Missing mandatory IE guami"
+		)))?;
+		let allowed_nssai = allowed_nssai.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE allowed_nssai"
 		)))?;
-		let ue_security_capabilities = ue_security_capabilities.ok_or(PerCodecError::new(
-			format!("Missing mandatory IE ue_security_capabilities"),
-		))?;
-		let security_key = security_key.ok_or(PerCodecError::new(format!(
+		let ue_security_capabilities = ue_security_capabilities.ok_or(
+			ThreeGppAsn1PerError::new(format!("Missing mandatory IE ue_security_capabilities")),
+		)?;
+		let security_key = security_key.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE security_key"
 		)))?;
 		Ok(Self {
@@ -1524,12 +1658,14 @@ impl InitialContextSetupRequest {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -1537,7 +1673,9 @@ impl InitialContextSetupRequest {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -1546,7 +1684,7 @@ impl InitialContextSetupRequest {
 
 		if let Some(x) = &self.old_amf {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 48, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -1556,7 +1694,7 @@ impl InitialContextSetupRequest {
 
 		if let Some(x) = &self.ue_aggregate_maximum_bit_rate {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 110, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -1566,7 +1704,7 @@ impl InitialContextSetupRequest {
 
 		if let Some(x) = &self.core_network_assistance_information_for_inactive {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 18, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -1575,7 +1713,7 @@ impl InitialContextSetupRequest {
 		}
 
 		let ie = &mut Allocator::new_codec_data();
-		self.guami.encode(ie)?;
+		self.guami.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 28, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -1584,7 +1722,7 @@ impl InitialContextSetupRequest {
 
 		if let Some(x) = &self.pdu_session_resource_setup_list_cxt_req {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 71, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -1593,7 +1731,9 @@ impl InitialContextSetupRequest {
 		}
 
 		let ie = &mut Allocator::new_codec_data();
-		self.allowed_nssai.encode(ie)?;
+		self.allowed_nssai
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 0, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -1601,7 +1741,9 @@ impl InitialContextSetupRequest {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ue_security_capabilities.encode(ie)?;
+		self.ue_security_capabilities
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 119, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -1609,7 +1751,9 @@ impl InitialContextSetupRequest {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.security_key.encode(ie)?;
+		self.security_key
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 94, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -1618,7 +1762,7 @@ impl InitialContextSetupRequest {
 
 		if let Some(x) = &self.trace_activation {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 108, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -1628,7 +1772,7 @@ impl InitialContextSetupRequest {
 
 		if let Some(x) = &self.mobility_restriction_list {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 36, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -1638,7 +1782,7 @@ impl InitialContextSetupRequest {
 
 		if let Some(x) = &self.ue_radio_capability {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 117, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -1648,7 +1792,7 @@ impl InitialContextSetupRequest {
 
 		if let Some(x) = &self.index_to_rfsp {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 31, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -1658,7 +1802,7 @@ impl InitialContextSetupRequest {
 
 		if let Some(x) = &self.masked_imeisv {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 34, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -1668,7 +1812,7 @@ impl InitialContextSetupRequest {
 
 		if let Some(x) = &self.nas_pdu {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 38, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -1678,7 +1822,7 @@ impl InitialContextSetupRequest {
 
 		if let Some(x) = &self.emergency_fallback_indicator {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 24, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -1688,7 +1832,7 @@ impl InitialContextSetupRequest {
 
 		if let Some(x) = &self.rrc_inactive_transition_report_request {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 91, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -1698,7 +1842,7 @@ impl InitialContextSetupRequest {
 
 		if let Some(x) = &self.ue_radio_capability_for_paging {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 118, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -1708,7 +1852,7 @@ impl InitialContextSetupRequest {
 
 		if let Some(x) = &self.redirection_voice_fallback {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 146, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -1718,7 +1862,7 @@ impl InitialContextSetupRequest {
 
 		if let Some(x) = &self.location_reporting_request_type {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 33, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -1728,7 +1872,7 @@ impl InitialContextSetupRequest {
 
 		if let Some(x) = &self.cn_assisted_ran_tuning {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 165, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -1738,7 +1882,7 @@ impl InitialContextSetupRequest {
 
 		if let Some(x) = &self.srvcc_operation_possible {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 177, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -1748,7 +1892,7 @@ impl InitialContextSetupRequest {
 
 		if let Some(x) = &self.iab_authorized {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 199, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -1758,7 +1902,7 @@ impl InitialContextSetupRequest {
 
 		if let Some(x) = &self.enhanced_coverage_restriction {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 205, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -1768,7 +1912,7 @@ impl InitialContextSetupRequest {
 
 		if let Some(x) = &self.extended_connected_time {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 206, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -1778,7 +1922,7 @@ impl InitialContextSetupRequest {
 
 		if let Some(x) = &self.ue_differentiation_info {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 209, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -1788,7 +1932,7 @@ impl InitialContextSetupRequest {
 
 		if let Some(x) = &self.nr_v2x_services_authorized {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 216, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -1798,7 +1942,7 @@ impl InitialContextSetupRequest {
 
 		if let Some(x) = &self.ltev2x_services_authorized {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 215, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -1808,7 +1952,7 @@ impl InitialContextSetupRequest {
 
 		if let Some(x) = &self.nr_ue_sidelink_aggregate_maximum_bitrate {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 218, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -1818,7 +1962,7 @@ impl InitialContextSetupRequest {
 
 		if let Some(x) = &self.lte_ue_sidelink_aggregate_maximum_bitrate {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 217, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -1828,7 +1972,7 @@ impl InitialContextSetupRequest {
 
 		if let Some(x) = &self.pc5_qos_parameters {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 219, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -1838,7 +1982,7 @@ impl InitialContextSetupRequest {
 
 		if let Some(x) = &self.c_emode_brestricted {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 222, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -1848,7 +1992,7 @@ impl InitialContextSetupRequest {
 
 		if let Some(x) = &self.ue_up_c_iot_support {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 234, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -1858,7 +2002,7 @@ impl InitialContextSetupRequest {
 
 		if let Some(x) = &self.rg_level_wireline_access_characteristics {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 238, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -1868,7 +2012,7 @@ impl InitialContextSetupRequest {
 
 		if let Some(x) = &self.management_based_mdt_plmn_list {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 254, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -1878,7 +2022,7 @@ impl InitialContextSetupRequest {
 
 		if let Some(x) = &self.ue_radio_capability_id {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 264, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -1888,7 +2032,7 @@ impl InitialContextSetupRequest {
 
 		if let Some(x) = &self.time_sync_assistance_info {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 326, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -1898,7 +2042,7 @@ impl InitialContextSetupRequest {
 
 		if let Some(x) = &self.qmc_config_info {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 328, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -1908,7 +2052,7 @@ impl InitialContextSetupRequest {
 
 		if let Some(x) = &self.target_nssai_information {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 334, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -1918,7 +2062,7 @@ impl InitialContextSetupRequest {
 
 		if let Some(x) = &self.ue_slice_maximum_bit_rate_list {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 335, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -1928,7 +2072,7 @@ impl InitialContextSetupRequest {
 
 		if let Some(x) = &self.five_g_pro_se_authorized {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 345, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -1938,7 +2082,7 @@ impl InitialContextSetupRequest {
 
 		if let Some(x) = &self.five_g_pro_se_ue_pc5_aggregate_maximum_bit_rate {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 346, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -1948,7 +2092,7 @@ impl InitialContextSetupRequest {
 
 		if let Some(x) = &self.five_g_pro_se_pc5_qos_parameters {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 347, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -1965,20 +2109,21 @@ impl InitialContextSetupRequest {
 
 impl PerCodec for InitialContextSetupRequest {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		InitialContextSetupRequest::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("InitialContextSetupRequest");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		InitialContextSetupRequest::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("InitialContextSetupRequest");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("InitialContextSetupRequest");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("InitialContextSetupRequest");
+				e
+			})
 	}
 }
 // InitialContextSetupResponse
@@ -1993,7 +2138,7 @@ pub struct InitialContextSetupResponse {
 }
 
 impl InitialContextSetupResponse {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -2022,14 +2167,19 @@ impl InitialContextSetupResponse {
 						Some(PduSessionResourceFailedToSetupListCxtRes::decode(data)?)
 				}
 				19 => criticality_diagnostics = Some(CriticalityDiagnostics::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
 		Ok(Self {
@@ -2043,12 +2193,14 @@ impl InitialContextSetupResponse {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -2056,7 +2208,9 @@ impl InitialContextSetupResponse {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -2065,7 +2219,7 @@ impl InitialContextSetupResponse {
 
 		if let Some(x) = &self.pdu_session_resource_setup_list_cxt_res {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 72, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -2075,7 +2229,7 @@ impl InitialContextSetupResponse {
 
 		if let Some(x) = &self.pdu_session_resource_failed_to_setup_list_cxt_res {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 55, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -2085,7 +2239,7 @@ impl InitialContextSetupResponse {
 
 		if let Some(x) = &self.criticality_diagnostics {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 19, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -2102,20 +2256,21 @@ impl InitialContextSetupResponse {
 
 impl PerCodec for InitialContextSetupResponse {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		InitialContextSetupResponse::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("InitialContextSetupResponse");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		InitialContextSetupResponse::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("InitialContextSetupResponse");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("InitialContextSetupResponse");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("InitialContextSetupResponse");
+				e
+			})
 	}
 }
 // InitialContextSetupFailure
@@ -2130,7 +2285,7 @@ pub struct InitialContextSetupFailure {
 }
 
 impl InitialContextSetupFailure {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -2155,17 +2310,24 @@ impl InitialContextSetupFailure {
 				}
 				15 => cause = Some(Cause::decode(data)?),
 				19 => criticality_diagnostics = Some(CriticalityDiagnostics::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
-		let cause = cause.ok_or(PerCodecError::new(format!("Missing mandatory IE cause")))?;
+		let cause = cause.ok_or(ThreeGppAsn1PerError::new(format!(
+			"Missing mandatory IE cause"
+		)))?;
 		Ok(Self {
 			amf_ue_ngap_id,
 			ran_ue_ngap_id,
@@ -2177,12 +2339,14 @@ impl InitialContextSetupFailure {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -2190,7 +2354,9 @@ impl InitialContextSetupFailure {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -2199,7 +2365,7 @@ impl InitialContextSetupFailure {
 
 		if let Some(x) = &self.pdu_session_resource_failed_to_setup_list_cxt_fail {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 132, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -2208,7 +2374,7 @@ impl InitialContextSetupFailure {
 		}
 
 		let ie = &mut Allocator::new_codec_data();
-		self.cause.encode(ie)?;
+		self.cause.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 15, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -2217,7 +2383,7 @@ impl InitialContextSetupFailure {
 
 		if let Some(x) = &self.criticality_diagnostics {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 19, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -2234,20 +2400,21 @@ impl InitialContextSetupFailure {
 
 impl PerCodec for InitialContextSetupFailure {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		InitialContextSetupFailure::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("InitialContextSetupFailure");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		InitialContextSetupFailure::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("InitialContextSetupFailure");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("InitialContextSetupFailure");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("InitialContextSetupFailure");
+				e
+			})
 	}
 }
 // UeContextReleaseRequest
@@ -2260,7 +2427,7 @@ pub struct UeContextReleaseRequest {
 }
 
 impl UeContextReleaseRequest {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -2282,17 +2449,24 @@ impl UeContextReleaseRequest {
 						Some(PduSessionResourceListCxtRelReq::decode(data)?)
 				}
 				15 => cause = Some(Cause::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
-		let cause = cause.ok_or(PerCodecError::new(format!("Missing mandatory IE cause")))?;
+		let cause = cause.ok_or(ThreeGppAsn1PerError::new(format!(
+			"Missing mandatory IE cause"
+		)))?;
 		Ok(Self {
 			amf_ue_ngap_id,
 			ran_ue_ngap_id,
@@ -2303,12 +2477,14 @@ impl UeContextReleaseRequest {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -2316,7 +2492,9 @@ impl UeContextReleaseRequest {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -2325,7 +2503,7 @@ impl UeContextReleaseRequest {
 
 		if let Some(x) = &self.pdu_session_resource_list_cxt_rel_req {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 133, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -2334,7 +2512,7 @@ impl UeContextReleaseRequest {
 		}
 
 		let ie = &mut Allocator::new_codec_data();
-		self.cause.encode(ie)?;
+		self.cause.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 15, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -2350,20 +2528,21 @@ impl UeContextReleaseRequest {
 
 impl PerCodec for UeContextReleaseRequest {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		UeContextReleaseRequest::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("UeContextReleaseRequest");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		UeContextReleaseRequest::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("UeContextReleaseRequest");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("UeContextReleaseRequest");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("UeContextReleaseRequest");
+				e
+			})
 	}
 }
 // UeContextReleaseCommand
@@ -2374,7 +2553,7 @@ pub struct UeContextReleaseCommand {
 }
 
 impl UeContextReleaseCommand {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -2388,14 +2567,21 @@ impl UeContextReleaseCommand {
 			match id {
 				114 => ue_ngap_i_ds = Some(UeNgapIDs::decode(data)?),
 				15 => cause = Some(Cause::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let ue_ngap_i_ds = ue_ngap_i_ds.ok_or(PerCodecError::new(format!(
+		let ue_ngap_i_ds = ue_ngap_i_ds.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ue_ngap_i_ds"
 		)))?;
-		let cause = cause.ok_or(PerCodecError::new(format!("Missing mandatory IE cause")))?;
+		let cause = cause.ok_or(ThreeGppAsn1PerError::new(format!(
+			"Missing mandatory IE cause"
+		)))?;
 		Ok(Self {
 			ue_ngap_i_ds,
 			cause,
@@ -2404,12 +2590,14 @@ impl UeContextReleaseCommand {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ue_ngap_i_ds.encode(ie)?;
+		self.ue_ngap_i_ds
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 114, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -2417,7 +2605,7 @@ impl UeContextReleaseCommand {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.cause.encode(ie)?;
+		self.cause.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 15, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -2433,20 +2621,21 @@ impl UeContextReleaseCommand {
 
 impl PerCodec for UeContextReleaseCommand {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		UeContextReleaseCommand::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("UeContextReleaseCommand");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		UeContextReleaseCommand::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("UeContextReleaseCommand");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("UeContextReleaseCommand");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("UeContextReleaseCommand");
+				e
+			})
 	}
 }
 // UeContextReleaseComplete
@@ -2463,7 +2652,7 @@ pub struct UeContextReleaseComplete {
 }
 
 impl UeContextReleaseComplete {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -2499,14 +2688,19 @@ impl UeContextReleaseComplete {
 					paging_assis_datafor_c_ecapab_ue =
 						Some(PagingAssisDataforCEcapabUe::decode(data)?)
 				}
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
 		Ok(Self {
@@ -2522,12 +2716,14 @@ impl UeContextReleaseComplete {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -2535,7 +2731,9 @@ impl UeContextReleaseComplete {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -2544,7 +2742,7 @@ impl UeContextReleaseComplete {
 
 		if let Some(x) = &self.user_location_information {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 121, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -2554,7 +2752,7 @@ impl UeContextReleaseComplete {
 
 		if let Some(x) = &self.info_on_recommended_cells_and_ran_nodes_for_paging {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 32, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -2564,7 +2762,7 @@ impl UeContextReleaseComplete {
 
 		if let Some(x) = &self.pdu_session_resource_list_cxt_rel_cpl {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 60, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -2574,7 +2772,7 @@ impl UeContextReleaseComplete {
 
 		if let Some(x) = &self.criticality_diagnostics {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 19, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -2584,7 +2782,7 @@ impl UeContextReleaseComplete {
 
 		if let Some(x) = &self.paging_assis_datafor_c_ecapab_ue {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 207, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -2601,20 +2799,21 @@ impl UeContextReleaseComplete {
 
 impl PerCodec for UeContextReleaseComplete {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		UeContextReleaseComplete::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("UeContextReleaseComplete");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		UeContextReleaseComplete::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("UeContextReleaseComplete");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("UeContextReleaseComplete");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("UeContextReleaseComplete");
+				e
+			})
 	}
 }
 // UeContextResumeRequest
@@ -2633,7 +2832,7 @@ pub struct UeContextResumeRequest {
 }
 
 impl UeContextResumeRequest {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -2677,17 +2876,22 @@ impl UeContextResumeRequest {
 					paging_assis_datafor_c_ecapab_ue =
 						Some(PagingAssisDataforCEcapabUe::decode(data)?)
 				}
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
-		let rrc_resume_cause = rrc_resume_cause.ok_or(PerCodecError::new(format!(
+		let rrc_resume_cause = rrc_resume_cause.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE rrc_resume_cause"
 		)))?;
 		Ok(Self {
@@ -2704,12 +2908,14 @@ impl UeContextResumeRequest {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -2717,7 +2923,9 @@ impl UeContextResumeRequest {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -2725,7 +2933,9 @@ impl UeContextResumeRequest {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.rrc_resume_cause.encode(ie)?;
+		self.rrc_resume_cause
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 237, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -2734,7 +2944,7 @@ impl UeContextResumeRequest {
 
 		if let Some(x) = &self.pdu_session_resource_resume_list_res_req {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 232, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -2744,7 +2954,7 @@ impl UeContextResumeRequest {
 
 		if let Some(x) = &self.pdu_session_resource_failed_to_resume_list_res_req {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 229, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -2754,7 +2964,7 @@ impl UeContextResumeRequest {
 
 		if let Some(x) = &self.suspend_request_indication {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 235, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -2764,7 +2974,7 @@ impl UeContextResumeRequest {
 
 		if let Some(x) = &self.info_on_recommended_cells_and_ran_nodes_for_paging {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 32, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -2774,7 +2984,7 @@ impl UeContextResumeRequest {
 
 		if let Some(x) = &self.paging_assis_datafor_c_ecapab_ue {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 207, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -2791,20 +3001,21 @@ impl UeContextResumeRequest {
 
 impl PerCodec for UeContextResumeRequest {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		UeContextResumeRequest::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("UeContextResumeRequest");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		UeContextResumeRequest::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("UeContextResumeRequest");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("UeContextResumeRequest");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("UeContextResumeRequest");
+				e
+			})
 	}
 }
 // UeContextResumeResponse
@@ -2822,7 +3033,7 @@ pub struct UeContextResumeResponse {
 }
 
 impl UeContextResumeResponse {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -2858,14 +3069,19 @@ impl UeContextResumeResponse {
 				236 => suspend_response_indication = Some(SuspendResponseIndication::decode(data)?),
 				206 => extended_connected_time = Some(ExtendedConnectedTime::decode(data)?),
 				19 => criticality_diagnostics = Some(CriticalityDiagnostics::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
 		Ok(Self {
@@ -2882,12 +3098,14 @@ impl UeContextResumeResponse {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -2895,7 +3113,9 @@ impl UeContextResumeResponse {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -2904,7 +3124,7 @@ impl UeContextResumeResponse {
 
 		if let Some(x) = &self.pdu_session_resource_resume_list_res_res {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 233, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -2914,7 +3134,7 @@ impl UeContextResumeResponse {
 
 		if let Some(x) = &self.pdu_session_resource_failed_to_resume_list_res_res {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 230, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -2924,7 +3144,7 @@ impl UeContextResumeResponse {
 
 		if let Some(x) = &self.security_context {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 93, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -2934,7 +3154,7 @@ impl UeContextResumeResponse {
 
 		if let Some(x) = &self.suspend_response_indication {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 236, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -2944,7 +3164,7 @@ impl UeContextResumeResponse {
 
 		if let Some(x) = &self.extended_connected_time {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 206, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -2954,7 +3174,7 @@ impl UeContextResumeResponse {
 
 		if let Some(x) = &self.criticality_diagnostics {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 19, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -2971,20 +3191,21 @@ impl UeContextResumeResponse {
 
 impl PerCodec for UeContextResumeResponse {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		UeContextResumeResponse::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("UeContextResumeResponse");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		UeContextResumeResponse::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("UeContextResumeResponse");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("UeContextResumeResponse");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("UeContextResumeResponse");
+				e
+			})
 	}
 }
 // UeContextResumeFailure
@@ -2997,7 +3218,7 @@ pub struct UeContextResumeFailure {
 }
 
 impl UeContextResumeFailure {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -3015,17 +3236,24 @@ impl UeContextResumeFailure {
 				85 => ran_ue_ngap_id = Some(RanUeNgapId::decode(data)?),
 				15 => cause = Some(Cause::decode(data)?),
 				19 => criticality_diagnostics = Some(CriticalityDiagnostics::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
-		let cause = cause.ok_or(PerCodecError::new(format!("Missing mandatory IE cause")))?;
+		let cause = cause.ok_or(ThreeGppAsn1PerError::new(format!(
+			"Missing mandatory IE cause"
+		)))?;
 		Ok(Self {
 			amf_ue_ngap_id,
 			ran_ue_ngap_id,
@@ -3036,12 +3264,14 @@ impl UeContextResumeFailure {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -3049,7 +3279,9 @@ impl UeContextResumeFailure {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -3057,7 +3289,7 @@ impl UeContextResumeFailure {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.cause.encode(ie)?;
+		self.cause.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 15, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -3066,7 +3298,7 @@ impl UeContextResumeFailure {
 
 		if let Some(x) = &self.criticality_diagnostics {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 19, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -3083,20 +3315,21 @@ impl UeContextResumeFailure {
 
 impl PerCodec for UeContextResumeFailure {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		UeContextResumeFailure::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("UeContextResumeFailure");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		UeContextResumeFailure::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("UeContextResumeFailure");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("UeContextResumeFailure");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("UeContextResumeFailure");
+				e
+			})
 	}
 }
 // UeContextSuspendRequest
@@ -3111,7 +3344,7 @@ pub struct UeContextSuspendRequest {
 }
 
 impl UeContextSuspendRequest {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -3144,14 +3377,19 @@ impl UeContextSuspendRequest {
 					pdu_session_resource_suspend_list_sus_req =
 						Some(PduSessionResourceSuspendListSusReq::decode(data)?)
 				}
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
 		Ok(Self {
@@ -3165,12 +3403,14 @@ impl UeContextSuspendRequest {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -3178,7 +3418,9 @@ impl UeContextSuspendRequest {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -3187,7 +3429,7 @@ impl UeContextSuspendRequest {
 
 		if let Some(x) = &self.info_on_recommended_cells_and_ran_nodes_for_paging {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 32, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -3197,7 +3439,7 @@ impl UeContextSuspendRequest {
 
 		if let Some(x) = &self.paging_assis_datafor_c_ecapab_ue {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 207, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -3207,7 +3449,7 @@ impl UeContextSuspendRequest {
 
 		if let Some(x) = &self.pdu_session_resource_suspend_list_sus_req {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 231, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -3224,20 +3466,21 @@ impl UeContextSuspendRequest {
 
 impl PerCodec for UeContextSuspendRequest {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		UeContextSuspendRequest::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("UeContextSuspendRequest");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		UeContextSuspendRequest::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("UeContextSuspendRequest");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("UeContextSuspendRequest");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("UeContextSuspendRequest");
+				e
+			})
 	}
 }
 // UeContextSuspendResponse
@@ -3250,7 +3493,7 @@ pub struct UeContextSuspendResponse {
 }
 
 impl UeContextSuspendResponse {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -3268,14 +3511,19 @@ impl UeContextSuspendResponse {
 				85 => ran_ue_ngap_id = Some(RanUeNgapId::decode(data)?),
 				93 => security_context = Some(SecurityContext::decode(data)?),
 				19 => criticality_diagnostics = Some(CriticalityDiagnostics::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
 		Ok(Self {
@@ -3288,12 +3536,14 @@ impl UeContextSuspendResponse {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -3301,7 +3551,9 @@ impl UeContextSuspendResponse {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -3310,7 +3562,7 @@ impl UeContextSuspendResponse {
 
 		if let Some(x) = &self.security_context {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 93, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -3320,7 +3572,7 @@ impl UeContextSuspendResponse {
 
 		if let Some(x) = &self.criticality_diagnostics {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 19, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -3337,20 +3589,21 @@ impl UeContextSuspendResponse {
 
 impl PerCodec for UeContextSuspendResponse {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		UeContextSuspendResponse::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("UeContextSuspendResponse");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		UeContextSuspendResponse::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("UeContextSuspendResponse");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("UeContextSuspendResponse");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("UeContextSuspendResponse");
+				e
+			})
 	}
 }
 // UeContextSuspendFailure
@@ -3363,7 +3616,7 @@ pub struct UeContextSuspendFailure {
 }
 
 impl UeContextSuspendFailure {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -3381,17 +3634,24 @@ impl UeContextSuspendFailure {
 				85 => ran_ue_ngap_id = Some(RanUeNgapId::decode(data)?),
 				15 => cause = Some(Cause::decode(data)?),
 				19 => criticality_diagnostics = Some(CriticalityDiagnostics::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
-		let cause = cause.ok_or(PerCodecError::new(format!("Missing mandatory IE cause")))?;
+		let cause = cause.ok_or(ThreeGppAsn1PerError::new(format!(
+			"Missing mandatory IE cause"
+		)))?;
 		Ok(Self {
 			amf_ue_ngap_id,
 			ran_ue_ngap_id,
@@ -3402,12 +3662,14 @@ impl UeContextSuspendFailure {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -3415,7 +3677,9 @@ impl UeContextSuspendFailure {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -3423,7 +3687,7 @@ impl UeContextSuspendFailure {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.cause.encode(ie)?;
+		self.cause.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 15, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -3432,7 +3696,7 @@ impl UeContextSuspendFailure {
 
 		if let Some(x) = &self.criticality_diagnostics {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 19, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -3449,20 +3713,21 @@ impl UeContextSuspendFailure {
 
 impl PerCodec for UeContextSuspendFailure {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		UeContextSuspendFailure::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("UeContextSuspendFailure");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		UeContextSuspendFailure::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("UeContextSuspendFailure");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("UeContextSuspendFailure");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("UeContextSuspendFailure");
+				e
+			})
 	}
 }
 // UeContextModificationRequest
@@ -3503,7 +3768,7 @@ pub struct UeContextModificationRequest {
 }
 
 impl UeContextModificationRequest {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -3614,14 +3879,19 @@ impl UeContextModificationRequest {
 					five_g_pro_se_pc5_qos_parameters =
 						Some(FiveGProSePc5QosParameters::decode(data)?)
 				}
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
 		Ok(Self {
@@ -3660,12 +3930,14 @@ impl UeContextModificationRequest {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -3673,7 +3945,9 @@ impl UeContextModificationRequest {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -3682,7 +3956,7 @@ impl UeContextModificationRequest {
 
 		if let Some(x) = &self.ran_paging_priority {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 83, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -3692,7 +3966,7 @@ impl UeContextModificationRequest {
 
 		if let Some(x) = &self.security_key {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 94, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -3702,7 +3976,7 @@ impl UeContextModificationRequest {
 
 		if let Some(x) = &self.index_to_rfsp {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 31, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -3712,7 +3986,7 @@ impl UeContextModificationRequest {
 
 		if let Some(x) = &self.ue_aggregate_maximum_bit_rate {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 110, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -3722,7 +3996,7 @@ impl UeContextModificationRequest {
 
 		if let Some(x) = &self.ue_security_capabilities {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 119, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -3732,7 +4006,7 @@ impl UeContextModificationRequest {
 
 		if let Some(x) = &self.core_network_assistance_information_for_inactive {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 18, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -3742,7 +4016,7 @@ impl UeContextModificationRequest {
 
 		if let Some(x) = &self.emergency_fallback_indicator {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 24, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -3752,7 +4026,7 @@ impl UeContextModificationRequest {
 
 		if let Some(x) = &self.new_amf_ue_ngap_id {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 40, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -3762,7 +4036,7 @@ impl UeContextModificationRequest {
 
 		if let Some(x) = &self.rrc_inactive_transition_report_request {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 91, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -3772,7 +4046,7 @@ impl UeContextModificationRequest {
 
 		if let Some(x) = &self.new_guami {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 162, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -3782,7 +4056,7 @@ impl UeContextModificationRequest {
 
 		if let Some(x) = &self.cn_assisted_ran_tuning {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 165, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -3792,7 +4066,7 @@ impl UeContextModificationRequest {
 
 		if let Some(x) = &self.srvcc_operation_possible {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 177, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -3802,7 +4076,7 @@ impl UeContextModificationRequest {
 
 		if let Some(x) = &self.iab_authorized {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 199, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -3812,7 +4086,7 @@ impl UeContextModificationRequest {
 
 		if let Some(x) = &self.nr_v2x_services_authorized {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 216, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -3822,7 +4096,7 @@ impl UeContextModificationRequest {
 
 		if let Some(x) = &self.ltev2x_services_authorized {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 215, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -3832,7 +4106,7 @@ impl UeContextModificationRequest {
 
 		if let Some(x) = &self.nr_ue_sidelink_aggregate_maximum_bitrate {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 218, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -3842,7 +4116,7 @@ impl UeContextModificationRequest {
 
 		if let Some(x) = &self.lte_ue_sidelink_aggregate_maximum_bitrate {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 217, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -3852,7 +4126,7 @@ impl UeContextModificationRequest {
 
 		if let Some(x) = &self.pc5_qos_parameters {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 219, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -3862,7 +4136,7 @@ impl UeContextModificationRequest {
 
 		if let Some(x) = &self.ue_radio_capability_id {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 264, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -3872,7 +4146,7 @@ impl UeContextModificationRequest {
 
 		if let Some(x) = &self.rg_level_wireline_access_characteristics {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 238, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -3882,7 +4156,7 @@ impl UeContextModificationRequest {
 
 		if let Some(x) = &self.time_sync_assistance_info {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 326, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -3892,7 +4166,7 @@ impl UeContextModificationRequest {
 
 		if let Some(x) = &self.qmc_config_info {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 328, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -3902,7 +4176,7 @@ impl UeContextModificationRequest {
 
 		if let Some(x) = &self.qmc_deactivation {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 329, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -3912,7 +4186,7 @@ impl UeContextModificationRequest {
 
 		if let Some(x) = &self.ue_slice_maximum_bit_rate_list {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 335, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -3922,7 +4196,7 @@ impl UeContextModificationRequest {
 
 		if let Some(x) = &self.management_based_mdt_plmn_modification_list {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 359, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -3932,7 +4206,7 @@ impl UeContextModificationRequest {
 
 		if let Some(x) = &self.five_g_pro_se_authorized {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 345, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -3942,7 +4216,7 @@ impl UeContextModificationRequest {
 
 		if let Some(x) = &self.five_g_pro_se_ue_pc5_aggregate_maximum_bit_rate {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 346, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -3952,7 +4226,7 @@ impl UeContextModificationRequest {
 
 		if let Some(x) = &self.five_g_pro_se_pc5_qos_parameters {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 347, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -3969,20 +4243,21 @@ impl UeContextModificationRequest {
 
 impl PerCodec for UeContextModificationRequest {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		UeContextModificationRequest::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("UeContextModificationRequest");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		UeContextModificationRequest::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("UeContextModificationRequest");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("UeContextModificationRequest");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("UeContextModificationRequest");
+				e
+			})
 	}
 }
 // UeContextModificationResponse
@@ -3996,7 +4271,7 @@ pub struct UeContextModificationResponse {
 }
 
 impl UeContextModificationResponse {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -4016,14 +4291,19 @@ impl UeContextModificationResponse {
 				92 => rrc_state = Some(RrcState::decode(data)?),
 				121 => user_location_information = Some(UserLocationInformation::decode(data)?),
 				19 => criticality_diagnostics = Some(CriticalityDiagnostics::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
 		Ok(Self {
@@ -4037,12 +4317,14 @@ impl UeContextModificationResponse {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -4050,7 +4332,9 @@ impl UeContextModificationResponse {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -4059,7 +4343,7 @@ impl UeContextModificationResponse {
 
 		if let Some(x) = &self.rrc_state {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 92, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -4069,7 +4353,7 @@ impl UeContextModificationResponse {
 
 		if let Some(x) = &self.user_location_information {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 121, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -4079,7 +4363,7 @@ impl UeContextModificationResponse {
 
 		if let Some(x) = &self.criticality_diagnostics {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 19, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -4096,20 +4380,21 @@ impl UeContextModificationResponse {
 
 impl PerCodec for UeContextModificationResponse {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		UeContextModificationResponse::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("UeContextModificationResponse");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		UeContextModificationResponse::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("UeContextModificationResponse");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("UeContextModificationResponse");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("UeContextModificationResponse");
+				e
+			})
 	}
 }
 // UeContextModificationFailure
@@ -4122,7 +4407,7 @@ pub struct UeContextModificationFailure {
 }
 
 impl UeContextModificationFailure {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -4140,17 +4425,24 @@ impl UeContextModificationFailure {
 				85 => ran_ue_ngap_id = Some(RanUeNgapId::decode(data)?),
 				15 => cause = Some(Cause::decode(data)?),
 				19 => criticality_diagnostics = Some(CriticalityDiagnostics::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
-		let cause = cause.ok_or(PerCodecError::new(format!("Missing mandatory IE cause")))?;
+		let cause = cause.ok_or(ThreeGppAsn1PerError::new(format!(
+			"Missing mandatory IE cause"
+		)))?;
 		Ok(Self {
 			amf_ue_ngap_id,
 			ran_ue_ngap_id,
@@ -4161,12 +4453,14 @@ impl UeContextModificationFailure {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -4174,7 +4468,9 @@ impl UeContextModificationFailure {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -4182,7 +4478,7 @@ impl UeContextModificationFailure {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.cause.encode(ie)?;
+		self.cause.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 15, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -4191,7 +4487,7 @@ impl UeContextModificationFailure {
 
 		if let Some(x) = &self.criticality_diagnostics {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 19, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -4208,20 +4504,21 @@ impl UeContextModificationFailure {
 
 impl PerCodec for UeContextModificationFailure {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		UeContextModificationFailure::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("UeContextModificationFailure");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		UeContextModificationFailure::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("UeContextModificationFailure");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("UeContextModificationFailure");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("UeContextModificationFailure");
+				e
+			})
 	}
 }
 // RrcInactiveTransitionReport
@@ -4234,7 +4531,7 @@ pub struct RrcInactiveTransitionReport {
 }
 
 impl RrcInactiveTransitionReport {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -4252,22 +4549,27 @@ impl RrcInactiveTransitionReport {
 				85 => ran_ue_ngap_id = Some(RanUeNgapId::decode(data)?),
 				92 => rrc_state = Some(RrcState::decode(data)?),
 				121 => user_location_information = Some(UserLocationInformation::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
-		let rrc_state = rrc_state.ok_or(PerCodecError::new(format!(
+		let rrc_state = rrc_state.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE rrc_state"
 		)))?;
-		let user_location_information = user_location_information.ok_or(PerCodecError::new(
-			format!("Missing mandatory IE user_location_information"),
-		))?;
+		let user_location_information = user_location_information.ok_or(
+			ThreeGppAsn1PerError::new(format!("Missing mandatory IE user_location_information")),
+		)?;
 		Ok(Self {
 			amf_ue_ngap_id,
 			ran_ue_ngap_id,
@@ -4278,12 +4580,14 @@ impl RrcInactiveTransitionReport {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -4291,7 +4595,9 @@ impl RrcInactiveTransitionReport {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -4299,7 +4605,9 @@ impl RrcInactiveTransitionReport {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.rrc_state.encode(ie)?;
+		self.rrc_state
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 92, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -4307,7 +4615,9 @@ impl RrcInactiveTransitionReport {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.user_location_information.encode(ie)?;
+		self.user_location_information
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 121, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -4323,20 +4633,21 @@ impl RrcInactiveTransitionReport {
 
 impl PerCodec for RrcInactiveTransitionReport {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		RrcInactiveTransitionReport::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("RrcInactiveTransitionReport");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		RrcInactiveTransitionReport::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("RrcInactiveTransitionReport");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("RrcInactiveTransitionReport");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("RrcInactiveTransitionReport");
+				e
+			})
 	}
 }
 // RetrieveUeInformation
@@ -4346,7 +4657,7 @@ pub struct RetrieveUeInformation {
 }
 
 impl RetrieveUeInformation {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -4358,11 +4669,16 @@ impl RetrieveUeInformation {
 			let _ = decode::decode_length_determinent(data, None, None, false)?;
 			match id {
 				26 => five_g_s_tmsi = Some(FiveGSTmsi::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let five_g_s_tmsi = five_g_s_tmsi.ok_or(PerCodecError::new(format!(
+		let five_g_s_tmsi = five_g_s_tmsi.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE five_g_s_tmsi"
 		)))?;
 		Ok(Self { five_g_s_tmsi })
@@ -4370,12 +4686,14 @@ impl RetrieveUeInformation {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.five_g_s_tmsi.encode(ie)?;
+		self.five_g_s_tmsi
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 26, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -4391,20 +4709,21 @@ impl RetrieveUeInformation {
 
 impl PerCodec for RetrieveUeInformation {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		RetrieveUeInformation::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("RetrieveUeInformation");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		RetrieveUeInformation::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("RetrieveUeInformation");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("RetrieveUeInformation");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("RetrieveUeInformation");
+				e
+			})
 	}
 }
 // UeInformationTransfer
@@ -4420,7 +4739,7 @@ pub struct UeInformationTransfer {
 }
 
 impl UeInformationTransfer {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -4444,11 +4763,16 @@ impl UeInformationTransfer {
 				0 => allowed_nssai = Some(AllowedNssai::decode(data)?),
 				209 => ue_differentiation_info = Some(UeDifferentiationInfo::decode(data)?),
 				34 => masked_imeisv = Some(MaskedImeisv::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let five_g_s_tmsi = five_g_s_tmsi.ok_or(PerCodecError::new(format!(
+		let five_g_s_tmsi = five_g_s_tmsi.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE five_g_s_tmsi"
 		)))?;
 		Ok(Self {
@@ -4464,12 +4788,14 @@ impl UeInformationTransfer {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.five_g_s_tmsi.encode(ie)?;
+		self.five_g_s_tmsi
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 26, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -4478,7 +4804,7 @@ impl UeInformationTransfer {
 
 		if let Some(x) = &self.nb_iot_ue_priority {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 210, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -4488,7 +4814,7 @@ impl UeInformationTransfer {
 
 		if let Some(x) = &self.ue_radio_capability {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 117, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -4498,7 +4824,7 @@ impl UeInformationTransfer {
 
 		if let Some(x) = &self.snssai {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 148, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -4508,7 +4834,7 @@ impl UeInformationTransfer {
 
 		if let Some(x) = &self.allowed_nssai {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 0, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -4518,7 +4844,7 @@ impl UeInformationTransfer {
 
 		if let Some(x) = &self.ue_differentiation_info {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 209, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -4528,7 +4854,7 @@ impl UeInformationTransfer {
 
 		if let Some(x) = &self.masked_imeisv {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 34, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -4545,20 +4871,21 @@ impl UeInformationTransfer {
 
 impl PerCodec for UeInformationTransfer {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		UeInformationTransfer::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("UeInformationTransfer");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		UeInformationTransfer::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("UeInformationTransfer");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("UeInformationTransfer");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("UeInformationTransfer");
+				e
+			})
 	}
 }
 // RancpRelocationIndication
@@ -4572,7 +4899,7 @@ pub struct RancpRelocationIndication {
 }
 
 impl RancpRelocationIndication {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -4592,23 +4919,30 @@ impl RancpRelocationIndication {
 				25 => eutra_cgi = Some(EutraCgi::decode(data)?),
 				213 => tai = Some(Tai::decode(data)?),
 				211 => ul_cp_security_information = Some(UlCpSecurityInformation::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
-		let five_g_s_tmsi = five_g_s_tmsi.ok_or(PerCodecError::new(format!(
+		let five_g_s_tmsi = five_g_s_tmsi.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE five_g_s_tmsi"
 		)))?;
-		let eutra_cgi = eutra_cgi.ok_or(PerCodecError::new(format!(
+		let eutra_cgi = eutra_cgi.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE eutra_cgi"
 		)))?;
-		let tai = tai.ok_or(PerCodecError::new(format!("Missing mandatory IE tai")))?;
-		let ul_cp_security_information = ul_cp_security_information.ok_or(PerCodecError::new(
-			format!("Missing mandatory IE ul_cp_security_information"),
-		))?;
+		let tai = tai.ok_or(ThreeGppAsn1PerError::new(format!(
+			"Missing mandatory IE tai"
+		)))?;
+		let ul_cp_security_information = ul_cp_security_information.ok_or(
+			ThreeGppAsn1PerError::new(format!("Missing mandatory IE ul_cp_security_information")),
+		)?;
 		Ok(Self {
 			ran_ue_ngap_id,
 			five_g_s_tmsi,
@@ -4620,12 +4954,14 @@ impl RancpRelocationIndication {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -4633,7 +4969,9 @@ impl RancpRelocationIndication {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.five_g_s_tmsi.encode(ie)?;
+		self.five_g_s_tmsi
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 26, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -4641,7 +4979,9 @@ impl RancpRelocationIndication {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.eutra_cgi.encode(ie)?;
+		self.eutra_cgi
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 25, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -4649,7 +4989,7 @@ impl RancpRelocationIndication {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.tai.encode(ie)?;
+		self.tai.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 213, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -4657,7 +4997,9 @@ impl RancpRelocationIndication {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ul_cp_security_information.encode(ie)?;
+		self.ul_cp_security_information
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 211, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -4673,20 +5015,21 @@ impl RancpRelocationIndication {
 
 impl PerCodec for RancpRelocationIndication {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		RancpRelocationIndication::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("RancpRelocationIndication");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		RancpRelocationIndication::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("RancpRelocationIndication");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("RancpRelocationIndication");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("RancpRelocationIndication");
+				e
+			})
 	}
 }
 // HandoverRequired
@@ -4703,7 +5046,7 @@ pub struct HandoverRequired {
 }
 
 impl HandoverRequired {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -4740,29 +5083,36 @@ impl HandoverRequired {
 					source_to_target_transparent_container =
 						Some(SourceToTargetTransparentContainer::decode(data)?)
 				}
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
-		let handover_type = handover_type.ok_or(PerCodecError::new(format!(
+		let handover_type = handover_type.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE handover_type"
 		)))?;
-		let cause = cause.ok_or(PerCodecError::new(format!("Missing mandatory IE cause")))?;
-		let target_id = target_id.ok_or(PerCodecError::new(format!(
+		let cause = cause.ok_or(ThreeGppAsn1PerError::new(format!(
+			"Missing mandatory IE cause"
+		)))?;
+		let target_id = target_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE target_id"
 		)))?;
 		let pdu_session_resource_list_ho_rqd =
-			pdu_session_resource_list_ho_rqd.ok_or(PerCodecError::new(format!(
+			pdu_session_resource_list_ho_rqd.ok_or(ThreeGppAsn1PerError::new(format!(
 				"Missing mandatory IE pdu_session_resource_list_ho_rqd"
 			)))?;
 		let source_to_target_transparent_container =
-			source_to_target_transparent_container.ok_or(PerCodecError::new(format!(
+			source_to_target_transparent_container.ok_or(ThreeGppAsn1PerError::new(format!(
 				"Missing mandatory IE source_to_target_transparent_container"
 			)))?;
 		Ok(Self {
@@ -4779,12 +5129,14 @@ impl HandoverRequired {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -4792,7 +5144,9 @@ impl HandoverRequired {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -4800,7 +5154,9 @@ impl HandoverRequired {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.handover_type.encode(ie)?;
+		self.handover_type
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 29, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -4808,7 +5164,7 @@ impl HandoverRequired {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.cause.encode(ie)?;
+		self.cause.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 15, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -4816,7 +5172,9 @@ impl HandoverRequired {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.target_id.encode(ie)?;
+		self.target_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 105, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -4825,7 +5183,7 @@ impl HandoverRequired {
 
 		if let Some(x) = &self.direct_forwarding_path_availability {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 22, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -4834,7 +5192,9 @@ impl HandoverRequired {
 		}
 
 		let ie = &mut Allocator::new_codec_data();
-		self.pdu_session_resource_list_ho_rqd.encode(ie)?;
+		self.pdu_session_resource_list_ho_rqd
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 61, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -4842,7 +5202,9 @@ impl HandoverRequired {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.source_to_target_transparent_container.encode(ie)?;
+		self.source_to_target_transparent_container
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 101, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -4858,20 +5220,21 @@ impl HandoverRequired {
 
 impl PerCodec for HandoverRequired {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		HandoverRequired::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("HandoverRequired");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		HandoverRequired::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("HandoverRequired");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("HandoverRequired");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("HandoverRequired");
+				e
+			})
 	}
 }
 // HandoverCommand
@@ -4888,7 +5251,7 @@ pub struct HandoverCommand {
 }
 
 impl HandoverCommand {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -4929,21 +5292,26 @@ impl HandoverCommand {
 						Some(TargetToSourceTransparentContainer::decode(data)?)
 				}
 				19 => criticality_diagnostics = Some(CriticalityDiagnostics::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
-		let handover_type = handover_type.ok_or(PerCodecError::new(format!(
+		let handover_type = handover_type.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE handover_type"
 		)))?;
 		let target_to_source_transparent_container =
-			target_to_source_transparent_container.ok_or(PerCodecError::new(format!(
+			target_to_source_transparent_container.ok_or(ThreeGppAsn1PerError::new(format!(
 				"Missing mandatory IE target_to_source_transparent_container"
 			)))?;
 		Ok(Self {
@@ -4960,12 +5328,14 @@ impl HandoverCommand {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -4973,7 +5343,9 @@ impl HandoverCommand {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -4981,7 +5353,9 @@ impl HandoverCommand {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.handover_type.encode(ie)?;
+		self.handover_type
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 29, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -4990,7 +5364,7 @@ impl HandoverCommand {
 
 		if let Some(x) = &self.nas_security_parameters_from_ngran {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 39, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -5000,7 +5374,7 @@ impl HandoverCommand {
 
 		if let Some(x) = &self.pdu_session_resource_handover_list {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 59, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -5010,7 +5384,7 @@ impl HandoverCommand {
 
 		if let Some(x) = &self.pdu_session_resource_to_release_list_ho_cmd {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 78, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -5019,7 +5393,9 @@ impl HandoverCommand {
 		}
 
 		let ie = &mut Allocator::new_codec_data();
-		self.target_to_source_transparent_container.encode(ie)?;
+		self.target_to_source_transparent_container
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 106, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -5028,7 +5404,7 @@ impl HandoverCommand {
 
 		if let Some(x) = &self.criticality_diagnostics {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 19, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -5045,20 +5421,21 @@ impl HandoverCommand {
 
 impl PerCodec for HandoverCommand {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		HandoverCommand::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("HandoverCommand");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		HandoverCommand::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("HandoverCommand");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("HandoverCommand");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("HandoverCommand");
+				e
+			})
 	}
 }
 // HandoverPreparationFailure
@@ -5073,7 +5450,7 @@ pub struct HandoverPreparationFailure {
 }
 
 impl HandoverPreparationFailure {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -5098,17 +5475,24 @@ impl HandoverPreparationFailure {
 					targetto_source_failure_transparent_container =
 						Some(TargettoSourceFailureTransparentContainer::decode(data)?)
 				}
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
-		let cause = cause.ok_or(PerCodecError::new(format!("Missing mandatory IE cause")))?;
+		let cause = cause.ok_or(ThreeGppAsn1PerError::new(format!(
+			"Missing mandatory IE cause"
+		)))?;
 		Ok(Self {
 			amf_ue_ngap_id,
 			ran_ue_ngap_id,
@@ -5120,12 +5504,14 @@ impl HandoverPreparationFailure {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -5133,7 +5519,9 @@ impl HandoverPreparationFailure {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -5141,7 +5529,7 @@ impl HandoverPreparationFailure {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.cause.encode(ie)?;
+		self.cause.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 15, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -5150,7 +5538,7 @@ impl HandoverPreparationFailure {
 
 		if let Some(x) = &self.criticality_diagnostics {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 19, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -5160,7 +5548,7 @@ impl HandoverPreparationFailure {
 
 		if let Some(x) = &self.targetto_source_failure_transparent_container {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 262, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -5177,20 +5565,21 @@ impl HandoverPreparationFailure {
 
 impl PerCodec for HandoverPreparationFailure {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		HandoverPreparationFailure::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("HandoverPreparationFailure");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		HandoverPreparationFailure::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("HandoverPreparationFailure");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("HandoverPreparationFailure");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("HandoverPreparationFailure");
+				e
+			})
 	}
 }
 // HandoverRequest
@@ -5240,7 +5629,7 @@ pub struct HandoverRequest {
 }
 
 impl HandoverRequest {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -5372,39 +5761,48 @@ impl HandoverRequest {
 					five_g_pro_se_pc5_qos_parameters =
 						Some(FiveGProSePc5QosParameters::decode(data)?)
 				}
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let handover_type = handover_type.ok_or(PerCodecError::new(format!(
+		let handover_type = handover_type.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE handover_type"
 		)))?;
-		let cause = cause.ok_or(PerCodecError::new(format!("Missing mandatory IE cause")))?;
+		let cause = cause.ok_or(ThreeGppAsn1PerError::new(format!(
+			"Missing mandatory IE cause"
+		)))?;
 		let ue_aggregate_maximum_bit_rate =
-			ue_aggregate_maximum_bit_rate.ok_or(PerCodecError::new(format!(
+			ue_aggregate_maximum_bit_rate.ok_or(ThreeGppAsn1PerError::new(format!(
 				"Missing mandatory IE ue_aggregate_maximum_bit_rate"
 			)))?;
-		let ue_security_capabilities = ue_security_capabilities.ok_or(PerCodecError::new(
-			format!("Missing mandatory IE ue_security_capabilities"),
-		))?;
-		let security_context = security_context.ok_or(PerCodecError::new(format!(
+		let ue_security_capabilities = ue_security_capabilities.ok_or(
+			ThreeGppAsn1PerError::new(format!("Missing mandatory IE ue_security_capabilities")),
+		)?;
+		let security_context = security_context.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE security_context"
 		)))?;
 		let pdu_session_resource_setup_list_ho_req =
-			pdu_session_resource_setup_list_ho_req.ok_or(PerCodecError::new(format!(
+			pdu_session_resource_setup_list_ho_req.ok_or(ThreeGppAsn1PerError::new(format!(
 				"Missing mandatory IE pdu_session_resource_setup_list_ho_req"
 			)))?;
-		let allowed_nssai = allowed_nssai.ok_or(PerCodecError::new(format!(
+		let allowed_nssai = allowed_nssai.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE allowed_nssai"
 		)))?;
 		let source_to_target_transparent_container =
-			source_to_target_transparent_container.ok_or(PerCodecError::new(format!(
+			source_to_target_transparent_container.ok_or(ThreeGppAsn1PerError::new(format!(
 				"Missing mandatory IE source_to_target_transparent_container"
 			)))?;
-		let guami = guami.ok_or(PerCodecError::new(format!("Missing mandatory IE guami")))?;
+		let guami = guami.ok_or(ThreeGppAsn1PerError::new(format!(
+			"Missing mandatory IE guami"
+		)))?;
 		Ok(Self {
 			amf_ue_ngap_id,
 			handover_type,
@@ -5450,12 +5848,14 @@ impl HandoverRequest {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -5463,7 +5863,9 @@ impl HandoverRequest {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.handover_type.encode(ie)?;
+		self.handover_type
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 29, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -5471,7 +5873,7 @@ impl HandoverRequest {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.cause.encode(ie)?;
+		self.cause.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 15, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -5479,7 +5881,9 @@ impl HandoverRequest {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ue_aggregate_maximum_bit_rate.encode(ie)?;
+		self.ue_aggregate_maximum_bit_rate
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 110, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -5488,7 +5892,7 @@ impl HandoverRequest {
 
 		if let Some(x) = &self.core_network_assistance_information_for_inactive {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 18, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -5497,7 +5901,9 @@ impl HandoverRequest {
 		}
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ue_security_capabilities.encode(ie)?;
+		self.ue_security_capabilities
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 119, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -5505,7 +5911,9 @@ impl HandoverRequest {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.security_context.encode(ie)?;
+		self.security_context
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 93, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -5514,7 +5922,7 @@ impl HandoverRequest {
 
 		if let Some(x) = &self.new_security_context_ind {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 41, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -5524,7 +5932,7 @@ impl HandoverRequest {
 
 		if let Some(x) = &self.nasc {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 37, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -5533,7 +5941,9 @@ impl HandoverRequest {
 		}
 
 		let ie = &mut Allocator::new_codec_data();
-		self.pdu_session_resource_setup_list_ho_req.encode(ie)?;
+		self.pdu_session_resource_setup_list_ho_req
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 73, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -5541,7 +5951,9 @@ impl HandoverRequest {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.allowed_nssai.encode(ie)?;
+		self.allowed_nssai
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 0, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -5550,7 +5962,7 @@ impl HandoverRequest {
 
 		if let Some(x) = &self.trace_activation {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 108, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -5560,7 +5972,7 @@ impl HandoverRequest {
 
 		if let Some(x) = &self.masked_imeisv {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 34, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -5569,7 +5981,9 @@ impl HandoverRequest {
 		}
 
 		let ie = &mut Allocator::new_codec_data();
-		self.source_to_target_transparent_container.encode(ie)?;
+		self.source_to_target_transparent_container
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 101, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -5578,7 +5992,7 @@ impl HandoverRequest {
 
 		if let Some(x) = &self.mobility_restriction_list {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 36, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -5588,7 +6002,7 @@ impl HandoverRequest {
 
 		if let Some(x) = &self.location_reporting_request_type {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 33, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -5598,7 +6012,7 @@ impl HandoverRequest {
 
 		if let Some(x) = &self.rrc_inactive_transition_report_request {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 91, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -5607,7 +6021,7 @@ impl HandoverRequest {
 		}
 
 		let ie = &mut Allocator::new_codec_data();
-		self.guami.encode(ie)?;
+		self.guami.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 28, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -5616,7 +6030,7 @@ impl HandoverRequest {
 
 		if let Some(x) = &self.redirection_voice_fallback {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 146, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -5626,7 +6040,7 @@ impl HandoverRequest {
 
 		if let Some(x) = &self.cn_assisted_ran_tuning {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 165, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -5636,7 +6050,7 @@ impl HandoverRequest {
 
 		if let Some(x) = &self.srvcc_operation_possible {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 177, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -5646,7 +6060,7 @@ impl HandoverRequest {
 
 		if let Some(x) = &self.iab_authorized {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 199, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -5656,7 +6070,7 @@ impl HandoverRequest {
 
 		if let Some(x) = &self.enhanced_coverage_restriction {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 205, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -5666,7 +6080,7 @@ impl HandoverRequest {
 
 		if let Some(x) = &self.ue_differentiation_info {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 209, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -5676,7 +6090,7 @@ impl HandoverRequest {
 
 		if let Some(x) = &self.nr_v2x_services_authorized {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 216, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -5686,7 +6100,7 @@ impl HandoverRequest {
 
 		if let Some(x) = &self.ltev2x_services_authorized {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 215, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -5696,7 +6110,7 @@ impl HandoverRequest {
 
 		if let Some(x) = &self.nr_ue_sidelink_aggregate_maximum_bitrate {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 218, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -5706,7 +6120,7 @@ impl HandoverRequest {
 
 		if let Some(x) = &self.lte_ue_sidelink_aggregate_maximum_bitrate {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 217, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -5716,7 +6130,7 @@ impl HandoverRequest {
 
 		if let Some(x) = &self.pc5_qos_parameters {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 219, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -5726,7 +6140,7 @@ impl HandoverRequest {
 
 		if let Some(x) = &self.c_emode_brestricted {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 222, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -5736,7 +6150,7 @@ impl HandoverRequest {
 
 		if let Some(x) = &self.ue_up_c_iot_support {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 234, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -5746,7 +6160,7 @@ impl HandoverRequest {
 
 		if let Some(x) = &self.management_based_mdt_plmn_list {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 254, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -5756,7 +6170,7 @@ impl HandoverRequest {
 
 		if let Some(x) = &self.ue_radio_capability_id {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 264, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -5766,7 +6180,7 @@ impl HandoverRequest {
 
 		if let Some(x) = &self.extended_connected_time {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 206, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -5776,7 +6190,7 @@ impl HandoverRequest {
 
 		if let Some(x) = &self.time_sync_assistance_info {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 326, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -5786,7 +6200,7 @@ impl HandoverRequest {
 
 		if let Some(x) = &self.ue_slice_maximum_bit_rate_list {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 335, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -5796,7 +6210,7 @@ impl HandoverRequest {
 
 		if let Some(x) = &self.five_g_pro_se_authorized {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 345, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -5806,7 +6220,7 @@ impl HandoverRequest {
 
 		if let Some(x) = &self.five_g_pro_se_ue_pc5_aggregate_maximum_bit_rate {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 346, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -5816,7 +6230,7 @@ impl HandoverRequest {
 
 		if let Some(x) = &self.five_g_pro_se_pc5_qos_parameters {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 347, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -5833,20 +6247,21 @@ impl HandoverRequest {
 
 impl PerCodec for HandoverRequest {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		HandoverRequest::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("HandoverRequest");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		HandoverRequest::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("HandoverRequest");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("HandoverRequest");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("HandoverRequest");
+				e
+			})
 	}
 }
 // HandoverRequestAcknowledge
@@ -5864,7 +6279,7 @@ pub struct HandoverRequestAcknowledge {
 }
 
 impl HandoverRequestAcknowledge {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -5902,22 +6317,27 @@ impl HandoverRequestAcknowledge {
 				19 => criticality_diagnostics = Some(CriticalityDiagnostics::decode(data)?),
 				259 => npn_access_information = Some(NpnAccessInformation::decode(data)?),
 				333 => red_cap_indication = Some(RedCapIndication::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
 		let pdu_session_resource_admitted_list =
-			pdu_session_resource_admitted_list.ok_or(PerCodecError::new(format!(
+			pdu_session_resource_admitted_list.ok_or(ThreeGppAsn1PerError::new(format!(
 				"Missing mandatory IE pdu_session_resource_admitted_list"
 			)))?;
 		let target_to_source_transparent_container =
-			target_to_source_transparent_container.ok_or(PerCodecError::new(format!(
+			target_to_source_transparent_container.ok_or(ThreeGppAsn1PerError::new(format!(
 				"Missing mandatory IE target_to_source_transparent_container"
 			)))?;
 		Ok(Self {
@@ -5934,12 +6354,14 @@ impl HandoverRequestAcknowledge {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -5947,7 +6369,9 @@ impl HandoverRequestAcknowledge {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -5955,7 +6379,9 @@ impl HandoverRequestAcknowledge {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.pdu_session_resource_admitted_list.encode(ie)?;
+		self.pdu_session_resource_admitted_list
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 53, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -5964,7 +6390,7 @@ impl HandoverRequestAcknowledge {
 
 		if let Some(x) = &self.pdu_session_resource_failed_to_setup_list_ho_ack {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 56, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -5973,7 +6399,9 @@ impl HandoverRequestAcknowledge {
 		}
 
 		let ie = &mut Allocator::new_codec_data();
-		self.target_to_source_transparent_container.encode(ie)?;
+		self.target_to_source_transparent_container
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 106, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -5982,7 +6410,7 @@ impl HandoverRequestAcknowledge {
 
 		if let Some(x) = &self.criticality_diagnostics {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 19, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -5992,7 +6420,7 @@ impl HandoverRequestAcknowledge {
 
 		if let Some(x) = &self.npn_access_information {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 259, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -6002,7 +6430,7 @@ impl HandoverRequestAcknowledge {
 
 		if let Some(x) = &self.red_cap_indication {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 333, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -6019,20 +6447,21 @@ impl HandoverRequestAcknowledge {
 
 impl PerCodec for HandoverRequestAcknowledge {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		HandoverRequestAcknowledge::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("HandoverRequestAcknowledge");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		HandoverRequestAcknowledge::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("HandoverRequestAcknowledge");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("HandoverRequestAcknowledge");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("HandoverRequestAcknowledge");
+				e
+			})
 	}
 }
 // HandoverFailure
@@ -6046,7 +6475,7 @@ pub struct HandoverFailure {
 }
 
 impl HandoverFailure {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -6069,14 +6498,21 @@ impl HandoverFailure {
 					targetto_source_failure_transparent_container =
 						Some(TargettoSourceFailureTransparentContainer::decode(data)?)
 				}
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let cause = cause.ok_or(PerCodecError::new(format!("Missing mandatory IE cause")))?;
+		let cause = cause.ok_or(ThreeGppAsn1PerError::new(format!(
+			"Missing mandatory IE cause"
+		)))?;
 		Ok(Self {
 			amf_ue_ngap_id,
 			cause,
@@ -6087,12 +6523,14 @@ impl HandoverFailure {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -6100,7 +6538,7 @@ impl HandoverFailure {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.cause.encode(ie)?;
+		self.cause.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 15, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -6109,7 +6547,7 @@ impl HandoverFailure {
 
 		if let Some(x) = &self.criticality_diagnostics {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 19, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -6119,7 +6557,7 @@ impl HandoverFailure {
 
 		if let Some(x) = &self.targetto_source_failure_transparent_container {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 262, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -6136,20 +6574,21 @@ impl HandoverFailure {
 
 impl PerCodec for HandoverFailure {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		HandoverFailure::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("HandoverFailure");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		HandoverFailure::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("HandoverFailure");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("HandoverFailure");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("HandoverFailure");
+				e
+			})
 	}
 }
 // HandoverNotify
@@ -6162,7 +6601,7 @@ pub struct HandoverNotify {
 }
 
 impl HandoverNotify {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -6180,19 +6619,24 @@ impl HandoverNotify {
 				85 => ran_ue_ngap_id = Some(RanUeNgapId::decode(data)?),
 				121 => user_location_information = Some(UserLocationInformation::decode(data)?),
 				269 => notify_source_ngran_node = Some(NotifySourceNgranNode::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
-		let user_location_information = user_location_information.ok_or(PerCodecError::new(
-			format!("Missing mandatory IE user_location_information"),
-		))?;
+		let user_location_information = user_location_information.ok_or(
+			ThreeGppAsn1PerError::new(format!("Missing mandatory IE user_location_information")),
+		)?;
 		Ok(Self {
 			amf_ue_ngap_id,
 			ran_ue_ngap_id,
@@ -6203,12 +6647,14 @@ impl HandoverNotify {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -6216,7 +6662,9 @@ impl HandoverNotify {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -6224,7 +6672,9 @@ impl HandoverNotify {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.user_location_information.encode(ie)?;
+		self.user_location_information
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 121, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -6233,7 +6683,7 @@ impl HandoverNotify {
 
 		if let Some(x) = &self.notify_source_ngran_node {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 269, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -6250,20 +6700,21 @@ impl HandoverNotify {
 
 impl PerCodec for HandoverNotify {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		HandoverNotify::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("HandoverNotify");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		HandoverNotify::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("HandoverNotify");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("HandoverNotify");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("HandoverNotify");
+				e
+			})
 	}
 }
 // PathSwitchRequest
@@ -6281,7 +6732,7 @@ pub struct PathSwitchRequest {
 }
 
 impl PathSwitchRequest {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -6317,26 +6768,31 @@ impl PathSwitchRequest {
 				}
 				237 => rrc_resume_cause = Some(RrcEstablishmentCause::decode(data)?),
 				333 => red_cap_indication = Some(RedCapIndication::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
-		let source_amf_ue_ngap_id = source_amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
-			"Missing mandatory IE source_amf_ue_ngap_id"
-		)))?;
-		let user_location_information = user_location_information.ok_or(PerCodecError::new(
-			format!("Missing mandatory IE user_location_information"),
+		let source_amf_ue_ngap_id = source_amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(
+			format!("Missing mandatory IE source_amf_ue_ngap_id"),
 		))?;
-		let ue_security_capabilities = ue_security_capabilities.ok_or(PerCodecError::new(
-			format!("Missing mandatory IE ue_security_capabilities"),
-		))?;
+		let user_location_information = user_location_information.ok_or(
+			ThreeGppAsn1PerError::new(format!("Missing mandatory IE user_location_information")),
+		)?;
+		let ue_security_capabilities = ue_security_capabilities.ok_or(
+			ThreeGppAsn1PerError::new(format!("Missing mandatory IE ue_security_capabilities")),
+		)?;
 		let pdu_session_resource_to_be_switched_dl_list =
-			pdu_session_resource_to_be_switched_dl_list.ok_or(PerCodecError::new(format!(
-				"Missing mandatory IE pdu_session_resource_to_be_switched_dl_list"
-			)))?;
+			pdu_session_resource_to_be_switched_dl_list.ok_or(ThreeGppAsn1PerError::new(
+				format!("Missing mandatory IE pdu_session_resource_to_be_switched_dl_list"),
+			))?;
 		Ok(Self {
 			ran_ue_ngap_id,
 			source_amf_ue_ngap_id,
@@ -6351,12 +6807,14 @@ impl PathSwitchRequest {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -6364,7 +6822,9 @@ impl PathSwitchRequest {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.source_amf_ue_ngap_id.encode(ie)?;
+		self.source_amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 100, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -6372,7 +6832,9 @@ impl PathSwitchRequest {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.user_location_information.encode(ie)?;
+		self.user_location_information
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 121, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -6380,7 +6842,9 @@ impl PathSwitchRequest {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ue_security_capabilities.encode(ie)?;
+		self.ue_security_capabilities
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 119, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -6389,7 +6853,8 @@ impl PathSwitchRequest {
 
 		let ie = &mut Allocator::new_codec_data();
 		self.pdu_session_resource_to_be_switched_dl_list
-			.encode(ie)?;
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 76, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -6398,7 +6863,7 @@ impl PathSwitchRequest {
 
 		if let Some(x) = &self.pdu_session_resource_failed_to_setup_list_ps_req {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 57, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -6408,7 +6873,7 @@ impl PathSwitchRequest {
 
 		if let Some(x) = &self.rrc_resume_cause {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 237, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -6418,7 +6883,7 @@ impl PathSwitchRequest {
 
 		if let Some(x) = &self.red_cap_indication {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 333, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -6435,20 +6900,21 @@ impl PathSwitchRequest {
 
 impl PerCodec for PathSwitchRequest {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		PathSwitchRequest::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("PathSwitchRequest");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		PathSwitchRequest::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("PathSwitchRequest");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("PathSwitchRequest");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("PathSwitchRequest");
+				e
+			})
 	}
 }
 // PathSwitchRequestAcknowledge
@@ -6491,7 +6957,7 @@ pub struct PathSwitchRequestAcknowledge {
 }
 
 impl PathSwitchRequestAcknowledge {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -6605,24 +7071,29 @@ impl PathSwitchRequestAcknowledge {
 						Some(MdtPlmnModificationList::decode(data)?)
 				}
 				199 => iab_authorized = Some(IabAuthorized::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
-		let security_context = security_context.ok_or(PerCodecError::new(format!(
+		let security_context = security_context.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE security_context"
 		)))?;
 		let pdu_session_resource_switched_list =
-			pdu_session_resource_switched_list.ok_or(PerCodecError::new(format!(
+			pdu_session_resource_switched_list.ok_or(ThreeGppAsn1PerError::new(format!(
 				"Missing mandatory IE pdu_session_resource_switched_list"
 			)))?;
-		let allowed_nssai = allowed_nssai.ok_or(PerCodecError::new(format!(
+		let allowed_nssai = allowed_nssai.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE allowed_nssai"
 		)))?;
 		Ok(Self {
@@ -6663,12 +7134,14 @@ impl PathSwitchRequestAcknowledge {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -6676,7 +7149,9 @@ impl PathSwitchRequestAcknowledge {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -6685,7 +7160,7 @@ impl PathSwitchRequestAcknowledge {
 
 		if let Some(x) = &self.ue_security_capabilities {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 119, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -6694,7 +7169,9 @@ impl PathSwitchRequestAcknowledge {
 		}
 
 		let ie = &mut Allocator::new_codec_data();
-		self.security_context.encode(ie)?;
+		self.security_context
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 93, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -6703,7 +7180,7 @@ impl PathSwitchRequestAcknowledge {
 
 		if let Some(x) = &self.new_security_context_ind {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 41, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -6712,7 +7189,9 @@ impl PathSwitchRequestAcknowledge {
 		}
 
 		let ie = &mut Allocator::new_codec_data();
-		self.pdu_session_resource_switched_list.encode(ie)?;
+		self.pdu_session_resource_switched_list
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 77, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -6721,7 +7200,7 @@ impl PathSwitchRequestAcknowledge {
 
 		if let Some(x) = &self.pdu_session_resource_released_list_ps_ack {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 68, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -6730,7 +7209,9 @@ impl PathSwitchRequestAcknowledge {
 		}
 
 		let ie = &mut Allocator::new_codec_data();
-		self.allowed_nssai.encode(ie)?;
+		self.allowed_nssai
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 0, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -6739,7 +7220,7 @@ impl PathSwitchRequestAcknowledge {
 
 		if let Some(x) = &self.core_network_assistance_information_for_inactive {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 18, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -6749,7 +7230,7 @@ impl PathSwitchRequestAcknowledge {
 
 		if let Some(x) = &self.rrc_inactive_transition_report_request {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 91, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -6759,7 +7240,7 @@ impl PathSwitchRequestAcknowledge {
 
 		if let Some(x) = &self.criticality_diagnostics {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 19, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -6769,7 +7250,7 @@ impl PathSwitchRequestAcknowledge {
 
 		if let Some(x) = &self.redirection_voice_fallback {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 146, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -6779,7 +7260,7 @@ impl PathSwitchRequestAcknowledge {
 
 		if let Some(x) = &self.cn_assisted_ran_tuning {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 165, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -6789,7 +7270,7 @@ impl PathSwitchRequestAcknowledge {
 
 		if let Some(x) = &self.srvcc_operation_possible {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 177, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -6799,7 +7280,7 @@ impl PathSwitchRequestAcknowledge {
 
 		if let Some(x) = &self.enhanced_coverage_restriction {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 205, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -6809,7 +7290,7 @@ impl PathSwitchRequestAcknowledge {
 
 		if let Some(x) = &self.extended_connected_time {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 206, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -6819,7 +7300,7 @@ impl PathSwitchRequestAcknowledge {
 
 		if let Some(x) = &self.ue_differentiation_info {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 209, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -6829,7 +7310,7 @@ impl PathSwitchRequestAcknowledge {
 
 		if let Some(x) = &self.nr_v2x_services_authorized {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 216, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -6839,7 +7320,7 @@ impl PathSwitchRequestAcknowledge {
 
 		if let Some(x) = &self.ltev2x_services_authorized {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 215, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -6849,7 +7330,7 @@ impl PathSwitchRequestAcknowledge {
 
 		if let Some(x) = &self.nr_ue_sidelink_aggregate_maximum_bitrate {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 218, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -6859,7 +7340,7 @@ impl PathSwitchRequestAcknowledge {
 
 		if let Some(x) = &self.lte_ue_sidelink_aggregate_maximum_bitrate {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 217, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -6869,7 +7350,7 @@ impl PathSwitchRequestAcknowledge {
 
 		if let Some(x) = &self.pc5_qos_parameters {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 219, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -6879,7 +7360,7 @@ impl PathSwitchRequestAcknowledge {
 
 		if let Some(x) = &self.c_emode_brestricted {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 222, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -6889,7 +7370,7 @@ impl PathSwitchRequestAcknowledge {
 
 		if let Some(x) = &self.ue_up_c_iot_support {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 234, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -6899,7 +7380,7 @@ impl PathSwitchRequestAcknowledge {
 
 		if let Some(x) = &self.ue_radio_capability_id {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 264, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -6909,7 +7390,7 @@ impl PathSwitchRequestAcknowledge {
 
 		if let Some(x) = &self.management_based_mdt_plmn_list {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 254, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -6919,7 +7400,7 @@ impl PathSwitchRequestAcknowledge {
 
 		if let Some(x) = &self.time_sync_assistance_info {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 326, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -6929,7 +7410,7 @@ impl PathSwitchRequestAcknowledge {
 
 		if let Some(x) = &self.five_g_pro_se_authorized {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 345, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -6939,7 +7420,7 @@ impl PathSwitchRequestAcknowledge {
 
 		if let Some(x) = &self.five_g_pro_se_ue_pc5_aggregate_maximum_bit_rate {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 346, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -6949,7 +7430,7 @@ impl PathSwitchRequestAcknowledge {
 
 		if let Some(x) = &self.five_g_pro_se_pc5_qos_parameters {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 347, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -6959,7 +7440,7 @@ impl PathSwitchRequestAcknowledge {
 
 		if let Some(x) = &self.management_based_mdt_plmn_modification_list {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 359, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -6969,7 +7450,7 @@ impl PathSwitchRequestAcknowledge {
 
 		if let Some(x) = &self.iab_authorized {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 199, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -6986,20 +7467,21 @@ impl PathSwitchRequestAcknowledge {
 
 impl PerCodec for PathSwitchRequestAcknowledge {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		PathSwitchRequestAcknowledge::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("PathSwitchRequestAcknowledge");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		PathSwitchRequestAcknowledge::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("PathSwitchRequestAcknowledge");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("PathSwitchRequestAcknowledge");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("PathSwitchRequestAcknowledge");
+				e
+			})
 	}
 }
 // PathSwitchRequestFailure
@@ -7012,7 +7494,7 @@ pub struct PathSwitchRequestFailure {
 }
 
 impl PathSwitchRequestFailure {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -7035,18 +7517,23 @@ impl PathSwitchRequestFailure {
 						Some(PduSessionResourceReleasedListPsFail::decode(data)?)
 				}
 				19 => criticality_diagnostics = Some(CriticalityDiagnostics::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
 		let pdu_session_resource_released_list_ps_fail = pdu_session_resource_released_list_ps_fail
-			.ok_or(PerCodecError::new(format!(
+			.ok_or(ThreeGppAsn1PerError::new(format!(
 				"Missing mandatory IE pdu_session_resource_released_list_ps_fail"
 			)))?;
 		Ok(Self {
@@ -7059,12 +7546,14 @@ impl PathSwitchRequestFailure {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -7072,7 +7561,9 @@ impl PathSwitchRequestFailure {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -7080,7 +7571,9 @@ impl PathSwitchRequestFailure {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.pdu_session_resource_released_list_ps_fail.encode(ie)?;
+		self.pdu_session_resource_released_list_ps_fail
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 69, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -7089,7 +7582,7 @@ impl PathSwitchRequestFailure {
 
 		if let Some(x) = &self.criticality_diagnostics {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 19, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -7106,20 +7599,21 @@ impl PathSwitchRequestFailure {
 
 impl PerCodec for PathSwitchRequestFailure {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		PathSwitchRequestFailure::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("PathSwitchRequestFailure");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		PathSwitchRequestFailure::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("PathSwitchRequestFailure");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("PathSwitchRequestFailure");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("PathSwitchRequestFailure");
+				e
+			})
 	}
 }
 // HandoverCancel
@@ -7131,7 +7625,7 @@ pub struct HandoverCancel {
 }
 
 impl HandoverCancel {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -7147,17 +7641,24 @@ impl HandoverCancel {
 				10 => amf_ue_ngap_id = Some(AmfUeNgapId::decode(data)?),
 				85 => ran_ue_ngap_id = Some(RanUeNgapId::decode(data)?),
 				15 => cause = Some(Cause::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
-		let cause = cause.ok_or(PerCodecError::new(format!("Missing mandatory IE cause")))?;
+		let cause = cause.ok_or(ThreeGppAsn1PerError::new(format!(
+			"Missing mandatory IE cause"
+		)))?;
 		Ok(Self {
 			amf_ue_ngap_id,
 			ran_ue_ngap_id,
@@ -7167,12 +7668,14 @@ impl HandoverCancel {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -7180,7 +7683,9 @@ impl HandoverCancel {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -7188,7 +7693,7 @@ impl HandoverCancel {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.cause.encode(ie)?;
+		self.cause.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 15, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -7204,20 +7709,21 @@ impl HandoverCancel {
 
 impl PerCodec for HandoverCancel {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		HandoverCancel::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("HandoverCancel");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		HandoverCancel::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("HandoverCancel");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("HandoverCancel");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("HandoverCancel");
+				e
+			})
 	}
 }
 // HandoverCancelAcknowledge
@@ -7229,7 +7735,7 @@ pub struct HandoverCancelAcknowledge {
 }
 
 impl HandoverCancelAcknowledge {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -7245,14 +7751,19 @@ impl HandoverCancelAcknowledge {
 				10 => amf_ue_ngap_id = Some(AmfUeNgapId::decode(data)?),
 				85 => ran_ue_ngap_id = Some(RanUeNgapId::decode(data)?),
 				19 => criticality_diagnostics = Some(CriticalityDiagnostics::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
 		Ok(Self {
@@ -7264,12 +7775,14 @@ impl HandoverCancelAcknowledge {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -7277,7 +7790,9 @@ impl HandoverCancelAcknowledge {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -7286,7 +7801,7 @@ impl HandoverCancelAcknowledge {
 
 		if let Some(x) = &self.criticality_diagnostics {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 19, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -7303,20 +7818,21 @@ impl HandoverCancelAcknowledge {
 
 impl PerCodec for HandoverCancelAcknowledge {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		HandoverCancelAcknowledge::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("HandoverCancelAcknowledge");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		HandoverCancelAcknowledge::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("HandoverCancelAcknowledge");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("HandoverCancelAcknowledge");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("HandoverCancelAcknowledge");
+				e
+			})
 	}
 }
 // HandoverSuccess
@@ -7327,7 +7843,7 @@ pub struct HandoverSuccess {
 }
 
 impl HandoverSuccess {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -7341,14 +7857,19 @@ impl HandoverSuccess {
 			match id {
 				10 => amf_ue_ngap_id = Some(AmfUeNgapId::decode(data)?),
 				85 => ran_ue_ngap_id = Some(RanUeNgapId::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
 		Ok(Self {
@@ -7359,12 +7880,14 @@ impl HandoverSuccess {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -7372,7 +7895,9 @@ impl HandoverSuccess {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -7388,20 +7913,21 @@ impl HandoverSuccess {
 
 impl PerCodec for HandoverSuccess {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		HandoverSuccess::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("HandoverSuccess");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		HandoverSuccess::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("HandoverSuccess");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("HandoverSuccess");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("HandoverSuccess");
+				e
+			})
 	}
 }
 // UplinkRanEarlyStatusTransfer
@@ -7413,7 +7939,7 @@ pub struct UplinkRanEarlyStatusTransfer {
 }
 
 impl UplinkRanEarlyStatusTransfer {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -7434,20 +7960,25 @@ impl UplinkRanEarlyStatusTransfer {
 					early_status_transfer_transparent_container =
 						Some(EarlyStatusTransferTransparentContainer::decode(data)?)
 				}
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
 		let early_status_transfer_transparent_container =
-			early_status_transfer_transparent_container.ok_or(PerCodecError::new(format!(
-				"Missing mandatory IE early_status_transfer_transparent_container"
-			)))?;
+			early_status_transfer_transparent_container.ok_or(ThreeGppAsn1PerError::new(
+				format!("Missing mandatory IE early_status_transfer_transparent_container"),
+			))?;
 		Ok(Self {
 			amf_ue_ngap_id,
 			ran_ue_ngap_id,
@@ -7457,12 +7988,14 @@ impl UplinkRanEarlyStatusTransfer {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -7470,7 +8003,9 @@ impl UplinkRanEarlyStatusTransfer {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -7479,7 +8014,8 @@ impl UplinkRanEarlyStatusTransfer {
 
 		let ie = &mut Allocator::new_codec_data();
 		self.early_status_transfer_transparent_container
-			.encode(ie)?;
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 268, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -7495,20 +8031,21 @@ impl UplinkRanEarlyStatusTransfer {
 
 impl PerCodec for UplinkRanEarlyStatusTransfer {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		UplinkRanEarlyStatusTransfer::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("UplinkRanEarlyStatusTransfer");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		UplinkRanEarlyStatusTransfer::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("UplinkRanEarlyStatusTransfer");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("UplinkRanEarlyStatusTransfer");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("UplinkRanEarlyStatusTransfer");
+				e
+			})
 	}
 }
 // DownlinkRanEarlyStatusTransfer
@@ -7520,7 +8057,7 @@ pub struct DownlinkRanEarlyStatusTransfer {
 }
 
 impl DownlinkRanEarlyStatusTransfer {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -7541,20 +8078,25 @@ impl DownlinkRanEarlyStatusTransfer {
 					early_status_transfer_transparent_container =
 						Some(EarlyStatusTransferTransparentContainer::decode(data)?)
 				}
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
 		let early_status_transfer_transparent_container =
-			early_status_transfer_transparent_container.ok_or(PerCodecError::new(format!(
-				"Missing mandatory IE early_status_transfer_transparent_container"
-			)))?;
+			early_status_transfer_transparent_container.ok_or(ThreeGppAsn1PerError::new(
+				format!("Missing mandatory IE early_status_transfer_transparent_container"),
+			))?;
 		Ok(Self {
 			amf_ue_ngap_id,
 			ran_ue_ngap_id,
@@ -7564,12 +8106,14 @@ impl DownlinkRanEarlyStatusTransfer {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -7577,7 +8121,9 @@ impl DownlinkRanEarlyStatusTransfer {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -7586,7 +8132,8 @@ impl DownlinkRanEarlyStatusTransfer {
 
 		let ie = &mut Allocator::new_codec_data();
 		self.early_status_transfer_transparent_container
-			.encode(ie)?;
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 268, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -7602,20 +8149,21 @@ impl DownlinkRanEarlyStatusTransfer {
 
 impl PerCodec for DownlinkRanEarlyStatusTransfer {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		DownlinkRanEarlyStatusTransfer::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("DownlinkRanEarlyStatusTransfer");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		DownlinkRanEarlyStatusTransfer::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("DownlinkRanEarlyStatusTransfer");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("DownlinkRanEarlyStatusTransfer");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("DownlinkRanEarlyStatusTransfer");
+				e
+			})
 	}
 }
 // UplinkRanStatusTransfer
@@ -7627,7 +8175,7 @@ pub struct UplinkRanStatusTransfer {
 }
 
 impl UplinkRanStatusTransfer {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -7648,20 +8196,25 @@ impl UplinkRanStatusTransfer {
 					ran_status_transfer_transparent_container =
 						Some(RanStatusTransferTransparentContainer::decode(data)?)
 				}
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
 		let ran_status_transfer_transparent_container = ran_status_transfer_transparent_container
-			.ok_or(PerCodecError::new(format!(
-			"Missing mandatory IE ran_status_transfer_transparent_container"
-		)))?;
+			.ok_or(ThreeGppAsn1PerError::new(
+			format!("Missing mandatory IE ran_status_transfer_transparent_container"),
+		))?;
 		Ok(Self {
 			amf_ue_ngap_id,
 			ran_ue_ngap_id,
@@ -7671,12 +8224,14 @@ impl UplinkRanStatusTransfer {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -7684,7 +8239,9 @@ impl UplinkRanStatusTransfer {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -7692,7 +8249,9 @@ impl UplinkRanStatusTransfer {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_status_transfer_transparent_container.encode(ie)?;
+		self.ran_status_transfer_transparent_container
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 84, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -7708,20 +8267,21 @@ impl UplinkRanStatusTransfer {
 
 impl PerCodec for UplinkRanStatusTransfer {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		UplinkRanStatusTransfer::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("UplinkRanStatusTransfer");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		UplinkRanStatusTransfer::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("UplinkRanStatusTransfer");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("UplinkRanStatusTransfer");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("UplinkRanStatusTransfer");
+				e
+			})
 	}
 }
 // DownlinkRanStatusTransfer
@@ -7733,7 +8293,7 @@ pub struct DownlinkRanStatusTransfer {
 }
 
 impl DownlinkRanStatusTransfer {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -7754,20 +8314,25 @@ impl DownlinkRanStatusTransfer {
 					ran_status_transfer_transparent_container =
 						Some(RanStatusTransferTransparentContainer::decode(data)?)
 				}
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
 		let ran_status_transfer_transparent_container = ran_status_transfer_transparent_container
-			.ok_or(PerCodecError::new(format!(
-			"Missing mandatory IE ran_status_transfer_transparent_container"
-		)))?;
+			.ok_or(ThreeGppAsn1PerError::new(
+			format!("Missing mandatory IE ran_status_transfer_transparent_container"),
+		))?;
 		Ok(Self {
 			amf_ue_ngap_id,
 			ran_ue_ngap_id,
@@ -7777,12 +8342,14 @@ impl DownlinkRanStatusTransfer {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -7790,7 +8357,9 @@ impl DownlinkRanStatusTransfer {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -7798,7 +8367,9 @@ impl DownlinkRanStatusTransfer {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_status_transfer_transparent_container.encode(ie)?;
+		self.ran_status_transfer_transparent_container
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 84, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -7814,20 +8385,21 @@ impl DownlinkRanStatusTransfer {
 
 impl PerCodec for DownlinkRanStatusTransfer {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		DownlinkRanStatusTransfer::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("DownlinkRanStatusTransfer");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		DownlinkRanStatusTransfer::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("DownlinkRanStatusTransfer");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("DownlinkRanStatusTransfer");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("DownlinkRanStatusTransfer");
+				e
+			})
 	}
 }
 // Paging
@@ -7852,7 +8424,7 @@ pub struct Paging {
 }
 
 impl Paging {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -7902,14 +8474,19 @@ impl Paging {
 				344 => {
 					peip_sassistance_information = Some(PeipSassistanceInformation::decode(data)?)
 				}
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let ue_paging_identity = ue_paging_identity.ok_or(PerCodecError::new(format!(
+		let ue_paging_identity = ue_paging_identity.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ue_paging_identity"
 		)))?;
-		let tai_list_for_paging = tai_list_for_paging.ok_or(PerCodecError::new(format!(
+		let tai_list_for_paging = tai_list_for_paging.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE tai_list_for_paging"
 		)))?;
 		Ok(Self {
@@ -7934,12 +8511,14 @@ impl Paging {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ue_paging_identity.encode(ie)?;
+		self.ue_paging_identity
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 115, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -7948,7 +8527,7 @@ impl Paging {
 
 		if let Some(x) = &self.paging_drx {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 50, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -7957,7 +8536,9 @@ impl Paging {
 		}
 
 		let ie = &mut Allocator::new_codec_data();
-		self.tai_list_for_paging.encode(ie)?;
+		self.tai_list_for_paging
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 103, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -7966,7 +8547,7 @@ impl Paging {
 
 		if let Some(x) = &self.paging_priority {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 52, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -7976,7 +8557,7 @@ impl Paging {
 
 		if let Some(x) = &self.ue_radio_capability_for_paging {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 118, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -7986,7 +8567,7 @@ impl Paging {
 
 		if let Some(x) = &self.paging_origin {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 51, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -7996,7 +8577,7 @@ impl Paging {
 
 		if let Some(x) = &self.assistance_data_for_paging {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 11, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -8006,7 +8587,7 @@ impl Paging {
 
 		if let Some(x) = &self.nb_iot_paging_e_drx_info {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 203, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -8016,7 +8597,7 @@ impl Paging {
 
 		if let Some(x) = &self.nb_iot_paging_drx {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 202, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -8026,7 +8607,7 @@ impl Paging {
 
 		if let Some(x) = &self.enhanced_coverage_restriction {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 205, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -8036,7 +8617,7 @@ impl Paging {
 
 		if let Some(x) = &self.wus_assistance_information {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 208, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -8046,7 +8627,7 @@ impl Paging {
 
 		if let Some(x) = &self.eutra_paginge_drx_information {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 223, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -8056,7 +8637,7 @@ impl Paging {
 
 		if let Some(x) = &self.c_emode_brestricted {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 222, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -8066,7 +8647,7 @@ impl Paging {
 
 		if let Some(x) = &self.nr_paginge_drx_information {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 332, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -8076,7 +8657,7 @@ impl Paging {
 
 		if let Some(x) = &self.paging_cause {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 342, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -8086,7 +8667,7 @@ impl Paging {
 
 		if let Some(x) = &self.peip_sassistance_information {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 344, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -8103,20 +8684,21 @@ impl Paging {
 
 impl PerCodec for Paging {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		Paging::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("Paging");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		Paging::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("Paging");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("Paging");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("Paging");
+				e
+			})
 	}
 }
 // InitialUeMessage
@@ -8142,7 +8724,7 @@ pub struct InitialUeMessage {
 }
 
 impl InitialUeMessage {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -8191,18 +8773,25 @@ impl InitialUeMessage {
 				245 => authenticated_indication = Some(AuthenticatedIndication::decode(data)?),
 				259 => npn_access_information = Some(NpnAccessInformation::decode(data)?),
 				333 => red_cap_indication = Some(RedCapIndication::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
-		let nas_pdu = nas_pdu.ok_or(PerCodecError::new(format!("Missing mandatory IE nas_pdu")))?;
-		let user_location_information = user_location_information.ok_or(PerCodecError::new(
-			format!("Missing mandatory IE user_location_information"),
-		))?;
-		let rrc_establishment_cause = rrc_establishment_cause.ok_or(PerCodecError::new(
+		let nas_pdu = nas_pdu.ok_or(ThreeGppAsn1PerError::new(format!(
+			"Missing mandatory IE nas_pdu"
+		)))?;
+		let user_location_information = user_location_information.ok_or(
+			ThreeGppAsn1PerError::new(format!("Missing mandatory IE user_location_information")),
+		)?;
+		let rrc_establishment_cause = rrc_establishment_cause.ok_or(ThreeGppAsn1PerError::new(
 			format!("Missing mandatory IE rrc_establishment_cause"),
 		))?;
 		Ok(Self {
@@ -8228,12 +8817,14 @@ impl InitialUeMessage {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -8241,7 +8832,9 @@ impl InitialUeMessage {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.nas_pdu.encode(ie)?;
+		self.nas_pdu
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 38, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -8249,7 +8842,9 @@ impl InitialUeMessage {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.user_location_information.encode(ie)?;
+		self.user_location_information
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 121, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -8257,7 +8852,9 @@ impl InitialUeMessage {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.rrc_establishment_cause.encode(ie)?;
+		self.rrc_establishment_cause
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 90, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -8266,7 +8863,7 @@ impl InitialUeMessage {
 
 		if let Some(x) = &self.five_g_s_tmsi {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 26, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -8276,7 +8873,7 @@ impl InitialUeMessage {
 
 		if let Some(x) = &self.amf_set_id {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 3, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -8286,7 +8883,7 @@ impl InitialUeMessage {
 
 		if let Some(x) = &self.ue_context_request {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 112, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -8296,7 +8893,7 @@ impl InitialUeMessage {
 
 		if let Some(x) = &self.allowed_nssai {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 0, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -8306,7 +8903,7 @@ impl InitialUeMessage {
 
 		if let Some(x) = &self.source_to_target_amf_information_reroute {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 171, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -8316,7 +8913,7 @@ impl InitialUeMessage {
 
 		if let Some(x) = &self.selected_plmn_identity {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 174, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -8326,7 +8923,7 @@ impl InitialUeMessage {
 
 		if let Some(x) = &self.iab_node_indication {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 201, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -8336,7 +8933,7 @@ impl InitialUeMessage {
 
 		if let Some(x) = &self.c_emode_b_support_indicator {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 224, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -8346,7 +8943,7 @@ impl InitialUeMessage {
 
 		if let Some(x) = &self.ltem_indication {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 225, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -8356,7 +8953,7 @@ impl InitialUeMessage {
 
 		if let Some(x) = &self.edt_session {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 227, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -8366,7 +8963,7 @@ impl InitialUeMessage {
 
 		if let Some(x) = &self.authenticated_indication {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 245, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -8376,7 +8973,7 @@ impl InitialUeMessage {
 
 		if let Some(x) = &self.npn_access_information {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 259, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -8386,7 +8983,7 @@ impl InitialUeMessage {
 
 		if let Some(x) = &self.red_cap_indication {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 333, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -8403,20 +9000,21 @@ impl InitialUeMessage {
 
 impl PerCodec for InitialUeMessage {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		InitialUeMessage::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("InitialUeMessage");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		InitialUeMessage::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("InitialUeMessage");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("InitialUeMessage");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("InitialUeMessage");
+				e
+			})
 	}
 }
 // DownlinkNasTransport
@@ -8445,7 +9043,7 @@ pub struct DownlinkNasTransport {
 }
 
 impl DownlinkNasTransport {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -8499,17 +9097,24 @@ impl DownlinkNasTransport {
 				264 => ue_radio_capability_id = Some(UeRadioCapabilityId::decode(data)?),
 				334 => target_nssai_information = Some(TargetNssaiInformation::decode(data)?),
 				34 => masked_imeisv = Some(MaskedImeisv::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
-		let nas_pdu = nas_pdu.ok_or(PerCodecError::new(format!("Missing mandatory IE nas_pdu")))?;
+		let nas_pdu = nas_pdu.ok_or(ThreeGppAsn1PerError::new(format!(
+			"Missing mandatory IE nas_pdu"
+		)))?;
 		Ok(Self {
 			amf_ue_ngap_id,
 			ran_ue_ngap_id,
@@ -8536,12 +9141,14 @@ impl DownlinkNasTransport {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -8549,7 +9156,9 @@ impl DownlinkNasTransport {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -8558,7 +9167,7 @@ impl DownlinkNasTransport {
 
 		if let Some(x) = &self.old_amf {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 48, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -8568,7 +9177,7 @@ impl DownlinkNasTransport {
 
 		if let Some(x) = &self.ran_paging_priority {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 83, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -8577,7 +9186,9 @@ impl DownlinkNasTransport {
 		}
 
 		let ie = &mut Allocator::new_codec_data();
-		self.nas_pdu.encode(ie)?;
+		self.nas_pdu
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 38, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -8586,7 +9197,7 @@ impl DownlinkNasTransport {
 
 		if let Some(x) = &self.mobility_restriction_list {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 36, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -8596,7 +9207,7 @@ impl DownlinkNasTransport {
 
 		if let Some(x) = &self.index_to_rfsp {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 31, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -8606,7 +9217,7 @@ impl DownlinkNasTransport {
 
 		if let Some(x) = &self.ue_aggregate_maximum_bit_rate {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 110, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -8616,7 +9227,7 @@ impl DownlinkNasTransport {
 
 		if let Some(x) = &self.allowed_nssai {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 0, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -8626,7 +9237,7 @@ impl DownlinkNasTransport {
 
 		if let Some(x) = &self.srvcc_operation_possible {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 177, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -8636,7 +9247,7 @@ impl DownlinkNasTransport {
 
 		if let Some(x) = &self.enhanced_coverage_restriction {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 205, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -8646,7 +9257,7 @@ impl DownlinkNasTransport {
 
 		if let Some(x) = &self.extended_connected_time {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 206, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -8656,7 +9267,7 @@ impl DownlinkNasTransport {
 
 		if let Some(x) = &self.ue_differentiation_info {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 209, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -8666,7 +9277,7 @@ impl DownlinkNasTransport {
 
 		if let Some(x) = &self.c_emode_brestricted {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 222, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -8676,7 +9287,7 @@ impl DownlinkNasTransport {
 
 		if let Some(x) = &self.ue_radio_capability {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 117, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -8686,7 +9297,7 @@ impl DownlinkNasTransport {
 
 		if let Some(x) = &self.ue_capability_info_request {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 228, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -8696,7 +9307,7 @@ impl DownlinkNasTransport {
 
 		if let Some(x) = &self.end_indication {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 226, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -8706,7 +9317,7 @@ impl DownlinkNasTransport {
 
 		if let Some(x) = &self.ue_radio_capability_id {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 264, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -8716,7 +9327,7 @@ impl DownlinkNasTransport {
 
 		if let Some(x) = &self.target_nssai_information {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 334, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -8726,7 +9337,7 @@ impl DownlinkNasTransport {
 
 		if let Some(x) = &self.masked_imeisv {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 34, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -8743,20 +9354,21 @@ impl DownlinkNasTransport {
 
 impl PerCodec for DownlinkNasTransport {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		DownlinkNasTransport::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("DownlinkNasTransport");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		DownlinkNasTransport::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("DownlinkNasTransport");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("DownlinkNasTransport");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("DownlinkNasTransport");
+				e
+			})
 	}
 }
 // UplinkNasTransport
@@ -8772,7 +9384,7 @@ pub struct UplinkNasTransport {
 }
 
 impl UplinkNasTransport {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -8805,20 +9417,27 @@ impl UplinkNasTransport {
 					twif_identity_information =
 						Some(decode::decode_octetstring(data, None, None, false)?)
 				}
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
-		let nas_pdu = nas_pdu.ok_or(PerCodecError::new(format!("Missing mandatory IE nas_pdu")))?;
-		let user_location_information = user_location_information.ok_or(PerCodecError::new(
-			format!("Missing mandatory IE user_location_information"),
-		))?;
+		let nas_pdu = nas_pdu.ok_or(ThreeGppAsn1PerError::new(format!(
+			"Missing mandatory IE nas_pdu"
+		)))?;
+		let user_location_information = user_location_information.ok_or(
+			ThreeGppAsn1PerError::new(format!("Missing mandatory IE user_location_information")),
+		)?;
 		Ok(Self {
 			amf_ue_ngap_id,
 			ran_ue_ngap_id,
@@ -8832,12 +9451,14 @@ impl UplinkNasTransport {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -8845,7 +9466,9 @@ impl UplinkNasTransport {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -8853,7 +9476,9 @@ impl UplinkNasTransport {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.nas_pdu.encode(ie)?;
+		self.nas_pdu
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 38, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -8861,7 +9486,9 @@ impl UplinkNasTransport {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.user_location_information.encode(ie)?;
+		self.user_location_information
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 121, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -8870,7 +9497,8 @@ impl UplinkNasTransport {
 
 		if let Some(x) = &self.w_agf_identity_information {
 			let ie = &mut Allocator::new_codec_data();
-			encode::encode_octetstring(ie, None, None, false, &x, false)?;
+			encode::encode_octetstring(ie, None, None, false, &x, false)
+				.map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 239, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -8880,7 +9508,8 @@ impl UplinkNasTransport {
 
 		if let Some(x) = &self.tngf_identity_information {
 			let ie = &mut Allocator::new_codec_data();
-			encode::encode_octetstring(ie, None, None, false, &x, false)?;
+			encode::encode_octetstring(ie, None, None, false, &x, false)
+				.map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 246, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -8890,7 +9519,8 @@ impl UplinkNasTransport {
 
 		if let Some(x) = &self.twif_identity_information {
 			let ie = &mut Allocator::new_codec_data();
-			encode::encode_octetstring(ie, None, None, false, &x, false)?;
+			encode::encode_octetstring(ie, None, None, false, &x, false)
+				.map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 247, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -8907,20 +9537,21 @@ impl UplinkNasTransport {
 
 impl PerCodec for UplinkNasTransport {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		UplinkNasTransport::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("UplinkNasTransport");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		UplinkNasTransport::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("UplinkNasTransport");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("UplinkNasTransport");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("UplinkNasTransport");
+				e
+			})
 	}
 }
 // NasNonDeliveryIndication
@@ -8933,7 +9564,7 @@ pub struct NasNonDeliveryIndication {
 }
 
 impl NasNonDeliveryIndication {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -8951,18 +9582,27 @@ impl NasNonDeliveryIndication {
 				85 => ran_ue_ngap_id = Some(RanUeNgapId::decode(data)?),
 				38 => nas_pdu = Some(NasPdu::decode(data)?),
 				15 => cause = Some(Cause::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
-		let nas_pdu = nas_pdu.ok_or(PerCodecError::new(format!("Missing mandatory IE nas_pdu")))?;
-		let cause = cause.ok_or(PerCodecError::new(format!("Missing mandatory IE cause")))?;
+		let nas_pdu = nas_pdu.ok_or(ThreeGppAsn1PerError::new(format!(
+			"Missing mandatory IE nas_pdu"
+		)))?;
+		let cause = cause.ok_or(ThreeGppAsn1PerError::new(format!(
+			"Missing mandatory IE cause"
+		)))?;
 		Ok(Self {
 			amf_ue_ngap_id,
 			ran_ue_ngap_id,
@@ -8973,12 +9613,14 @@ impl NasNonDeliveryIndication {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -8986,7 +9628,9 @@ impl NasNonDeliveryIndication {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -8994,7 +9638,9 @@ impl NasNonDeliveryIndication {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.nas_pdu.encode(ie)?;
+		self.nas_pdu
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 38, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -9002,7 +9648,7 @@ impl NasNonDeliveryIndication {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.cause.encode(ie)?;
+		self.cause.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 15, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -9018,20 +9664,21 @@ impl NasNonDeliveryIndication {
 
 impl PerCodec for NasNonDeliveryIndication {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		NasNonDeliveryIndication::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("NasNonDeliveryIndication");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		NasNonDeliveryIndication::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("NasNonDeliveryIndication");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("NasNonDeliveryIndication");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("NasNonDeliveryIndication");
+				e
+			})
 	}
 }
 // RerouteNasRequest
@@ -9046,7 +9693,7 @@ pub struct RerouteNasRequest {
 }
 
 impl RerouteNasRequest {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -9073,17 +9720,22 @@ impl RerouteNasRequest {
 					source_to_target_amf_information_reroute =
 						Some(SourceToTargetAmfInformationReroute::decode(data)?)
 				}
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
-		let ngap_message = ngap_message.ok_or(PerCodecError::new(format!(
+		let ngap_message = ngap_message.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ngap_message"
 		)))?;
-		let amf_set_id = amf_set_id.ok_or(PerCodecError::new(format!(
+		let amf_set_id = amf_set_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_set_id"
 		)))?;
 		Ok(Self {
@@ -9098,12 +9750,14 @@ impl RerouteNasRequest {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -9112,7 +9766,7 @@ impl RerouteNasRequest {
 
 		if let Some(x) = &self.amf_ue_ngap_id {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -9121,7 +9775,8 @@ impl RerouteNasRequest {
 		}
 
 		let ie = &mut Allocator::new_codec_data();
-		encode::encode_octetstring(ie, None, None, false, &self.ngap_message, false)?;
+		encode::encode_octetstring(ie, None, None, false, &self.ngap_message, false)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 42, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -9129,7 +9784,9 @@ impl RerouteNasRequest {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_set_id.encode(ie)?;
+		self.amf_set_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 3, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -9138,7 +9795,7 @@ impl RerouteNasRequest {
 
 		if let Some(x) = &self.allowed_nssai {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 0, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -9148,7 +9805,7 @@ impl RerouteNasRequest {
 
 		if let Some(x) = &self.source_to_target_amf_information_reroute {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 171, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -9165,20 +9822,21 @@ impl RerouteNasRequest {
 
 impl PerCodec for RerouteNasRequest {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		RerouteNasRequest::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("RerouteNasRequest");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		RerouteNasRequest::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("RerouteNasRequest");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("RerouteNasRequest");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("RerouteNasRequest");
+				e
+			})
 	}
 }
 // NgSetupRequest
@@ -9194,7 +9852,7 @@ pub struct NgSetupRequest {
 }
 
 impl NgSetupRequest {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -9218,17 +9876,22 @@ impl NgSetupRequest {
 				147 => ue_retention_information = Some(UeRetentionInformation::decode(data)?),
 				204 => nb_iot_default_paging_drx = Some(NbIotDefaultPagingDrx::decode(data)?),
 				273 => extended_ran_node_name = Some(ExtendedRanNodeName::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let global_ran_node_id = global_ran_node_id.ok_or(PerCodecError::new(format!(
+		let global_ran_node_id = global_ran_node_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE global_ran_node_id"
 		)))?;
-		let supported_ta_list = supported_ta_list.ok_or(PerCodecError::new(format!(
+		let supported_ta_list = supported_ta_list.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE supported_ta_list"
 		)))?;
-		let default_paging_drx = default_paging_drx.ok_or(PerCodecError::new(format!(
+		let default_paging_drx = default_paging_drx.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE default_paging_drx"
 		)))?;
 		Ok(Self {
@@ -9244,12 +9907,14 @@ impl NgSetupRequest {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.global_ran_node_id.encode(ie)?;
+		self.global_ran_node_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 27, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -9258,7 +9923,7 @@ impl NgSetupRequest {
 
 		if let Some(x) = &self.ran_node_name {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 82, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -9267,7 +9932,9 @@ impl NgSetupRequest {
 		}
 
 		let ie = &mut Allocator::new_codec_data();
-		self.supported_ta_list.encode(ie)?;
+		self.supported_ta_list
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 102, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -9275,7 +9942,9 @@ impl NgSetupRequest {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.default_paging_drx.encode(ie)?;
+		self.default_paging_drx
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 21, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -9284,7 +9953,7 @@ impl NgSetupRequest {
 
 		if let Some(x) = &self.ue_retention_information {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 147, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -9294,7 +9963,7 @@ impl NgSetupRequest {
 
 		if let Some(x) = &self.nb_iot_default_paging_drx {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 204, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -9304,7 +9973,7 @@ impl NgSetupRequest {
 
 		if let Some(x) = &self.extended_ran_node_name {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 273, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -9321,20 +9990,21 @@ impl NgSetupRequest {
 
 impl PerCodec for NgSetupRequest {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		NgSetupRequest::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("NgSetupRequest");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		NgSetupRequest::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("NgSetupRequest");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("NgSetupRequest");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("NgSetupRequest");
+				e
+			})
 	}
 }
 // NgSetupResponse
@@ -9351,7 +10021,7 @@ pub struct NgSetupResponse {
 }
 
 impl NgSetupResponse {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -9377,19 +10047,25 @@ impl NgSetupResponse {
 				147 => ue_retention_information = Some(UeRetentionInformation::decode(data)?),
 				200 => iab_supported = Some(IabSupported::decode(data)?),
 				274 => extended_amf_name = Some(ExtendedAmfName::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_name =
-			amf_name.ok_or(PerCodecError::new(format!("Missing mandatory IE amf_name")))?;
-		let served_guami_list = served_guami_list.ok_or(PerCodecError::new(format!(
+		let amf_name = amf_name.ok_or(ThreeGppAsn1PerError::new(format!(
+			"Missing mandatory IE amf_name"
+		)))?;
+		let served_guami_list = served_guami_list.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE served_guami_list"
 		)))?;
-		let relative_amf_capacity = relative_amf_capacity.ok_or(PerCodecError::new(format!(
-			"Missing mandatory IE relative_amf_capacity"
-		)))?;
-		let plmn_support_list = plmn_support_list.ok_or(PerCodecError::new(format!(
+		let relative_amf_capacity = relative_amf_capacity.ok_or(ThreeGppAsn1PerError::new(
+			format!("Missing mandatory IE relative_amf_capacity"),
+		))?;
+		let plmn_support_list = plmn_support_list.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE plmn_support_list"
 		)))?;
 		Ok(Self {
@@ -9406,12 +10082,14 @@ impl NgSetupResponse {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_name.encode(ie)?;
+		self.amf_name
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 1, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -9419,7 +10097,9 @@ impl NgSetupResponse {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.served_guami_list.encode(ie)?;
+		self.served_guami_list
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 96, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -9427,7 +10107,9 @@ impl NgSetupResponse {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.relative_amf_capacity.encode(ie)?;
+		self.relative_amf_capacity
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 86, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -9435,7 +10117,9 @@ impl NgSetupResponse {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.plmn_support_list.encode(ie)?;
+		self.plmn_support_list
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 80, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -9444,7 +10128,7 @@ impl NgSetupResponse {
 
 		if let Some(x) = &self.criticality_diagnostics {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 19, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -9454,7 +10138,7 @@ impl NgSetupResponse {
 
 		if let Some(x) = &self.ue_retention_information {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 147, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -9464,7 +10148,7 @@ impl NgSetupResponse {
 
 		if let Some(x) = &self.iab_supported {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 200, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -9474,7 +10158,7 @@ impl NgSetupResponse {
 
 		if let Some(x) = &self.extended_amf_name {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 274, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -9491,20 +10175,21 @@ impl NgSetupResponse {
 
 impl PerCodec for NgSetupResponse {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		NgSetupResponse::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("NgSetupResponse");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		NgSetupResponse::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("NgSetupResponse");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("NgSetupResponse");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("NgSetupResponse");
+				e
+			})
 	}
 }
 // NgSetupFailure
@@ -9516,7 +10201,7 @@ pub struct NgSetupFailure {
 }
 
 impl NgSetupFailure {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -9532,11 +10217,18 @@ impl NgSetupFailure {
 				15 => cause = Some(Cause::decode(data)?),
 				107 => time_to_wait = Some(TimeToWait::decode(data)?),
 				19 => criticality_diagnostics = Some(CriticalityDiagnostics::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let cause = cause.ok_or(PerCodecError::new(format!("Missing mandatory IE cause")))?;
+		let cause = cause.ok_or(ThreeGppAsn1PerError::new(format!(
+			"Missing mandatory IE cause"
+		)))?;
 		Ok(Self {
 			cause,
 			time_to_wait,
@@ -9546,12 +10238,12 @@ impl NgSetupFailure {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.cause.encode(ie)?;
+		self.cause.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 15, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -9560,7 +10252,7 @@ impl NgSetupFailure {
 
 		if let Some(x) = &self.time_to_wait {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 107, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -9570,7 +10262,7 @@ impl NgSetupFailure {
 
 		if let Some(x) = &self.criticality_diagnostics {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 19, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -9587,20 +10279,21 @@ impl NgSetupFailure {
 
 impl PerCodec for NgSetupFailure {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		NgSetupFailure::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("NgSetupFailure");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		NgSetupFailure::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("NgSetupFailure");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("NgSetupFailure");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("NgSetupFailure");
+				e
+			})
 	}
 }
 // RanConfigurationUpdate
@@ -9616,7 +10309,7 @@ pub struct RanConfigurationUpdate {
 }
 
 impl RanConfigurationUpdate {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -9644,7 +10337,12 @@ impl RanConfigurationUpdate {
 				}
 				204 => nb_iot_default_paging_drx = Some(NbIotDefaultPagingDrx::decode(data)?),
 				273 => extended_ran_node_name = Some(ExtendedRanNodeName::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
@@ -9661,13 +10359,13 @@ impl RanConfigurationUpdate {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		if let Some(x) = &self.ran_node_name {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 82, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -9677,7 +10375,7 @@ impl RanConfigurationUpdate {
 
 		if let Some(x) = &self.supported_ta_list {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 102, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -9687,7 +10385,7 @@ impl RanConfigurationUpdate {
 
 		if let Some(x) = &self.default_paging_drx {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 21, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -9697,7 +10395,7 @@ impl RanConfigurationUpdate {
 
 		if let Some(x) = &self.global_ran_node_id {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 27, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -9707,7 +10405,7 @@ impl RanConfigurationUpdate {
 
 		if let Some(x) = &self.ngran_tnl_association_to_remove_list {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 167, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -9717,7 +10415,7 @@ impl RanConfigurationUpdate {
 
 		if let Some(x) = &self.nb_iot_default_paging_drx {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 204, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -9727,7 +10425,7 @@ impl RanConfigurationUpdate {
 
 		if let Some(x) = &self.extended_ran_node_name {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 273, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -9744,20 +10442,21 @@ impl RanConfigurationUpdate {
 
 impl PerCodec for RanConfigurationUpdate {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		RanConfigurationUpdate::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("RanConfigurationUpdate");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		RanConfigurationUpdate::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("RanConfigurationUpdate");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("RanConfigurationUpdate");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("RanConfigurationUpdate");
+				e
+			})
 	}
 }
 // RanConfigurationUpdateAcknowledge
@@ -9767,7 +10466,7 @@ pub struct RanConfigurationUpdateAcknowledge {
 }
 
 impl RanConfigurationUpdateAcknowledge {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -9779,7 +10478,12 @@ impl RanConfigurationUpdateAcknowledge {
 			let _ = decode::decode_length_determinent(data, None, None, false)?;
 			match id {
 				19 => criticality_diagnostics = Some(CriticalityDiagnostics::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
@@ -9790,13 +10494,13 @@ impl RanConfigurationUpdateAcknowledge {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		if let Some(x) = &self.criticality_diagnostics {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 19, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -9813,20 +10517,25 @@ impl RanConfigurationUpdateAcknowledge {
 
 impl PerCodec for RanConfigurationUpdateAcknowledge {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		RanConfigurationUpdateAcknowledge::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("RanConfigurationUpdateAcknowledge");
-			e
-		})
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		RanConfigurationUpdateAcknowledge::decode_inner(data).map_err(
+			|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("RanConfigurationUpdateAcknowledge");
+				e
+			},
+		)
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("RanConfigurationUpdateAcknowledge");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("RanConfigurationUpdateAcknowledge");
+				e
+			})
 	}
 }
 // RanConfigurationUpdateFailure
@@ -9838,7 +10547,7 @@ pub struct RanConfigurationUpdateFailure {
 }
 
 impl RanConfigurationUpdateFailure {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -9854,11 +10563,18 @@ impl RanConfigurationUpdateFailure {
 				15 => cause = Some(Cause::decode(data)?),
 				107 => time_to_wait = Some(TimeToWait::decode(data)?),
 				19 => criticality_diagnostics = Some(CriticalityDiagnostics::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let cause = cause.ok_or(PerCodecError::new(format!("Missing mandatory IE cause")))?;
+		let cause = cause.ok_or(ThreeGppAsn1PerError::new(format!(
+			"Missing mandatory IE cause"
+		)))?;
 		Ok(Self {
 			cause,
 			time_to_wait,
@@ -9868,12 +10584,12 @@ impl RanConfigurationUpdateFailure {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.cause.encode(ie)?;
+		self.cause.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 15, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -9882,7 +10598,7 @@ impl RanConfigurationUpdateFailure {
 
 		if let Some(x) = &self.time_to_wait {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 107, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -9892,7 +10608,7 @@ impl RanConfigurationUpdateFailure {
 
 		if let Some(x) = &self.criticality_diagnostics {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 19, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -9909,20 +10625,21 @@ impl RanConfigurationUpdateFailure {
 
 impl PerCodec for RanConfigurationUpdateFailure {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		RanConfigurationUpdateFailure::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("RanConfigurationUpdateFailure");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		RanConfigurationUpdateFailure::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("RanConfigurationUpdateFailure");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("RanConfigurationUpdateFailure");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("RanConfigurationUpdateFailure");
+				e
+			})
 	}
 }
 // AmfConfigurationUpdate
@@ -9939,7 +10656,7 @@ pub struct AmfConfigurationUpdate {
 }
 
 impl AmfConfigurationUpdate {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -9974,7 +10691,12 @@ impl AmfConfigurationUpdate {
 						Some(AmfTnlAssociationToUpdateList::decode(data)?)
 				}
 				274 => extended_amf_name = Some(ExtendedAmfName::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
@@ -9992,13 +10714,13 @@ impl AmfConfigurationUpdate {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		if let Some(x) = &self.amf_name {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 1, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -10008,7 +10730,7 @@ impl AmfConfigurationUpdate {
 
 		if let Some(x) = &self.served_guami_list {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 96, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -10018,7 +10740,7 @@ impl AmfConfigurationUpdate {
 
 		if let Some(x) = &self.relative_amf_capacity {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 86, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -10028,7 +10750,7 @@ impl AmfConfigurationUpdate {
 
 		if let Some(x) = &self.plmn_support_list {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 80, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -10038,7 +10760,7 @@ impl AmfConfigurationUpdate {
 
 		if let Some(x) = &self.amf_tnl_association_to_add_list {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 6, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -10048,7 +10770,7 @@ impl AmfConfigurationUpdate {
 
 		if let Some(x) = &self.amf_tnl_association_to_remove_list {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 7, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -10058,7 +10780,7 @@ impl AmfConfigurationUpdate {
 
 		if let Some(x) = &self.amf_tnl_association_to_update_list {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 8, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -10068,7 +10790,7 @@ impl AmfConfigurationUpdate {
 
 		if let Some(x) = &self.extended_amf_name {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 274, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -10085,20 +10807,21 @@ impl AmfConfigurationUpdate {
 
 impl PerCodec for AmfConfigurationUpdate {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		AmfConfigurationUpdate::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("AmfConfigurationUpdate");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		AmfConfigurationUpdate::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("AmfConfigurationUpdate");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("AmfConfigurationUpdate");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("AmfConfigurationUpdate");
+				e
+			})
 	}
 }
 // AmfConfigurationUpdateAcknowledge
@@ -10110,7 +10833,7 @@ pub struct AmfConfigurationUpdateAcknowledge {
 }
 
 impl AmfConfigurationUpdateAcknowledge {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -10131,7 +10854,12 @@ impl AmfConfigurationUpdateAcknowledge {
 						Some(TnlAssociationList::decode(data)?)
 				}
 				19 => criticality_diagnostics = Some(CriticalityDiagnostics::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
@@ -10144,13 +10872,13 @@ impl AmfConfigurationUpdateAcknowledge {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		if let Some(x) = &self.amf_tnl_association_setup_list {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 5, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -10160,7 +10888,7 @@ impl AmfConfigurationUpdateAcknowledge {
 
 		if let Some(x) = &self.amf_tnl_association_failed_to_setup_list {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 4, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -10170,7 +10898,7 @@ impl AmfConfigurationUpdateAcknowledge {
 
 		if let Some(x) = &self.criticality_diagnostics {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 19, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -10187,20 +10915,25 @@ impl AmfConfigurationUpdateAcknowledge {
 
 impl PerCodec for AmfConfigurationUpdateAcknowledge {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		AmfConfigurationUpdateAcknowledge::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("AmfConfigurationUpdateAcknowledge");
-			e
-		})
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		AmfConfigurationUpdateAcknowledge::decode_inner(data).map_err(
+			|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("AmfConfigurationUpdateAcknowledge");
+				e
+			},
+		)
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("AmfConfigurationUpdateAcknowledge");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("AmfConfigurationUpdateAcknowledge");
+				e
+			})
 	}
 }
 // AmfConfigurationUpdateFailure
@@ -10212,7 +10945,7 @@ pub struct AmfConfigurationUpdateFailure {
 }
 
 impl AmfConfigurationUpdateFailure {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -10228,11 +10961,18 @@ impl AmfConfigurationUpdateFailure {
 				15 => cause = Some(Cause::decode(data)?),
 				107 => time_to_wait = Some(TimeToWait::decode(data)?),
 				19 => criticality_diagnostics = Some(CriticalityDiagnostics::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let cause = cause.ok_or(PerCodecError::new(format!("Missing mandatory IE cause")))?;
+		let cause = cause.ok_or(ThreeGppAsn1PerError::new(format!(
+			"Missing mandatory IE cause"
+		)))?;
 		Ok(Self {
 			cause,
 			time_to_wait,
@@ -10242,12 +10982,12 @@ impl AmfConfigurationUpdateFailure {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.cause.encode(ie)?;
+		self.cause.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 15, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -10256,7 +10996,7 @@ impl AmfConfigurationUpdateFailure {
 
 		if let Some(x) = &self.time_to_wait {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 107, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -10266,7 +11006,7 @@ impl AmfConfigurationUpdateFailure {
 
 		if let Some(x) = &self.criticality_diagnostics {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 19, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -10283,20 +11023,21 @@ impl AmfConfigurationUpdateFailure {
 
 impl PerCodec for AmfConfigurationUpdateFailure {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		AmfConfigurationUpdateFailure::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("AmfConfigurationUpdateFailure");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		AmfConfigurationUpdateFailure::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("AmfConfigurationUpdateFailure");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("AmfConfigurationUpdateFailure");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("AmfConfigurationUpdateFailure");
+				e
+			})
 	}
 }
 // AmfStatusIndication
@@ -10306,7 +11047,7 @@ pub struct AmfStatusIndication {
 }
 
 impl AmfStatusIndication {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -10318,13 +11059,18 @@ impl AmfStatusIndication {
 			let _ = decode::decode_length_determinent(data, None, None, false)?;
 			match id {
 				120 => unavailable_guami_list = Some(UnavailableGuamiList::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let unavailable_guami_list = unavailable_guami_list.ok_or(PerCodecError::new(format!(
-			"Missing mandatory IE unavailable_guami_list"
-		)))?;
+		let unavailable_guami_list = unavailable_guami_list.ok_or(ThreeGppAsn1PerError::new(
+			format!("Missing mandatory IE unavailable_guami_list"),
+		))?;
 		Ok(Self {
 			unavailable_guami_list,
 		})
@@ -10332,12 +11078,14 @@ impl AmfStatusIndication {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.unavailable_guami_list.encode(ie)?;
+		self.unavailable_guami_list
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 120, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -10353,20 +11101,21 @@ impl AmfStatusIndication {
 
 impl PerCodec for AmfStatusIndication {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		AmfStatusIndication::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("AmfStatusIndication");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		AmfStatusIndication::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("AmfStatusIndication");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("AmfStatusIndication");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("AmfStatusIndication");
+				e
+			})
 	}
 }
 // NgReset
@@ -10377,7 +11126,7 @@ pub struct NgReset {
 }
 
 impl NgReset {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -10391,12 +11140,19 @@ impl NgReset {
 			match id {
 				15 => cause = Some(Cause::decode(data)?),
 				88 => reset_type = Some(ResetType::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let cause = cause.ok_or(PerCodecError::new(format!("Missing mandatory IE cause")))?;
-		let reset_type = reset_type.ok_or(PerCodecError::new(format!(
+		let cause = cause.ok_or(ThreeGppAsn1PerError::new(format!(
+			"Missing mandatory IE cause"
+		)))?;
+		let reset_type = reset_type.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE reset_type"
 		)))?;
 		Ok(Self { cause, reset_type })
@@ -10404,12 +11160,12 @@ impl NgReset {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.cause.encode(ie)?;
+		self.cause.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 15, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -10417,7 +11173,9 @@ impl NgReset {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.reset_type.encode(ie)?;
+		self.reset_type
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 88, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -10433,20 +11191,21 @@ impl NgReset {
 
 impl PerCodec for NgReset {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		NgReset::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("NgReset");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		NgReset::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("NgReset");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("NgReset");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("NgReset");
+				e
+			})
 	}
 }
 // NgResetAcknowledge
@@ -10457,7 +11216,7 @@ pub struct NgResetAcknowledge {
 }
 
 impl NgResetAcknowledge {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -10476,7 +11235,12 @@ impl NgResetAcknowledge {
 						Some(UeAssociatedLogicalNgConnectionList::decode(data)?)
 				}
 				19 => criticality_diagnostics = Some(CriticalityDiagnostics::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
@@ -10488,13 +11252,13 @@ impl NgResetAcknowledge {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		if let Some(x) = &self.ue_associated_logical_ng_connection_list {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 111, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -10504,7 +11268,7 @@ impl NgResetAcknowledge {
 
 		if let Some(x) = &self.criticality_diagnostics {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 19, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -10521,20 +11285,21 @@ impl NgResetAcknowledge {
 
 impl PerCodec for NgResetAcknowledge {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		NgResetAcknowledge::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("NgResetAcknowledge");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		NgResetAcknowledge::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("NgResetAcknowledge");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("NgResetAcknowledge");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("NgResetAcknowledge");
+				e
+			})
 	}
 }
 // ErrorIndication
@@ -10548,7 +11313,7 @@ pub struct ErrorIndication {
 }
 
 impl ErrorIndication {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -10568,7 +11333,12 @@ impl ErrorIndication {
 				15 => cause = Some(Cause::decode(data)?),
 				19 => criticality_diagnostics = Some(CriticalityDiagnostics::decode(data)?),
 				26 => five_g_s_tmsi = Some(FiveGSTmsi::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
@@ -10583,13 +11353,13 @@ impl ErrorIndication {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		if let Some(x) = &self.amf_ue_ngap_id {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -10599,7 +11369,7 @@ impl ErrorIndication {
 
 		if let Some(x) = &self.ran_ue_ngap_id {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -10609,7 +11379,7 @@ impl ErrorIndication {
 
 		if let Some(x) = &self.cause {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 15, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -10619,7 +11389,7 @@ impl ErrorIndication {
 
 		if let Some(x) = &self.criticality_diagnostics {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 19, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -10629,7 +11399,7 @@ impl ErrorIndication {
 
 		if let Some(x) = &self.five_g_s_tmsi {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 26, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -10646,20 +11416,21 @@ impl ErrorIndication {
 
 impl PerCodec for ErrorIndication {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		ErrorIndication::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("ErrorIndication");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		ErrorIndication::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("ErrorIndication");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("ErrorIndication");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("ErrorIndication");
+				e
+			})
 	}
 }
 // OverloadStart
@@ -10671,7 +11442,7 @@ pub struct OverloadStart {
 }
 
 impl OverloadStart {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -10691,7 +11462,12 @@ impl OverloadStart {
 						Some(TrafficLoadReductionIndication::decode(data)?)
 				}
 				49 => overload_start_nssai_list = Some(OverloadStartNssaiList::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
@@ -10704,13 +11480,13 @@ impl OverloadStart {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		if let Some(x) = &self.amf_overload_response {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 2, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -10720,7 +11496,7 @@ impl OverloadStart {
 
 		if let Some(x) = &self.amf_traffic_load_reduction_indication {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 9, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -10730,7 +11506,7 @@ impl OverloadStart {
 
 		if let Some(x) = &self.overload_start_nssai_list {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 49, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -10747,20 +11523,21 @@ impl OverloadStart {
 
 impl PerCodec for OverloadStart {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		OverloadStart::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("OverloadStart");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		OverloadStart::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("OverloadStart");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("OverloadStart");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("OverloadStart");
+				e
+			})
 	}
 }
 // OverloadStop
@@ -10768,7 +11545,7 @@ impl PerCodec for OverloadStart {
 pub struct OverloadStop {}
 
 impl OverloadStop {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -10777,7 +11554,12 @@ impl OverloadStop {
 			let _ = Criticality::decode(data)?;
 			let _ = decode::decode_length_determinent(data, None, None, false)?;
 			match id {
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 		}
 		Ok(Self {})
@@ -10785,7 +11567,7 @@ impl OverloadStop {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
@@ -10798,20 +11580,21 @@ impl OverloadStop {
 
 impl PerCodec for OverloadStop {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		OverloadStop::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("OverloadStop");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		OverloadStop::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("OverloadStop");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("OverloadStop");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("OverloadStop");
+				e
+			})
 	}
 }
 // UplinkRanConfigurationTransfer
@@ -10823,7 +11606,7 @@ pub struct UplinkRanConfigurationTransfer {
 }
 
 impl UplinkRanConfigurationTransfer {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -10847,7 +11630,12 @@ impl UplinkRanConfigurationTransfer {
 					intersystem_son_configuration_transfer_ul =
 						Some(IntersystemSonConfigurationTransfer::decode(data)?)
 				}
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
@@ -10860,13 +11648,13 @@ impl UplinkRanConfigurationTransfer {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		if let Some(x) = &self.son_configuration_transfer_ul {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 99, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -10876,7 +11664,7 @@ impl UplinkRanConfigurationTransfer {
 
 		if let Some(x) = &self.endc_son_configuration_transfer_ul {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 158, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -10886,7 +11674,7 @@ impl UplinkRanConfigurationTransfer {
 
 		if let Some(x) = &self.intersystem_son_configuration_transfer_ul {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 251, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -10903,20 +11691,21 @@ impl UplinkRanConfigurationTransfer {
 
 impl PerCodec for UplinkRanConfigurationTransfer {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		UplinkRanConfigurationTransfer::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("UplinkRanConfigurationTransfer");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		UplinkRanConfigurationTransfer::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("UplinkRanConfigurationTransfer");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("UplinkRanConfigurationTransfer");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("UplinkRanConfigurationTransfer");
+				e
+			})
 	}
 }
 // DownlinkRanConfigurationTransfer
@@ -10928,7 +11717,7 @@ pub struct DownlinkRanConfigurationTransfer {
 }
 
 impl DownlinkRanConfigurationTransfer {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -10952,7 +11741,12 @@ impl DownlinkRanConfigurationTransfer {
 					intersystem_son_configuration_transfer_dl =
 						Some(IntersystemSonConfigurationTransfer::decode(data)?)
 				}
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
@@ -10965,13 +11759,13 @@ impl DownlinkRanConfigurationTransfer {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		if let Some(x) = &self.son_configuration_transfer_dl {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 98, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -10981,7 +11775,7 @@ impl DownlinkRanConfigurationTransfer {
 
 		if let Some(x) = &self.endc_son_configuration_transfer_dl {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 157, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -10991,7 +11785,7 @@ impl DownlinkRanConfigurationTransfer {
 
 		if let Some(x) = &self.intersystem_son_configuration_transfer_dl {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 250, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -11008,20 +11802,25 @@ impl DownlinkRanConfigurationTransfer {
 
 impl PerCodec for DownlinkRanConfigurationTransfer {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		DownlinkRanConfigurationTransfer::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("DownlinkRanConfigurationTransfer");
-			e
-		})
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		DownlinkRanConfigurationTransfer::decode_inner(data).map_err(
+			|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("DownlinkRanConfigurationTransfer");
+				e
+			},
+		)
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("DownlinkRanConfigurationTransfer");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("DownlinkRanConfigurationTransfer");
+				e
+			})
 	}
 }
 // WriteReplaceWarningRequest
@@ -11041,7 +11840,7 @@ pub struct WriteReplaceWarningRequest {
 }
 
 impl WriteReplaceWarningRequest {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -11079,21 +11878,26 @@ impl WriteReplaceWarningRequest {
 						Some(ConcurrentWarningMessageInd::decode(data)?)
 				}
 				141 => warning_area_coordinates = Some(WarningAreaCoordinates::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let message_identifier = message_identifier.ok_or(PerCodecError::new(format!(
+		let message_identifier = message_identifier.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE message_identifier"
 		)))?;
-		let serial_number = serial_number.ok_or(PerCodecError::new(format!(
+		let serial_number = serial_number.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE serial_number"
 		)))?;
-		let repetition_period = repetition_period.ok_or(PerCodecError::new(format!(
+		let repetition_period = repetition_period.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE repetition_period"
 		)))?;
 		let number_of_broadcasts_requested =
-			number_of_broadcasts_requested.ok_or(PerCodecError::new(format!(
+			number_of_broadcasts_requested.ok_or(ThreeGppAsn1PerError::new(format!(
 				"Missing mandatory IE number_of_broadcasts_requested"
 			)))?;
 		Ok(Self {
@@ -11113,12 +11917,14 @@ impl WriteReplaceWarningRequest {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.message_identifier.encode(ie)?;
+		self.message_identifier
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 35, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -11126,7 +11932,9 @@ impl WriteReplaceWarningRequest {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.serial_number.encode(ie)?;
+		self.serial_number
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 95, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -11135,7 +11943,7 @@ impl WriteReplaceWarningRequest {
 
 		if let Some(x) = &self.warning_area_list {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 122, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -11144,7 +11952,9 @@ impl WriteReplaceWarningRequest {
 		}
 
 		let ie = &mut Allocator::new_codec_data();
-		self.repetition_period.encode(ie)?;
+		self.repetition_period
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 87, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -11152,7 +11962,9 @@ impl WriteReplaceWarningRequest {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.number_of_broadcasts_requested.encode(ie)?;
+		self.number_of_broadcasts_requested
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 47, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -11161,7 +11973,7 @@ impl WriteReplaceWarningRequest {
 
 		if let Some(x) = &self.warning_type {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 125, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -11171,7 +11983,7 @@ impl WriteReplaceWarningRequest {
 
 		if let Some(x) = &self.warning_security_info {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 124, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -11181,7 +11993,7 @@ impl WriteReplaceWarningRequest {
 
 		if let Some(x) = &self.data_coding_scheme {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 20, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -11191,7 +12003,7 @@ impl WriteReplaceWarningRequest {
 
 		if let Some(x) = &self.warning_message_contents {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 123, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -11201,7 +12013,7 @@ impl WriteReplaceWarningRequest {
 
 		if let Some(x) = &self.concurrent_warning_message_ind {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 17, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -11211,7 +12023,7 @@ impl WriteReplaceWarningRequest {
 
 		if let Some(x) = &self.warning_area_coordinates {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 141, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -11228,20 +12040,21 @@ impl WriteReplaceWarningRequest {
 
 impl PerCodec for WriteReplaceWarningRequest {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		WriteReplaceWarningRequest::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("WriteReplaceWarningRequest");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		WriteReplaceWarningRequest::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("WriteReplaceWarningRequest");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("WriteReplaceWarningRequest");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("WriteReplaceWarningRequest");
+				e
+			})
 	}
 }
 // WriteReplaceWarningResponse
@@ -11254,7 +12067,7 @@ pub struct WriteReplaceWarningResponse {
 }
 
 impl WriteReplaceWarningResponse {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -11274,14 +12087,19 @@ impl WriteReplaceWarningResponse {
 					broadcast_completed_area_list = Some(BroadcastCompletedAreaList::decode(data)?)
 				}
 				19 => criticality_diagnostics = Some(CriticalityDiagnostics::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let message_identifier = message_identifier.ok_or(PerCodecError::new(format!(
+		let message_identifier = message_identifier.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE message_identifier"
 		)))?;
-		let serial_number = serial_number.ok_or(PerCodecError::new(format!(
+		let serial_number = serial_number.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE serial_number"
 		)))?;
 		Ok(Self {
@@ -11294,12 +12112,14 @@ impl WriteReplaceWarningResponse {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.message_identifier.encode(ie)?;
+		self.message_identifier
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 35, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -11307,7 +12127,9 @@ impl WriteReplaceWarningResponse {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.serial_number.encode(ie)?;
+		self.serial_number
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 95, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -11316,7 +12138,7 @@ impl WriteReplaceWarningResponse {
 
 		if let Some(x) = &self.broadcast_completed_area_list {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 13, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -11326,7 +12148,7 @@ impl WriteReplaceWarningResponse {
 
 		if let Some(x) = &self.criticality_diagnostics {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 19, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -11343,20 +12165,21 @@ impl WriteReplaceWarningResponse {
 
 impl PerCodec for WriteReplaceWarningResponse {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		WriteReplaceWarningResponse::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("WriteReplaceWarningResponse");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		WriteReplaceWarningResponse::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("WriteReplaceWarningResponse");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("WriteReplaceWarningResponse");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("WriteReplaceWarningResponse");
+				e
+			})
 	}
 }
 // PwsCancelRequest
@@ -11369,7 +12192,7 @@ pub struct PwsCancelRequest {
 }
 
 impl PwsCancelRequest {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -11387,14 +12210,19 @@ impl PwsCancelRequest {
 				95 => serial_number = Some(SerialNumber::decode(data)?),
 				122 => warning_area_list = Some(WarningAreaList::decode(data)?),
 				14 => cancel_all_warning_messages = Some(CancelAllWarningMessages::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let message_identifier = message_identifier.ok_or(PerCodecError::new(format!(
+		let message_identifier = message_identifier.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE message_identifier"
 		)))?;
-		let serial_number = serial_number.ok_or(PerCodecError::new(format!(
+		let serial_number = serial_number.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE serial_number"
 		)))?;
 		Ok(Self {
@@ -11407,12 +12235,14 @@ impl PwsCancelRequest {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.message_identifier.encode(ie)?;
+		self.message_identifier
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 35, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -11420,7 +12250,9 @@ impl PwsCancelRequest {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.serial_number.encode(ie)?;
+		self.serial_number
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 95, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -11429,7 +12261,7 @@ impl PwsCancelRequest {
 
 		if let Some(x) = &self.warning_area_list {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 122, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -11439,7 +12271,7 @@ impl PwsCancelRequest {
 
 		if let Some(x) = &self.cancel_all_warning_messages {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 14, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -11456,20 +12288,21 @@ impl PwsCancelRequest {
 
 impl PerCodec for PwsCancelRequest {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		PwsCancelRequest::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("PwsCancelRequest");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		PwsCancelRequest::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("PwsCancelRequest");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("PwsCancelRequest");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("PwsCancelRequest");
+				e
+			})
 	}
 }
 // PwsCancelResponse
@@ -11482,7 +12315,7 @@ pub struct PwsCancelResponse {
 }
 
 impl PwsCancelResponse {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -11502,14 +12335,19 @@ impl PwsCancelResponse {
 					broadcast_cancelled_area_list = Some(BroadcastCancelledAreaList::decode(data)?)
 				}
 				19 => criticality_diagnostics = Some(CriticalityDiagnostics::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let message_identifier = message_identifier.ok_or(PerCodecError::new(format!(
+		let message_identifier = message_identifier.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE message_identifier"
 		)))?;
-		let serial_number = serial_number.ok_or(PerCodecError::new(format!(
+		let serial_number = serial_number.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE serial_number"
 		)))?;
 		Ok(Self {
@@ -11522,12 +12360,14 @@ impl PwsCancelResponse {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.message_identifier.encode(ie)?;
+		self.message_identifier
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 35, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -11535,7 +12375,9 @@ impl PwsCancelResponse {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.serial_number.encode(ie)?;
+		self.serial_number
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 95, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -11544,7 +12386,7 @@ impl PwsCancelResponse {
 
 		if let Some(x) = &self.broadcast_cancelled_area_list {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 12, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -11554,7 +12396,7 @@ impl PwsCancelResponse {
 
 		if let Some(x) = &self.criticality_diagnostics {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 19, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -11571,20 +12413,21 @@ impl PwsCancelResponse {
 
 impl PerCodec for PwsCancelResponse {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		PwsCancelResponse::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("PwsCancelResponse");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		PwsCancelResponse::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("PwsCancelResponse");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("PwsCancelResponse");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("PwsCancelResponse");
+				e
+			})
 	}
 }
 // PwsRestartIndication
@@ -11597,7 +12440,7 @@ pub struct PwsRestartIndication {
 }
 
 impl PwsRestartIndication {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -11618,19 +12461,24 @@ impl PwsRestartIndication {
 					emergency_area_id_list_for_restart =
 						Some(EmergencyAreaIdListForRestart::decode(data)?)
 				}
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let cell_id_list_for_restart = cell_id_list_for_restart.ok_or(PerCodecError::new(
-			format!("Missing mandatory IE cell_id_list_for_restart"),
-		))?;
-		let global_ran_node_id = global_ran_node_id.ok_or(PerCodecError::new(format!(
+		let cell_id_list_for_restart = cell_id_list_for_restart.ok_or(
+			ThreeGppAsn1PerError::new(format!("Missing mandatory IE cell_id_list_for_restart")),
+		)?;
+		let global_ran_node_id = global_ran_node_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE global_ran_node_id"
 		)))?;
-		let tai_list_for_restart = tai_list_for_restart.ok_or(PerCodecError::new(format!(
-			"Missing mandatory IE tai_list_for_restart"
-		)))?;
+		let tai_list_for_restart = tai_list_for_restart.ok_or(ThreeGppAsn1PerError::new(
+			format!("Missing mandatory IE tai_list_for_restart"),
+		))?;
 		Ok(Self {
 			cell_id_list_for_restart,
 			global_ran_node_id,
@@ -11641,12 +12489,14 @@ impl PwsRestartIndication {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.cell_id_list_for_restart.encode(ie)?;
+		self.cell_id_list_for_restart
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 16, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -11654,7 +12504,9 @@ impl PwsRestartIndication {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.global_ran_node_id.encode(ie)?;
+		self.global_ran_node_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 27, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -11662,7 +12514,9 @@ impl PwsRestartIndication {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.tai_list_for_restart.encode(ie)?;
+		self.tai_list_for_restart
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 104, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -11671,7 +12525,7 @@ impl PwsRestartIndication {
 
 		if let Some(x) = &self.emergency_area_id_list_for_restart {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 23, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -11688,20 +12542,21 @@ impl PwsRestartIndication {
 
 impl PerCodec for PwsRestartIndication {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		PwsRestartIndication::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("PwsRestartIndication");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		PwsRestartIndication::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("PwsRestartIndication");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("PwsRestartIndication");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("PwsRestartIndication");
+				e
+			})
 	}
 }
 // PwsFailureIndication
@@ -11712,7 +12567,7 @@ pub struct PwsFailureIndication {
 }
 
 impl PwsFailureIndication {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -11726,14 +12581,19 @@ impl PwsFailureIndication {
 			match id {
 				81 => pws_failed_cell_id_list = Some(PwsFailedCellIdList::decode(data)?),
 				27 => global_ran_node_id = Some(GlobalRanNodeId::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let pws_failed_cell_id_list = pws_failed_cell_id_list.ok_or(PerCodecError::new(
+		let pws_failed_cell_id_list = pws_failed_cell_id_list.ok_or(ThreeGppAsn1PerError::new(
 			format!("Missing mandatory IE pws_failed_cell_id_list"),
 		))?;
-		let global_ran_node_id = global_ran_node_id.ok_or(PerCodecError::new(format!(
+		let global_ran_node_id = global_ran_node_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE global_ran_node_id"
 		)))?;
 		Ok(Self {
@@ -11744,12 +12604,14 @@ impl PwsFailureIndication {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.pws_failed_cell_id_list.encode(ie)?;
+		self.pws_failed_cell_id_list
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 81, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -11757,7 +12619,9 @@ impl PwsFailureIndication {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.global_ran_node_id.encode(ie)?;
+		self.global_ran_node_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 27, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -11773,20 +12637,21 @@ impl PwsFailureIndication {
 
 impl PerCodec for PwsFailureIndication {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		PwsFailureIndication::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("PwsFailureIndication");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		PwsFailureIndication::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("PwsFailureIndication");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("PwsFailureIndication");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("PwsFailureIndication");
+				e
+			})
 	}
 }
 // DownlinkUeAssociatedNrPPaTransport
@@ -11799,7 +12664,7 @@ pub struct DownlinkUeAssociatedNrPPaTransport {
 }
 
 impl DownlinkUeAssociatedNrPPaTransport {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -11817,20 +12682,25 @@ impl DownlinkUeAssociatedNrPPaTransport {
 				85 => ran_ue_ngap_id = Some(RanUeNgapId::decode(data)?),
 				89 => routing_id = Some(RoutingId::decode(data)?),
 				46 => nr_p_pa_pdu = Some(NrPPaPdu::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
-		let routing_id = routing_id.ok_or(PerCodecError::new(format!(
+		let routing_id = routing_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE routing_id"
 		)))?;
-		let nr_p_pa_pdu = nr_p_pa_pdu.ok_or(PerCodecError::new(format!(
+		let nr_p_pa_pdu = nr_p_pa_pdu.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE nr_p_pa_pdu"
 		)))?;
 		Ok(Self {
@@ -11843,12 +12713,14 @@ impl DownlinkUeAssociatedNrPPaTransport {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -11856,7 +12728,9 @@ impl DownlinkUeAssociatedNrPPaTransport {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -11864,7 +12738,9 @@ impl DownlinkUeAssociatedNrPPaTransport {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.routing_id.encode(ie)?;
+		self.routing_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 89, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -11872,7 +12748,9 @@ impl DownlinkUeAssociatedNrPPaTransport {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.nr_p_pa_pdu.encode(ie)?;
+		self.nr_p_pa_pdu
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 46, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -11888,20 +12766,25 @@ impl DownlinkUeAssociatedNrPPaTransport {
 
 impl PerCodec for DownlinkUeAssociatedNrPPaTransport {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		DownlinkUeAssociatedNrPPaTransport::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("DownlinkUeAssociatedNrPPaTransport");
-			e
-		})
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		DownlinkUeAssociatedNrPPaTransport::decode_inner(data).map_err(
+			|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("DownlinkUeAssociatedNrPPaTransport");
+				e
+			},
+		)
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("DownlinkUeAssociatedNrPPaTransport");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("DownlinkUeAssociatedNrPPaTransport");
+				e
+			})
 	}
 }
 // UplinkUeAssociatedNrPPaTransport
@@ -11914,7 +12797,7 @@ pub struct UplinkUeAssociatedNrPPaTransport {
 }
 
 impl UplinkUeAssociatedNrPPaTransport {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -11932,20 +12815,25 @@ impl UplinkUeAssociatedNrPPaTransport {
 				85 => ran_ue_ngap_id = Some(RanUeNgapId::decode(data)?),
 				89 => routing_id = Some(RoutingId::decode(data)?),
 				46 => nr_p_pa_pdu = Some(NrPPaPdu::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
-		let routing_id = routing_id.ok_or(PerCodecError::new(format!(
+		let routing_id = routing_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE routing_id"
 		)))?;
-		let nr_p_pa_pdu = nr_p_pa_pdu.ok_or(PerCodecError::new(format!(
+		let nr_p_pa_pdu = nr_p_pa_pdu.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE nr_p_pa_pdu"
 		)))?;
 		Ok(Self {
@@ -11958,12 +12846,14 @@ impl UplinkUeAssociatedNrPPaTransport {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -11971,7 +12861,9 @@ impl UplinkUeAssociatedNrPPaTransport {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -11979,7 +12871,9 @@ impl UplinkUeAssociatedNrPPaTransport {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.routing_id.encode(ie)?;
+		self.routing_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 89, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -11987,7 +12881,9 @@ impl UplinkUeAssociatedNrPPaTransport {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.nr_p_pa_pdu.encode(ie)?;
+		self.nr_p_pa_pdu
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 46, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -12003,20 +12899,25 @@ impl UplinkUeAssociatedNrPPaTransport {
 
 impl PerCodec for UplinkUeAssociatedNrPPaTransport {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		UplinkUeAssociatedNrPPaTransport::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("UplinkUeAssociatedNrPPaTransport");
-			e
-		})
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		UplinkUeAssociatedNrPPaTransport::decode_inner(data).map_err(
+			|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("UplinkUeAssociatedNrPPaTransport");
+				e
+			},
+		)
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("UplinkUeAssociatedNrPPaTransport");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("UplinkUeAssociatedNrPPaTransport");
+				e
+			})
 	}
 }
 // DownlinkNonUeAssociatedNrPPaTransport
@@ -12027,7 +12928,7 @@ pub struct DownlinkNonUeAssociatedNrPPaTransport {
 }
 
 impl DownlinkNonUeAssociatedNrPPaTransport {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -12041,14 +12942,19 @@ impl DownlinkNonUeAssociatedNrPPaTransport {
 			match id {
 				89 => routing_id = Some(RoutingId::decode(data)?),
 				46 => nr_p_pa_pdu = Some(NrPPaPdu::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let routing_id = routing_id.ok_or(PerCodecError::new(format!(
+		let routing_id = routing_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE routing_id"
 		)))?;
-		let nr_p_pa_pdu = nr_p_pa_pdu.ok_or(PerCodecError::new(format!(
+		let nr_p_pa_pdu = nr_p_pa_pdu.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE nr_p_pa_pdu"
 		)))?;
 		Ok(Self {
@@ -12059,12 +12965,14 @@ impl DownlinkNonUeAssociatedNrPPaTransport {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.routing_id.encode(ie)?;
+		self.routing_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 89, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -12072,7 +12980,9 @@ impl DownlinkNonUeAssociatedNrPPaTransport {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.nr_p_pa_pdu.encode(ie)?;
+		self.nr_p_pa_pdu
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 46, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -12088,20 +12998,25 @@ impl DownlinkNonUeAssociatedNrPPaTransport {
 
 impl PerCodec for DownlinkNonUeAssociatedNrPPaTransport {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		DownlinkNonUeAssociatedNrPPaTransport::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("DownlinkNonUeAssociatedNrPPaTransport");
-			e
-		})
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		DownlinkNonUeAssociatedNrPPaTransport::decode_inner(data).map_err(
+			|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("DownlinkNonUeAssociatedNrPPaTransport");
+				e
+			},
+		)
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("DownlinkNonUeAssociatedNrPPaTransport");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("DownlinkNonUeAssociatedNrPPaTransport");
+				e
+			})
 	}
 }
 // UplinkNonUeAssociatedNrPPaTransport
@@ -12112,7 +13027,7 @@ pub struct UplinkNonUeAssociatedNrPPaTransport {
 }
 
 impl UplinkNonUeAssociatedNrPPaTransport {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -12126,14 +13041,19 @@ impl UplinkNonUeAssociatedNrPPaTransport {
 			match id {
 				89 => routing_id = Some(RoutingId::decode(data)?),
 				46 => nr_p_pa_pdu = Some(NrPPaPdu::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let routing_id = routing_id.ok_or(PerCodecError::new(format!(
+		let routing_id = routing_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE routing_id"
 		)))?;
-		let nr_p_pa_pdu = nr_p_pa_pdu.ok_or(PerCodecError::new(format!(
+		let nr_p_pa_pdu = nr_p_pa_pdu.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE nr_p_pa_pdu"
 		)))?;
 		Ok(Self {
@@ -12144,12 +13064,14 @@ impl UplinkNonUeAssociatedNrPPaTransport {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.routing_id.encode(ie)?;
+		self.routing_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 89, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -12157,7 +13079,9 @@ impl UplinkNonUeAssociatedNrPPaTransport {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.nr_p_pa_pdu.encode(ie)?;
+		self.nr_p_pa_pdu
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 46, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -12173,20 +13097,25 @@ impl UplinkNonUeAssociatedNrPPaTransport {
 
 impl PerCodec for UplinkNonUeAssociatedNrPPaTransport {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		UplinkNonUeAssociatedNrPPaTransport::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("UplinkNonUeAssociatedNrPPaTransport");
-			e
-		})
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		UplinkNonUeAssociatedNrPPaTransport::decode_inner(data).map_err(
+			|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("UplinkNonUeAssociatedNrPPaTransport");
+				e
+			},
+		)
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("UplinkNonUeAssociatedNrPPaTransport");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("UplinkNonUeAssociatedNrPPaTransport");
+				e
+			})
 	}
 }
 // TraceStart
@@ -12198,7 +13127,7 @@ pub struct TraceStart {
 }
 
 impl TraceStart {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -12214,17 +13143,22 @@ impl TraceStart {
 				10 => amf_ue_ngap_id = Some(AmfUeNgapId::decode(data)?),
 				85 => ran_ue_ngap_id = Some(RanUeNgapId::decode(data)?),
 				108 => trace_activation = Some(TraceActivation::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
-		let trace_activation = trace_activation.ok_or(PerCodecError::new(format!(
+		let trace_activation = trace_activation.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE trace_activation"
 		)))?;
 		Ok(Self {
@@ -12236,12 +13170,14 @@ impl TraceStart {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -12249,7 +13185,9 @@ impl TraceStart {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -12257,7 +13195,9 @@ impl TraceStart {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.trace_activation.encode(ie)?;
+		self.trace_activation
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 108, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -12273,20 +13213,21 @@ impl TraceStart {
 
 impl PerCodec for TraceStart {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		TraceStart::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("TraceStart");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		TraceStart::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("TraceStart");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("TraceStart");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("TraceStart");
+				e
+			})
 	}
 }
 // TraceFailureIndication
@@ -12299,7 +13240,7 @@ pub struct TraceFailureIndication {
 }
 
 impl TraceFailureIndication {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -12317,20 +13258,27 @@ impl TraceFailureIndication {
 				85 => ran_ue_ngap_id = Some(RanUeNgapId::decode(data)?),
 				44 => ngran_trace_id = Some(NgranTraceId::decode(data)?),
 				15 => cause = Some(Cause::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
-		let ngran_trace_id = ngran_trace_id.ok_or(PerCodecError::new(format!(
+		let ngran_trace_id = ngran_trace_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ngran_trace_id"
 		)))?;
-		let cause = cause.ok_or(PerCodecError::new(format!("Missing mandatory IE cause")))?;
+		let cause = cause.ok_or(ThreeGppAsn1PerError::new(format!(
+			"Missing mandatory IE cause"
+		)))?;
 		Ok(Self {
 			amf_ue_ngap_id,
 			ran_ue_ngap_id,
@@ -12341,12 +13289,14 @@ impl TraceFailureIndication {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -12354,7 +13304,9 @@ impl TraceFailureIndication {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -12362,7 +13314,9 @@ impl TraceFailureIndication {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ngran_trace_id.encode(ie)?;
+		self.ngran_trace_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 44, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -12370,7 +13324,7 @@ impl TraceFailureIndication {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.cause.encode(ie)?;
+		self.cause.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 15, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -12386,20 +13340,21 @@ impl TraceFailureIndication {
 
 impl PerCodec for TraceFailureIndication {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		TraceFailureIndication::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("TraceFailureIndication");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		TraceFailureIndication::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("TraceFailureIndication");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("TraceFailureIndication");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("TraceFailureIndication");
+				e
+			})
 	}
 }
 // DeactivateTrace
@@ -12411,7 +13366,7 @@ pub struct DeactivateTrace {
 }
 
 impl DeactivateTrace {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -12427,17 +13382,22 @@ impl DeactivateTrace {
 				10 => amf_ue_ngap_id = Some(AmfUeNgapId::decode(data)?),
 				85 => ran_ue_ngap_id = Some(RanUeNgapId::decode(data)?),
 				44 => ngran_trace_id = Some(NgranTraceId::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
-		let ngran_trace_id = ngran_trace_id.ok_or(PerCodecError::new(format!(
+		let ngran_trace_id = ngran_trace_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ngran_trace_id"
 		)))?;
 		Ok(Self {
@@ -12449,12 +13409,14 @@ impl DeactivateTrace {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -12462,7 +13424,9 @@ impl DeactivateTrace {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -12470,7 +13434,9 @@ impl DeactivateTrace {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ngran_trace_id.encode(ie)?;
+		self.ngran_trace_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 44, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -12486,20 +13452,21 @@ impl DeactivateTrace {
 
 impl PerCodec for DeactivateTrace {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		DeactivateTrace::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("DeactivateTrace");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		DeactivateTrace::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("DeactivateTrace");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("DeactivateTrace");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("DeactivateTrace");
+				e
+			})
 	}
 }
 // CellTrafficTrace
@@ -12515,7 +13482,7 @@ pub struct CellTrafficTrace {
 }
 
 impl CellTrafficTrace {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -12541,24 +13508,29 @@ impl CellTrafficTrace {
 				}
 				256 => privacy_indicator = Some(PrivacyIndicator::decode(data)?),
 				257 => trace_collection_entity_uri = Some(UriAddress::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
-		let ngran_trace_id = ngran_trace_id.ok_or(PerCodecError::new(format!(
+		let ngran_trace_id = ngran_trace_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ngran_trace_id"
 		)))?;
-		let ngran_cgi = ngran_cgi.ok_or(PerCodecError::new(format!(
+		let ngran_cgi = ngran_cgi.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ngran_cgi"
 		)))?;
 		let trace_collection_entity_ip_address =
-			trace_collection_entity_ip_address.ok_or(PerCodecError::new(format!(
+			trace_collection_entity_ip_address.ok_or(ThreeGppAsn1PerError::new(format!(
 				"Missing mandatory IE trace_collection_entity_ip_address"
 			)))?;
 		Ok(Self {
@@ -12574,12 +13546,14 @@ impl CellTrafficTrace {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -12587,7 +13561,9 @@ impl CellTrafficTrace {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -12595,7 +13571,9 @@ impl CellTrafficTrace {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ngran_trace_id.encode(ie)?;
+		self.ngran_trace_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 44, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -12603,7 +13581,9 @@ impl CellTrafficTrace {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ngran_cgi.encode(ie)?;
+		self.ngran_cgi
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 43, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -12611,7 +13591,9 @@ impl CellTrafficTrace {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.trace_collection_entity_ip_address.encode(ie)?;
+		self.trace_collection_entity_ip_address
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 109, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -12620,7 +13602,7 @@ impl CellTrafficTrace {
 
 		if let Some(x) = &self.privacy_indicator {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 256, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -12630,7 +13612,7 @@ impl CellTrafficTrace {
 
 		if let Some(x) = &self.trace_collection_entity_uri {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 257, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -12647,20 +13629,21 @@ impl CellTrafficTrace {
 
 impl PerCodec for CellTrafficTrace {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		CellTrafficTrace::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("CellTrafficTrace");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		CellTrafficTrace::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("CellTrafficTrace");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("CellTrafficTrace");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("CellTrafficTrace");
+				e
+			})
 	}
 }
 // LocationReportingControl
@@ -12672,7 +13655,7 @@ pub struct LocationReportingControl {
 }
 
 impl LocationReportingControl {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -12691,18 +13674,23 @@ impl LocationReportingControl {
 					location_reporting_request_type =
 						Some(LocationReportingRequestType::decode(data)?)
 				}
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
 		let location_reporting_request_type =
-			location_reporting_request_type.ok_or(PerCodecError::new(format!(
+			location_reporting_request_type.ok_or(ThreeGppAsn1PerError::new(format!(
 				"Missing mandatory IE location_reporting_request_type"
 			)))?;
 		Ok(Self {
@@ -12714,12 +13702,14 @@ impl LocationReportingControl {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -12727,7 +13717,9 @@ impl LocationReportingControl {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -12735,7 +13727,9 @@ impl LocationReportingControl {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.location_reporting_request_type.encode(ie)?;
+		self.location_reporting_request_type
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 33, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -12751,20 +13745,21 @@ impl LocationReportingControl {
 
 impl PerCodec for LocationReportingControl {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		LocationReportingControl::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("LocationReportingControl");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		LocationReportingControl::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("LocationReportingControl");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("LocationReportingControl");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("LocationReportingControl");
+				e
+			})
 	}
 }
 // LocationReportingFailureIndication
@@ -12776,7 +13771,7 @@ pub struct LocationReportingFailureIndication {
 }
 
 impl LocationReportingFailureIndication {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -12792,17 +13787,24 @@ impl LocationReportingFailureIndication {
 				10 => amf_ue_ngap_id = Some(AmfUeNgapId::decode(data)?),
 				85 => ran_ue_ngap_id = Some(RanUeNgapId::decode(data)?),
 				15 => cause = Some(Cause::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
-		let cause = cause.ok_or(PerCodecError::new(format!("Missing mandatory IE cause")))?;
+		let cause = cause.ok_or(ThreeGppAsn1PerError::new(format!(
+			"Missing mandatory IE cause"
+		)))?;
 		Ok(Self {
 			amf_ue_ngap_id,
 			ran_ue_ngap_id,
@@ -12812,12 +13814,14 @@ impl LocationReportingFailureIndication {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -12825,7 +13829,9 @@ impl LocationReportingFailureIndication {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -12833,7 +13839,7 @@ impl LocationReportingFailureIndication {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.cause.encode(ie)?;
+		self.cause.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 15, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -12849,20 +13855,25 @@ impl LocationReportingFailureIndication {
 
 impl PerCodec for LocationReportingFailureIndication {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		LocationReportingFailureIndication::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("LocationReportingFailureIndication");
-			e
-		})
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		LocationReportingFailureIndication::decode_inner(data).map_err(
+			|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("LocationReportingFailureIndication");
+				e
+			},
+		)
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("LocationReportingFailureIndication");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("LocationReportingFailureIndication");
+				e
+			})
 	}
 }
 // LocationReport
@@ -12876,7 +13887,7 @@ pub struct LocationReport {
 }
 
 impl LocationReport {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -12902,21 +13913,26 @@ impl LocationReport {
 					location_reporting_request_type =
 						Some(LocationReportingRequestType::decode(data)?)
 				}
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
-		let user_location_information = user_location_information.ok_or(PerCodecError::new(
-			format!("Missing mandatory IE user_location_information"),
-		))?;
+		let user_location_information = user_location_information.ok_or(
+			ThreeGppAsn1PerError::new(format!("Missing mandatory IE user_location_information")),
+		)?;
 		let location_reporting_request_type =
-			location_reporting_request_type.ok_or(PerCodecError::new(format!(
+			location_reporting_request_type.ok_or(ThreeGppAsn1PerError::new(format!(
 				"Missing mandatory IE location_reporting_request_type"
 			)))?;
 		Ok(Self {
@@ -12930,12 +13946,14 @@ impl LocationReport {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -12943,7 +13961,9 @@ impl LocationReport {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -12951,7 +13971,9 @@ impl LocationReport {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.user_location_information.encode(ie)?;
+		self.user_location_information
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 121, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -12960,7 +13982,7 @@ impl LocationReport {
 
 		if let Some(x) = &self.ue_presence_in_area_of_interest_list {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 116, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -12969,7 +13991,9 @@ impl LocationReport {
 		}
 
 		let ie = &mut Allocator::new_codec_data();
-		self.location_reporting_request_type.encode(ie)?;
+		self.location_reporting_request_type
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 33, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -12985,20 +14009,21 @@ impl LocationReport {
 
 impl PerCodec for LocationReport {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		LocationReport::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("LocationReport");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		LocationReport::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("LocationReport");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("LocationReport");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("LocationReport");
+				e
+			})
 	}
 }
 // UeTnlaBindingReleaseRequest
@@ -13009,7 +14034,7 @@ pub struct UeTnlaBindingReleaseRequest {
 }
 
 impl UeTnlaBindingReleaseRequest {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -13023,14 +14048,19 @@ impl UeTnlaBindingReleaseRequest {
 			match id {
 				10 => amf_ue_ngap_id = Some(AmfUeNgapId::decode(data)?),
 				85 => ran_ue_ngap_id = Some(RanUeNgapId::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
 		Ok(Self {
@@ -13041,12 +14071,14 @@ impl UeTnlaBindingReleaseRequest {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -13054,7 +14086,9 @@ impl UeTnlaBindingReleaseRequest {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -13070,20 +14104,21 @@ impl UeTnlaBindingReleaseRequest {
 
 impl PerCodec for UeTnlaBindingReleaseRequest {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		UeTnlaBindingReleaseRequest::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("UeTnlaBindingReleaseRequest");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		UeTnlaBindingReleaseRequest::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("UeTnlaBindingReleaseRequest");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("UeTnlaBindingReleaseRequest");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("UeTnlaBindingReleaseRequest");
+				e
+			})
 	}
 }
 // UeRadioCapabilityInfoIndication
@@ -13097,7 +14132,7 @@ pub struct UeRadioCapabilityInfoIndication {
 }
 
 impl UeRadioCapabilityInfoIndication {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -13119,17 +14154,22 @@ impl UeRadioCapabilityInfoIndication {
 					ue_radio_capability_for_paging = Some(UeRadioCapabilityForPaging::decode(data)?)
 				}
 				265 => ue_radio_capability_eutra_format = Some(UeRadioCapability::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
-		let ue_radio_capability = ue_radio_capability.ok_or(PerCodecError::new(format!(
+		let ue_radio_capability = ue_radio_capability.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ue_radio_capability"
 		)))?;
 		Ok(Self {
@@ -13143,12 +14183,14 @@ impl UeRadioCapabilityInfoIndication {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -13156,7 +14198,9 @@ impl UeRadioCapabilityInfoIndication {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -13164,7 +14208,9 @@ impl UeRadioCapabilityInfoIndication {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ue_radio_capability.encode(ie)?;
+		self.ue_radio_capability
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 117, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -13173,7 +14219,7 @@ impl UeRadioCapabilityInfoIndication {
 
 		if let Some(x) = &self.ue_radio_capability_for_paging {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 118, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -13183,7 +14229,7 @@ impl UeRadioCapabilityInfoIndication {
 
 		if let Some(x) = &self.ue_radio_capability_eutra_format {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 265, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -13200,20 +14246,25 @@ impl UeRadioCapabilityInfoIndication {
 
 impl PerCodec for UeRadioCapabilityInfoIndication {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		UeRadioCapabilityInfoIndication::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("UeRadioCapabilityInfoIndication");
-			e
-		})
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		UeRadioCapabilityInfoIndication::decode_inner(data).map_err(
+			|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("UeRadioCapabilityInfoIndication");
+				e
+			},
+		)
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("UeRadioCapabilityInfoIndication");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("UeRadioCapabilityInfoIndication");
+				e
+			})
 	}
 }
 // UeRadioCapabilityCheckRequest
@@ -13226,7 +14277,7 @@ pub struct UeRadioCapabilityCheckRequest {
 }
 
 impl UeRadioCapabilityCheckRequest {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -13244,14 +14295,19 @@ impl UeRadioCapabilityCheckRequest {
 				85 => ran_ue_ngap_id = Some(RanUeNgapId::decode(data)?),
 				117 => ue_radio_capability = Some(UeRadioCapability::decode(data)?),
 				264 => ue_radio_capability_id = Some(UeRadioCapabilityId::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
 		Ok(Self {
@@ -13264,12 +14320,14 @@ impl UeRadioCapabilityCheckRequest {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -13277,7 +14335,9 @@ impl UeRadioCapabilityCheckRequest {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -13286,7 +14346,7 @@ impl UeRadioCapabilityCheckRequest {
 
 		if let Some(x) = &self.ue_radio_capability {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 117, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -13296,7 +14356,7 @@ impl UeRadioCapabilityCheckRequest {
 
 		if let Some(x) = &self.ue_radio_capability_id {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 264, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -13313,20 +14373,21 @@ impl UeRadioCapabilityCheckRequest {
 
 impl PerCodec for UeRadioCapabilityCheckRequest {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		UeRadioCapabilityCheckRequest::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("UeRadioCapabilityCheckRequest");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		UeRadioCapabilityCheckRequest::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("UeRadioCapabilityCheckRequest");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("UeRadioCapabilityCheckRequest");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("UeRadioCapabilityCheckRequest");
+				e
+			})
 	}
 }
 // UeRadioCapabilityCheckResponse
@@ -13339,7 +14400,7 @@ pub struct UeRadioCapabilityCheckResponse {
 }
 
 impl UeRadioCapabilityCheckResponse {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -13357,19 +14418,24 @@ impl UeRadioCapabilityCheckResponse {
 				85 => ran_ue_ngap_id = Some(RanUeNgapId::decode(data)?),
 				30 => ims_voice_support_indicator = Some(ImsVoiceSupportIndicator::decode(data)?),
 				19 => criticality_diagnostics = Some(CriticalityDiagnostics::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
-		let ims_voice_support_indicator = ims_voice_support_indicator.ok_or(PerCodecError::new(
-			format!("Missing mandatory IE ims_voice_support_indicator"),
-		))?;
+		let ims_voice_support_indicator = ims_voice_support_indicator.ok_or(
+			ThreeGppAsn1PerError::new(format!("Missing mandatory IE ims_voice_support_indicator")),
+		)?;
 		Ok(Self {
 			amf_ue_ngap_id,
 			ran_ue_ngap_id,
@@ -13380,12 +14446,14 @@ impl UeRadioCapabilityCheckResponse {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -13393,7 +14461,9 @@ impl UeRadioCapabilityCheckResponse {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -13401,7 +14471,9 @@ impl UeRadioCapabilityCheckResponse {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ims_voice_support_indicator.encode(ie)?;
+		self.ims_voice_support_indicator
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 30, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -13410,7 +14482,7 @@ impl UeRadioCapabilityCheckResponse {
 
 		if let Some(x) = &self.criticality_diagnostics {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 19, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -13427,20 +14499,21 @@ impl UeRadioCapabilityCheckResponse {
 
 impl PerCodec for UeRadioCapabilityCheckResponse {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		UeRadioCapabilityCheckResponse::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("UeRadioCapabilityCheckResponse");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		UeRadioCapabilityCheckResponse::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("UeRadioCapabilityCheckResponse");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("UeRadioCapabilityCheckResponse");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("UeRadioCapabilityCheckResponse");
+				e
+			})
 	}
 }
 // PrivateMessage
@@ -13448,7 +14521,7 @@ impl PerCodec for UeRadioCapabilityCheckResponse {
 pub struct PrivateMessage {}
 
 impl PrivateMessage {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let (_optionals, _extensions_present) = decode::decode_sequence_header(data, true, 0)?;
 
 		Ok(Self {})
@@ -13456,7 +14529,7 @@ impl PrivateMessage {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let optionals = BitString::new();
 
 		encode::encode_sequence_header(data, true, &optionals, false)?;
@@ -13467,20 +14540,21 @@ impl PrivateMessage {
 
 impl PerCodec for PrivateMessage {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		PrivateMessage::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("PrivateMessage");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		PrivateMessage::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("PrivateMessage");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("PrivateMessage");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("PrivateMessage");
+				e
+			})
 	}
 }
 // SecondaryRatDataUsageReport
@@ -13494,7 +14568,7 @@ pub struct SecondaryRatDataUsageReport {
 }
 
 impl SecondaryRatDataUsageReport {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -13519,20 +14593,25 @@ impl SecondaryRatDataUsageReport {
 				}
 				143 => handover_flag = Some(HandoverFlag::decode(data)?),
 				121 => user_location_information = Some(UserLocationInformation::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
 		let pdu_session_resource_secondary_rat_usage_list =
-			pdu_session_resource_secondary_rat_usage_list.ok_or(PerCodecError::new(format!(
-				"Missing mandatory IE pdu_session_resource_secondary_rat_usage_list"
-			)))?;
+			pdu_session_resource_secondary_rat_usage_list.ok_or(ThreeGppAsn1PerError::new(
+				format!("Missing mandatory IE pdu_session_resource_secondary_rat_usage_list"),
+			))?;
 		Ok(Self {
 			amf_ue_ngap_id,
 			ran_ue_ngap_id,
@@ -13544,12 +14623,14 @@ impl SecondaryRatDataUsageReport {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -13557,7 +14638,9 @@ impl SecondaryRatDataUsageReport {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -13566,7 +14649,8 @@ impl SecondaryRatDataUsageReport {
 
 		let ie = &mut Allocator::new_codec_data();
 		self.pdu_session_resource_secondary_rat_usage_list
-			.encode(ie)?;
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 142, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -13575,7 +14659,7 @@ impl SecondaryRatDataUsageReport {
 
 		if let Some(x) = &self.handover_flag {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 143, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -13585,7 +14669,7 @@ impl SecondaryRatDataUsageReport {
 
 		if let Some(x) = &self.user_location_information {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 121, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -13602,20 +14686,21 @@ impl SecondaryRatDataUsageReport {
 
 impl PerCodec for SecondaryRatDataUsageReport {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		SecondaryRatDataUsageReport::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("SecondaryRatDataUsageReport");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		SecondaryRatDataUsageReport::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("SecondaryRatDataUsageReport");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("SecondaryRatDataUsageReport");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("SecondaryRatDataUsageReport");
+				e
+			})
 	}
 }
 // UplinkRimInformationTransfer
@@ -13625,7 +14710,7 @@ pub struct UplinkRimInformationTransfer {
 }
 
 impl UplinkRimInformationTransfer {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -13637,7 +14722,12 @@ impl UplinkRimInformationTransfer {
 			let _ = decode::decode_length_determinent(data, None, None, false)?;
 			match id {
 				175 => rim_information_transfer = Some(RimInformationTransfer::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
@@ -13648,13 +14738,13 @@ impl UplinkRimInformationTransfer {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		if let Some(x) = &self.rim_information_transfer {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 175, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -13671,20 +14761,21 @@ impl UplinkRimInformationTransfer {
 
 impl PerCodec for UplinkRimInformationTransfer {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		UplinkRimInformationTransfer::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("UplinkRimInformationTransfer");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		UplinkRimInformationTransfer::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("UplinkRimInformationTransfer");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("UplinkRimInformationTransfer");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("UplinkRimInformationTransfer");
+				e
+			})
 	}
 }
 // DownlinkRimInformationTransfer
@@ -13694,7 +14785,7 @@ pub struct DownlinkRimInformationTransfer {
 }
 
 impl DownlinkRimInformationTransfer {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -13706,7 +14797,12 @@ impl DownlinkRimInformationTransfer {
 			let _ = decode::decode_length_determinent(data, None, None, false)?;
 			match id {
 				175 => rim_information_transfer = Some(RimInformationTransfer::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
@@ -13717,13 +14813,13 @@ impl DownlinkRimInformationTransfer {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		if let Some(x) = &self.rim_information_transfer {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 175, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -13740,20 +14836,21 @@ impl DownlinkRimInformationTransfer {
 
 impl PerCodec for DownlinkRimInformationTransfer {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		DownlinkRimInformationTransfer::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("DownlinkRimInformationTransfer");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		DownlinkRimInformationTransfer::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("DownlinkRimInformationTransfer");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("DownlinkRimInformationTransfer");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("DownlinkRimInformationTransfer");
+				e
+			})
 	}
 }
 // ConnectionEstablishmentIndication
@@ -13776,7 +14873,7 @@ pub struct ConnectionEstablishmentIndication {
 }
 
 impl ConnectionEstablishmentIndication {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -13816,14 +14913,19 @@ impl ConnectionEstablishmentIndication {
 				264 => ue_radio_capability_id = Some(UeRadioCapabilityId::decode(data)?),
 				34 => masked_imeisv = Some(MaskedImeisv::decode(data)?),
 				48 => old_amf = Some(AmfName::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
 		Ok(Self {
@@ -13846,12 +14948,14 @@ impl ConnectionEstablishmentIndication {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -13859,7 +14963,9 @@ impl ConnectionEstablishmentIndication {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -13868,7 +14974,7 @@ impl ConnectionEstablishmentIndication {
 
 		if let Some(x) = &self.ue_radio_capability {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 117, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -13878,7 +14984,7 @@ impl ConnectionEstablishmentIndication {
 
 		if let Some(x) = &self.end_indication {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 226, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -13888,7 +14994,7 @@ impl ConnectionEstablishmentIndication {
 
 		if let Some(x) = &self.snssai {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 148, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -13898,7 +15004,7 @@ impl ConnectionEstablishmentIndication {
 
 		if let Some(x) = &self.allowed_nssai {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 0, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -13908,7 +15014,7 @@ impl ConnectionEstablishmentIndication {
 
 		if let Some(x) = &self.ue_differentiation_info {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 209, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -13918,7 +15024,7 @@ impl ConnectionEstablishmentIndication {
 
 		if let Some(x) = &self.dl_cp_security_information {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 212, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -13928,7 +15034,7 @@ impl ConnectionEstablishmentIndication {
 
 		if let Some(x) = &self.nb_iot_ue_priority {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 210, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -13938,7 +15044,7 @@ impl ConnectionEstablishmentIndication {
 
 		if let Some(x) = &self.enhanced_coverage_restriction {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 205, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -13948,7 +15054,7 @@ impl ConnectionEstablishmentIndication {
 
 		if let Some(x) = &self.c_emode_brestricted {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 222, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -13958,7 +15064,7 @@ impl ConnectionEstablishmentIndication {
 
 		if let Some(x) = &self.ue_radio_capability_id {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 264, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -13968,7 +15074,7 @@ impl ConnectionEstablishmentIndication {
 
 		if let Some(x) = &self.masked_imeisv {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 34, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -13978,7 +15084,7 @@ impl ConnectionEstablishmentIndication {
 
 		if let Some(x) = &self.old_amf {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 48, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -13995,20 +15101,25 @@ impl ConnectionEstablishmentIndication {
 
 impl PerCodec for ConnectionEstablishmentIndication {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		ConnectionEstablishmentIndication::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("ConnectionEstablishmentIndication");
-			e
-		})
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		ConnectionEstablishmentIndication::decode_inner(data).map_err(
+			|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("ConnectionEstablishmentIndication");
+				e
+			},
+		)
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("ConnectionEstablishmentIndication");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("ConnectionEstablishmentIndication");
+				e
+			})
 	}
 }
 // UeRadioCapabilityIdMappingRequest
@@ -14018,7 +15129,7 @@ pub struct UeRadioCapabilityIdMappingRequest {
 }
 
 impl UeRadioCapabilityIdMappingRequest {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -14030,13 +15141,18 @@ impl UeRadioCapabilityIdMappingRequest {
 			let _ = decode::decode_length_determinent(data, None, None, false)?;
 			match id {
 				264 => ue_radio_capability_id = Some(UeRadioCapabilityId::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let ue_radio_capability_id = ue_radio_capability_id.ok_or(PerCodecError::new(format!(
-			"Missing mandatory IE ue_radio_capability_id"
-		)))?;
+		let ue_radio_capability_id = ue_radio_capability_id.ok_or(ThreeGppAsn1PerError::new(
+			format!("Missing mandatory IE ue_radio_capability_id"),
+		))?;
 		Ok(Self {
 			ue_radio_capability_id,
 		})
@@ -14044,12 +15160,14 @@ impl UeRadioCapabilityIdMappingRequest {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ue_radio_capability_id.encode(ie)?;
+		self.ue_radio_capability_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 264, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -14065,20 +15183,25 @@ impl UeRadioCapabilityIdMappingRequest {
 
 impl PerCodec for UeRadioCapabilityIdMappingRequest {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		UeRadioCapabilityIdMappingRequest::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("UeRadioCapabilityIdMappingRequest");
-			e
-		})
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		UeRadioCapabilityIdMappingRequest::decode_inner(data).map_err(
+			|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("UeRadioCapabilityIdMappingRequest");
+				e
+			},
+		)
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("UeRadioCapabilityIdMappingRequest");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("UeRadioCapabilityIdMappingRequest");
+				e
+			})
 	}
 }
 // UeRadioCapabilityIdMappingResponse
@@ -14090,7 +15213,7 @@ pub struct UeRadioCapabilityIdMappingResponse {
 }
 
 impl UeRadioCapabilityIdMappingResponse {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -14106,14 +15229,19 @@ impl UeRadioCapabilityIdMappingResponse {
 				264 => ue_radio_capability_id = Some(UeRadioCapabilityId::decode(data)?),
 				117 => ue_radio_capability = Some(UeRadioCapability::decode(data)?),
 				19 => criticality_diagnostics = Some(CriticalityDiagnostics::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let ue_radio_capability_id = ue_radio_capability_id.ok_or(PerCodecError::new(format!(
-			"Missing mandatory IE ue_radio_capability_id"
-		)))?;
-		let ue_radio_capability = ue_radio_capability.ok_or(PerCodecError::new(format!(
+		let ue_radio_capability_id = ue_radio_capability_id.ok_or(ThreeGppAsn1PerError::new(
+			format!("Missing mandatory IE ue_radio_capability_id"),
+		))?;
+		let ue_radio_capability = ue_radio_capability.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ue_radio_capability"
 		)))?;
 		Ok(Self {
@@ -14125,12 +15253,14 @@ impl UeRadioCapabilityIdMappingResponse {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ue_radio_capability_id.encode(ie)?;
+		self.ue_radio_capability_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 264, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -14138,7 +15268,9 @@ impl UeRadioCapabilityIdMappingResponse {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ue_radio_capability.encode(ie)?;
+		self.ue_radio_capability
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 117, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -14147,7 +15279,7 @@ impl UeRadioCapabilityIdMappingResponse {
 
 		if let Some(x) = &self.criticality_diagnostics {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 19, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -14164,20 +15296,25 @@ impl UeRadioCapabilityIdMappingResponse {
 
 impl PerCodec for UeRadioCapabilityIdMappingResponse {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		UeRadioCapabilityIdMappingResponse::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("UeRadioCapabilityIdMappingResponse");
-			e
-		})
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		UeRadioCapabilityIdMappingResponse::decode_inner(data).map_err(
+			|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("UeRadioCapabilityIdMappingResponse");
+				e
+			},
+		)
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("UeRadioCapabilityIdMappingResponse");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("UeRadioCapabilityIdMappingResponse");
+				e
+			})
 	}
 }
 // AmfcpRelocationIndication
@@ -14190,7 +15327,7 @@ pub struct AmfcpRelocationIndication {
 }
 
 impl AmfcpRelocationIndication {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -14208,14 +15345,19 @@ impl AmfcpRelocationIndication {
 				85 => ran_ue_ngap_id = Some(RanUeNgapId::decode(data)?),
 				148 => snssai = Some(Snssai::decode(data)?),
 				0 => allowed_nssai = Some(AllowedNssai::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let amf_ue_ngap_id = amf_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE amf_ue_ngap_id"
 		)))?;
-		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(PerCodecError::new(format!(
+		let ran_ue_ngap_id = ran_ue_ngap_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE ran_ue_ngap_id"
 		)))?;
 		Ok(Self {
@@ -14228,12 +15370,14 @@ impl AmfcpRelocationIndication {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.amf_ue_ngap_id.encode(ie)?;
+		self.amf_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 10, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -14241,7 +15385,9 @@ impl AmfcpRelocationIndication {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.ran_ue_ngap_id.encode(ie)?;
+		self.ran_ue_ngap_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 85, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -14250,7 +15396,7 @@ impl AmfcpRelocationIndication {
 
 		if let Some(x) = &self.snssai {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 148, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -14260,7 +15406,7 @@ impl AmfcpRelocationIndication {
 
 		if let Some(x) = &self.allowed_nssai {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 0, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -14277,20 +15423,21 @@ impl AmfcpRelocationIndication {
 
 impl PerCodec for AmfcpRelocationIndication {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		AmfcpRelocationIndication::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("AmfcpRelocationIndication");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		AmfcpRelocationIndication::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("AmfcpRelocationIndication");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("AmfcpRelocationIndication");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("AmfcpRelocationIndication");
+				e
+			})
 	}
 }
 // BroadcastSessionSetupRequest
@@ -14303,7 +15450,7 @@ pub struct BroadcastSessionSetupRequest {
 }
 
 impl BroadcastSessionSetupRequest {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -14324,19 +15471,26 @@ impl BroadcastSessionSetupRequest {
 					mbs_session_setup_request_transfer =
 						Some(decode::decode_octetstring(data, None, None, false)?)
 				}
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let mbs_session_id = mbs_session_id.ok_or(PerCodecError::new(format!(
+		let mbs_session_id = mbs_session_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE mbs_session_id"
 		)))?;
-		let snssai = snssai.ok_or(PerCodecError::new(format!("Missing mandatory IE snssai")))?;
-		let mbs_service_area = mbs_service_area.ok_or(PerCodecError::new(format!(
+		let snssai = snssai.ok_or(ThreeGppAsn1PerError::new(format!(
+			"Missing mandatory IE snssai"
+		)))?;
+		let mbs_service_area = mbs_service_area.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE mbs_service_area"
 		)))?;
 		let mbs_session_setup_request_transfer =
-			mbs_session_setup_request_transfer.ok_or(PerCodecError::new(format!(
+			mbs_session_setup_request_transfer.ok_or(ThreeGppAsn1PerError::new(format!(
 				"Missing mandatory IE mbs_session_setup_request_transfer"
 			)))?;
 		Ok(Self {
@@ -14349,12 +15503,14 @@ impl BroadcastSessionSetupRequest {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.mbs_session_id.encode(ie)?;
+		self.mbs_session_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 299, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -14362,7 +15518,7 @@ impl BroadcastSessionSetupRequest {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.snssai.encode(ie)?;
+		self.snssai.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 148, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -14370,7 +15526,9 @@ impl BroadcastSessionSetupRequest {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.mbs_service_area.encode(ie)?;
+		self.mbs_service_area
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 298, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -14385,7 +15543,8 @@ impl BroadcastSessionSetupRequest {
 			false,
 			&self.mbs_session_setup_request_transfer,
 			false,
-		)?;
+		)
+		.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 315, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -14401,20 +15560,21 @@ impl BroadcastSessionSetupRequest {
 
 impl PerCodec for BroadcastSessionSetupRequest {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		BroadcastSessionSetupRequest::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("BroadcastSessionSetupRequest");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		BroadcastSessionSetupRequest::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("BroadcastSessionSetupRequest");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("BroadcastSessionSetupRequest");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("BroadcastSessionSetupRequest");
+				e
+			})
 	}
 }
 // BroadcastSessionSetupResponse
@@ -14426,7 +15586,7 @@ pub struct BroadcastSessionSetupResponse {
 }
 
 impl BroadcastSessionSetupResponse {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -14445,11 +15605,16 @@ impl BroadcastSessionSetupResponse {
 						Some(decode::decode_octetstring(data, None, None, false)?)
 				}
 				19 => criticality_diagnostics = Some(CriticalityDiagnostics::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let mbs_session_id = mbs_session_id.ok_or(PerCodecError::new(format!(
+		let mbs_session_id = mbs_session_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE mbs_session_id"
 		)))?;
 		Ok(Self {
@@ -14461,12 +15626,14 @@ impl BroadcastSessionSetupResponse {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.mbs_session_id.encode(ie)?;
+		self.mbs_session_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 299, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -14475,7 +15642,8 @@ impl BroadcastSessionSetupResponse {
 
 		if let Some(x) = &self.mbs_session_setup_response_transfer {
 			let ie = &mut Allocator::new_codec_data();
-			encode::encode_octetstring(ie, None, None, false, &x, false)?;
+			encode::encode_octetstring(ie, None, None, false, &x, false)
+				.map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 316, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -14485,7 +15653,7 @@ impl BroadcastSessionSetupResponse {
 
 		if let Some(x) = &self.criticality_diagnostics {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 19, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -14502,20 +15670,21 @@ impl BroadcastSessionSetupResponse {
 
 impl PerCodec for BroadcastSessionSetupResponse {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		BroadcastSessionSetupResponse::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("BroadcastSessionSetupResponse");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		BroadcastSessionSetupResponse::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("BroadcastSessionSetupResponse");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("BroadcastSessionSetupResponse");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("BroadcastSessionSetupResponse");
+				e
+			})
 	}
 }
 // BroadcastSessionSetupFailure
@@ -14528,7 +15697,7 @@ pub struct BroadcastSessionSetupFailure {
 }
 
 impl BroadcastSessionSetupFailure {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -14549,14 +15718,21 @@ impl BroadcastSessionSetupFailure {
 				}
 				15 => cause = Some(Cause::decode(data)?),
 				19 => criticality_diagnostics = Some(CriticalityDiagnostics::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let mbs_session_id = mbs_session_id.ok_or(PerCodecError::new(format!(
+		let mbs_session_id = mbs_session_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE mbs_session_id"
 		)))?;
-		let cause = cause.ok_or(PerCodecError::new(format!("Missing mandatory IE cause")))?;
+		let cause = cause.ok_or(ThreeGppAsn1PerError::new(format!(
+			"Missing mandatory IE cause"
+		)))?;
 		Ok(Self {
 			mbs_session_id,
 			mbs_session_setup_failure_transfer,
@@ -14567,12 +15743,14 @@ impl BroadcastSessionSetupFailure {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.mbs_session_id.encode(ie)?;
+		self.mbs_session_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 299, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -14581,7 +15759,8 @@ impl BroadcastSessionSetupFailure {
 
 		if let Some(x) = &self.mbs_session_setup_failure_transfer {
 			let ie = &mut Allocator::new_codec_data();
-			encode::encode_octetstring(ie, None, None, false, &x, false)?;
+			encode::encode_octetstring(ie, None, None, false, &x, false)
+				.map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 314, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -14590,7 +15769,7 @@ impl BroadcastSessionSetupFailure {
 		}
 
 		let ie = &mut Allocator::new_codec_data();
-		self.cause.encode(ie)?;
+		self.cause.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 15, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -14599,7 +15778,7 @@ impl BroadcastSessionSetupFailure {
 
 		if let Some(x) = &self.criticality_diagnostics {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 19, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -14616,20 +15795,21 @@ impl BroadcastSessionSetupFailure {
 
 impl PerCodec for BroadcastSessionSetupFailure {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		BroadcastSessionSetupFailure::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("BroadcastSessionSetupFailure");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		BroadcastSessionSetupFailure::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("BroadcastSessionSetupFailure");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("BroadcastSessionSetupFailure");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("BroadcastSessionSetupFailure");
+				e
+			})
 	}
 }
 // BroadcastSessionModificationRequest
@@ -14641,7 +15821,7 @@ pub struct BroadcastSessionModificationRequest {
 }
 
 impl BroadcastSessionModificationRequest {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -14660,11 +15840,16 @@ impl BroadcastSessionModificationRequest {
 					mbs_session_modification_request_transfer =
 						Some(decode::decode_octetstring(data, None, None, false)?)
 				}
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let mbs_session_id = mbs_session_id.ok_or(PerCodecError::new(format!(
+		let mbs_session_id = mbs_session_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE mbs_session_id"
 		)))?;
 		Ok(Self {
@@ -14676,12 +15861,14 @@ impl BroadcastSessionModificationRequest {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.mbs_session_id.encode(ie)?;
+		self.mbs_session_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 299, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -14690,7 +15877,7 @@ impl BroadcastSessionModificationRequest {
 
 		if let Some(x) = &self.mbs_service_area {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 298, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -14700,7 +15887,8 @@ impl BroadcastSessionModificationRequest {
 
 		if let Some(x) = &self.mbs_session_modification_request_transfer {
 			let ie = &mut Allocator::new_codec_data();
-			encode::encode_octetstring(ie, None, None, false, &x, false)?;
+			encode::encode_octetstring(ie, None, None, false, &x, false)
+				.map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 349, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -14717,20 +15905,25 @@ impl BroadcastSessionModificationRequest {
 
 impl PerCodec for BroadcastSessionModificationRequest {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		BroadcastSessionModificationRequest::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("BroadcastSessionModificationRequest");
-			e
-		})
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		BroadcastSessionModificationRequest::decode_inner(data).map_err(
+			|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("BroadcastSessionModificationRequest");
+				e
+			},
+		)
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("BroadcastSessionModificationRequest");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("BroadcastSessionModificationRequest");
+				e
+			})
 	}
 }
 // BroadcastSessionModificationResponse
@@ -14742,7 +15935,7 @@ pub struct BroadcastSessionModificationResponse {
 }
 
 impl BroadcastSessionModificationResponse {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -14761,11 +15954,16 @@ impl BroadcastSessionModificationResponse {
 						Some(decode::decode_octetstring(data, None, None, false)?)
 				}
 				19 => criticality_diagnostics = Some(CriticalityDiagnostics::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let mbs_session_id = mbs_session_id.ok_or(PerCodecError::new(format!(
+		let mbs_session_id = mbs_session_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE mbs_session_id"
 		)))?;
 		Ok(Self {
@@ -14777,12 +15975,14 @@ impl BroadcastSessionModificationResponse {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.mbs_session_id.encode(ie)?;
+		self.mbs_session_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 299, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -14791,7 +15991,8 @@ impl BroadcastSessionModificationResponse {
 
 		if let Some(x) = &self.mbs_session_modification_response_transfer {
 			let ie = &mut Allocator::new_codec_data();
-			encode::encode_octetstring(ie, None, None, false, &x, false)?;
+			encode::encode_octetstring(ie, None, None, false, &x, false)
+				.map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 350, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -14801,7 +16002,7 @@ impl BroadcastSessionModificationResponse {
 
 		if let Some(x) = &self.criticality_diagnostics {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 19, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -14818,20 +16019,25 @@ impl BroadcastSessionModificationResponse {
 
 impl PerCodec for BroadcastSessionModificationResponse {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		BroadcastSessionModificationResponse::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("BroadcastSessionModificationResponse");
-			e
-		})
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		BroadcastSessionModificationResponse::decode_inner(data).map_err(
+			|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("BroadcastSessionModificationResponse");
+				e
+			},
+		)
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("BroadcastSessionModificationResponse");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("BroadcastSessionModificationResponse");
+				e
+			})
 	}
 }
 // BroadcastSessionModificationFailure
@@ -14844,7 +16050,7 @@ pub struct BroadcastSessionModificationFailure {
 }
 
 impl BroadcastSessionModificationFailure {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -14865,14 +16071,21 @@ impl BroadcastSessionModificationFailure {
 				}
 				15 => cause = Some(Cause::decode(data)?),
 				19 => criticality_diagnostics = Some(CriticalityDiagnostics::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let mbs_session_id = mbs_session_id.ok_or(PerCodecError::new(format!(
+		let mbs_session_id = mbs_session_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE mbs_session_id"
 		)))?;
-		let cause = cause.ok_or(PerCodecError::new(format!("Missing mandatory IE cause")))?;
+		let cause = cause.ok_or(ThreeGppAsn1PerError::new(format!(
+			"Missing mandatory IE cause"
+		)))?;
 		Ok(Self {
 			mbs_session_id,
 			mbs_session_modification_failure_transfer,
@@ -14883,12 +16096,14 @@ impl BroadcastSessionModificationFailure {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.mbs_session_id.encode(ie)?;
+		self.mbs_session_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 299, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -14897,7 +16112,8 @@ impl BroadcastSessionModificationFailure {
 
 		if let Some(x) = &self.mbs_session_modification_failure_transfer {
 			let ie = &mut Allocator::new_codec_data();
-			encode::encode_octetstring(ie, None, None, false, &x, false)?;
+			encode::encode_octetstring(ie, None, None, false, &x, false)
+				.map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 348, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -14906,7 +16122,7 @@ impl BroadcastSessionModificationFailure {
 		}
 
 		let ie = &mut Allocator::new_codec_data();
-		self.cause.encode(ie)?;
+		self.cause.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 15, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -14915,7 +16131,7 @@ impl BroadcastSessionModificationFailure {
 
 		if let Some(x) = &self.criticality_diagnostics {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 19, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -14932,20 +16148,25 @@ impl BroadcastSessionModificationFailure {
 
 impl PerCodec for BroadcastSessionModificationFailure {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		BroadcastSessionModificationFailure::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("BroadcastSessionModificationFailure");
-			e
-		})
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		BroadcastSessionModificationFailure::decode_inner(data).map_err(
+			|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("BroadcastSessionModificationFailure");
+				e
+			},
+		)
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("BroadcastSessionModificationFailure");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("BroadcastSessionModificationFailure");
+				e
+			})
 	}
 }
 // BroadcastSessionReleaseRequest
@@ -14956,7 +16177,7 @@ pub struct BroadcastSessionReleaseRequest {
 }
 
 impl BroadcastSessionReleaseRequest {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -14970,14 +16191,21 @@ impl BroadcastSessionReleaseRequest {
 			match id {
 				299 => mbs_session_id = Some(MbsSessionId::decode(data)?),
 				15 => cause = Some(Cause::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let mbs_session_id = mbs_session_id.ok_or(PerCodecError::new(format!(
+		let mbs_session_id = mbs_session_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE mbs_session_id"
 		)))?;
-		let cause = cause.ok_or(PerCodecError::new(format!("Missing mandatory IE cause")))?;
+		let cause = cause.ok_or(ThreeGppAsn1PerError::new(format!(
+			"Missing mandatory IE cause"
+		)))?;
 		Ok(Self {
 			mbs_session_id,
 			cause,
@@ -14986,12 +16214,14 @@ impl BroadcastSessionReleaseRequest {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.mbs_session_id.encode(ie)?;
+		self.mbs_session_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 299, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -14999,7 +16229,7 @@ impl BroadcastSessionReleaseRequest {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.cause.encode(ie)?;
+		self.cause.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 15, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -15015,20 +16245,21 @@ impl BroadcastSessionReleaseRequest {
 
 impl PerCodec for BroadcastSessionReleaseRequest {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		BroadcastSessionReleaseRequest::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("BroadcastSessionReleaseRequest");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		BroadcastSessionReleaseRequest::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("BroadcastSessionReleaseRequest");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("BroadcastSessionReleaseRequest");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("BroadcastSessionReleaseRequest");
+				e
+			})
 	}
 }
 // BroadcastSessionReleaseRequired
@@ -15039,7 +16270,7 @@ pub struct BroadcastSessionReleaseRequired {
 }
 
 impl BroadcastSessionReleaseRequired {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -15053,14 +16284,21 @@ impl BroadcastSessionReleaseRequired {
 			match id {
 				299 => mbs_session_id = Some(MbsSessionId::decode(data)?),
 				15 => cause = Some(Cause::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let mbs_session_id = mbs_session_id.ok_or(PerCodecError::new(format!(
+		let mbs_session_id = mbs_session_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE mbs_session_id"
 		)))?;
-		let cause = cause.ok_or(PerCodecError::new(format!("Missing mandatory IE cause")))?;
+		let cause = cause.ok_or(ThreeGppAsn1PerError::new(format!(
+			"Missing mandatory IE cause"
+		)))?;
 		Ok(Self {
 			mbs_session_id,
 			cause,
@@ -15069,12 +16307,14 @@ impl BroadcastSessionReleaseRequired {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.mbs_session_id.encode(ie)?;
+		self.mbs_session_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 299, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -15082,7 +16322,7 @@ impl BroadcastSessionReleaseRequired {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.cause.encode(ie)?;
+		self.cause.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 15, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -15098,20 +16338,25 @@ impl BroadcastSessionReleaseRequired {
 
 impl PerCodec for BroadcastSessionReleaseRequired {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		BroadcastSessionReleaseRequired::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("BroadcastSessionReleaseRequired");
-			e
-		})
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		BroadcastSessionReleaseRequired::decode_inner(data).map_err(
+			|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("BroadcastSessionReleaseRequired");
+				e
+			},
+		)
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("BroadcastSessionReleaseRequired");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("BroadcastSessionReleaseRequired");
+				e
+			})
 	}
 }
 // BroadcastSessionReleaseResponse
@@ -15123,7 +16368,7 @@ pub struct BroadcastSessionReleaseResponse {
 }
 
 impl BroadcastSessionReleaseResponse {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -15142,11 +16387,16 @@ impl BroadcastSessionReleaseResponse {
 						Some(decode::decode_octetstring(data, None, None, false)?)
 				}
 				19 => criticality_diagnostics = Some(CriticalityDiagnostics::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let mbs_session_id = mbs_session_id.ok_or(PerCodecError::new(format!(
+		let mbs_session_id = mbs_session_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE mbs_session_id"
 		)))?;
 		Ok(Self {
@@ -15158,12 +16408,14 @@ impl BroadcastSessionReleaseResponse {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.mbs_session_id.encode(ie)?;
+		self.mbs_session_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 299, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -15172,7 +16424,8 @@ impl BroadcastSessionReleaseResponse {
 
 		if let Some(x) = &self.mbs_session_release_response_transfer {
 			let ie = &mut Allocator::new_codec_data();
-			encode::encode_octetstring(ie, None, None, false, &x, false)?;
+			encode::encode_octetstring(ie, None, None, false, &x, false)
+				.map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 358, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -15182,7 +16435,7 @@ impl BroadcastSessionReleaseResponse {
 
 		if let Some(x) = &self.criticality_diagnostics {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 19, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -15199,20 +16452,25 @@ impl BroadcastSessionReleaseResponse {
 
 impl PerCodec for BroadcastSessionReleaseResponse {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		BroadcastSessionReleaseResponse::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("BroadcastSessionReleaseResponse");
-			e
-		})
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		BroadcastSessionReleaseResponse::decode_inner(data).map_err(
+			|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("BroadcastSessionReleaseResponse");
+				e
+			},
+		)
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("BroadcastSessionReleaseResponse");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("BroadcastSessionReleaseResponse");
+				e
+			})
 	}
 }
 // DistributionSetupRequest
@@ -15224,7 +16482,7 @@ pub struct DistributionSetupRequest {
 }
 
 impl DistributionSetupRequest {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -15243,15 +16501,20 @@ impl DistributionSetupRequest {
 					mbs_distribution_setup_request_transfer =
 						Some(decode::decode_octetstring(data, None, None, false)?)
 				}
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let mbs_session_id = mbs_session_id.ok_or(PerCodecError::new(format!(
+		let mbs_session_id = mbs_session_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE mbs_session_id"
 		)))?;
 		let mbs_distribution_setup_request_transfer = mbs_distribution_setup_request_transfer
-			.ok_or(PerCodecError::new(format!(
+			.ok_or(ThreeGppAsn1PerError::new(format!(
 				"Missing mandatory IE mbs_distribution_setup_request_transfer"
 			)))?;
 		Ok(Self {
@@ -15263,12 +16526,14 @@ impl DistributionSetupRequest {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.mbs_session_id.encode(ie)?;
+		self.mbs_session_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 299, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -15277,7 +16542,7 @@ impl DistributionSetupRequest {
 
 		if let Some(x) = &self.mbs_area_session_id {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 295, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -15293,7 +16558,8 @@ impl DistributionSetupRequest {
 			false,
 			&self.mbs_distribution_setup_request_transfer,
 			false,
-		)?;
+		)
+		.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 301, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -15309,20 +16575,21 @@ impl DistributionSetupRequest {
 
 impl PerCodec for DistributionSetupRequest {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		DistributionSetupRequest::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("DistributionSetupRequest");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		DistributionSetupRequest::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("DistributionSetupRequest");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("DistributionSetupRequest");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("DistributionSetupRequest");
+				e
+			})
 	}
 }
 // DistributionSetupResponse
@@ -15335,7 +16602,7 @@ pub struct DistributionSetupResponse {
 }
 
 impl DistributionSetupResponse {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -15356,15 +16623,20 @@ impl DistributionSetupResponse {
 						Some(decode::decode_octetstring(data, None, None, false)?)
 				}
 				19 => criticality_diagnostics = Some(CriticalityDiagnostics::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let mbs_session_id = mbs_session_id.ok_or(PerCodecError::new(format!(
+		let mbs_session_id = mbs_session_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE mbs_session_id"
 		)))?;
 		let mbs_distribution_setup_response_transfer = mbs_distribution_setup_response_transfer
-			.ok_or(PerCodecError::new(format!(
+			.ok_or(ThreeGppAsn1PerError::new(format!(
 				"Missing mandatory IE mbs_distribution_setup_response_transfer"
 			)))?;
 		Ok(Self {
@@ -15377,12 +16649,14 @@ impl DistributionSetupResponse {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.mbs_session_id.encode(ie)?;
+		self.mbs_session_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 299, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -15391,7 +16665,7 @@ impl DistributionSetupResponse {
 
 		if let Some(x) = &self.mbs_area_session_id {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 295, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -15407,7 +16681,8 @@ impl DistributionSetupResponse {
 			false,
 			&self.mbs_distribution_setup_response_transfer,
 			false,
-		)?;
+		)
+		.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 302, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -15416,7 +16691,7 @@ impl DistributionSetupResponse {
 
 		if let Some(x) = &self.criticality_diagnostics {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 19, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -15433,20 +16708,21 @@ impl DistributionSetupResponse {
 
 impl PerCodec for DistributionSetupResponse {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		DistributionSetupResponse::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("DistributionSetupResponse");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		DistributionSetupResponse::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("DistributionSetupResponse");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("DistributionSetupResponse");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("DistributionSetupResponse");
+				e
+			})
 	}
 }
 // DistributionSetupFailure
@@ -15460,7 +16736,7 @@ pub struct DistributionSetupFailure {
 }
 
 impl DistributionSetupFailure {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -15483,18 +16759,25 @@ impl DistributionSetupFailure {
 				}
 				15 => cause = Some(Cause::decode(data)?),
 				19 => criticality_diagnostics = Some(CriticalityDiagnostics::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let mbs_session_id = mbs_session_id.ok_or(PerCodecError::new(format!(
+		let mbs_session_id = mbs_session_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE mbs_session_id"
 		)))?;
 		let mbs_distribution_setup_unsuccessful_transfer =
-			mbs_distribution_setup_unsuccessful_transfer.ok_or(PerCodecError::new(format!(
-				"Missing mandatory IE mbs_distribution_setup_unsuccessful_transfer"
-			)))?;
-		let cause = cause.ok_or(PerCodecError::new(format!("Missing mandatory IE cause")))?;
+			mbs_distribution_setup_unsuccessful_transfer.ok_or(ThreeGppAsn1PerError::new(
+				format!("Missing mandatory IE mbs_distribution_setup_unsuccessful_transfer"),
+			))?;
+		let cause = cause.ok_or(ThreeGppAsn1PerError::new(format!(
+			"Missing mandatory IE cause"
+		)))?;
 		Ok(Self {
 			mbs_session_id,
 			mbs_area_session_id,
@@ -15506,12 +16789,14 @@ impl DistributionSetupFailure {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.mbs_session_id.encode(ie)?;
+		self.mbs_session_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 299, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -15520,7 +16805,7 @@ impl DistributionSetupFailure {
 
 		if let Some(x) = &self.mbs_area_session_id {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 295, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -15536,7 +16821,8 @@ impl DistributionSetupFailure {
 			false,
 			&self.mbs_distribution_setup_unsuccessful_transfer,
 			false,
-		)?;
+		)
+		.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 303, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -15544,7 +16830,7 @@ impl DistributionSetupFailure {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.cause.encode(ie)?;
+		self.cause.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 15, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -15553,7 +16839,7 @@ impl DistributionSetupFailure {
 
 		if let Some(x) = &self.criticality_diagnostics {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 19, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -15570,20 +16856,21 @@ impl DistributionSetupFailure {
 
 impl PerCodec for DistributionSetupFailure {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		DistributionSetupFailure::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("DistributionSetupFailure");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		DistributionSetupFailure::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("DistributionSetupFailure");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("DistributionSetupFailure");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("DistributionSetupFailure");
+				e
+			})
 	}
 }
 // DistributionReleaseRequest
@@ -15596,7 +16883,7 @@ pub struct DistributionReleaseRequest {
 }
 
 impl DistributionReleaseRequest {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -15617,18 +16904,25 @@ impl DistributionReleaseRequest {
 						Some(decode::decode_octetstring(data, None, None, false)?)
 				}
 				15 => cause = Some(Cause::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let mbs_session_id = mbs_session_id.ok_or(PerCodecError::new(format!(
+		let mbs_session_id = mbs_session_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE mbs_session_id"
 		)))?;
 		let mbs_distribution_release_request_transfer = mbs_distribution_release_request_transfer
-			.ok_or(PerCodecError::new(format!(
-			"Missing mandatory IE mbs_distribution_release_request_transfer"
+			.ok_or(ThreeGppAsn1PerError::new(
+			format!("Missing mandatory IE mbs_distribution_release_request_transfer"),
+		))?;
+		let cause = cause.ok_or(ThreeGppAsn1PerError::new(format!(
+			"Missing mandatory IE cause"
 		)))?;
-		let cause = cause.ok_or(PerCodecError::new(format!("Missing mandatory IE cause")))?;
 		Ok(Self {
 			mbs_session_id,
 			mbs_area_session_id,
@@ -15639,12 +16933,14 @@ impl DistributionReleaseRequest {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.mbs_session_id.encode(ie)?;
+		self.mbs_session_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 299, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -15653,7 +16949,7 @@ impl DistributionReleaseRequest {
 
 		if let Some(x) = &self.mbs_area_session_id {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 295, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -15669,7 +16965,8 @@ impl DistributionReleaseRequest {
 			false,
 			&self.mbs_distribution_release_request_transfer,
 			false,
-		)?;
+		)
+		.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 300, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -15677,7 +16974,7 @@ impl DistributionReleaseRequest {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.cause.encode(ie)?;
+		self.cause.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 15, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -15693,20 +16990,21 @@ impl DistributionReleaseRequest {
 
 impl PerCodec for DistributionReleaseRequest {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		DistributionReleaseRequest::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("DistributionReleaseRequest");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		DistributionReleaseRequest::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("DistributionReleaseRequest");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("DistributionReleaseRequest");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("DistributionReleaseRequest");
+				e
+			})
 	}
 }
 // DistributionReleaseResponse
@@ -15718,7 +17016,7 @@ pub struct DistributionReleaseResponse {
 }
 
 impl DistributionReleaseResponse {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -15734,11 +17032,16 @@ impl DistributionReleaseResponse {
 				299 => mbs_session_id = Some(MbsSessionId::decode(data)?),
 				295 => mbs_area_session_id = Some(MbsAreaSessionId::decode(data)?),
 				19 => criticality_diagnostics = Some(CriticalityDiagnostics::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let mbs_session_id = mbs_session_id.ok_or(PerCodecError::new(format!(
+		let mbs_session_id = mbs_session_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE mbs_session_id"
 		)))?;
 		Ok(Self {
@@ -15750,12 +17053,14 @@ impl DistributionReleaseResponse {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.mbs_session_id.encode(ie)?;
+		self.mbs_session_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 299, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -15764,7 +17069,7 @@ impl DistributionReleaseResponse {
 
 		if let Some(x) = &self.mbs_area_session_id {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 295, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -15774,7 +17079,7 @@ impl DistributionReleaseResponse {
 
 		if let Some(x) = &self.criticality_diagnostics {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 19, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -15791,20 +17096,21 @@ impl DistributionReleaseResponse {
 
 impl PerCodec for DistributionReleaseResponse {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		DistributionReleaseResponse::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("DistributionReleaseResponse");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		DistributionReleaseResponse::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("DistributionReleaseResponse");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("DistributionReleaseResponse");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("DistributionReleaseResponse");
+				e
+			})
 	}
 }
 // MulticastSessionActivationRequest
@@ -15815,7 +17121,7 @@ pub struct MulticastSessionActivationRequest {
 }
 
 impl MulticastSessionActivationRequest {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -15832,17 +17138,22 @@ impl MulticastSessionActivationRequest {
 					multicast_session_activation_request_transfer =
 						Some(decode::decode_octetstring(data, None, None, false)?)
 				}
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let mbs_session_id = mbs_session_id.ok_or(PerCodecError::new(format!(
+		let mbs_session_id = mbs_session_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE mbs_session_id"
 		)))?;
 		let multicast_session_activation_request_transfer =
-			multicast_session_activation_request_transfer.ok_or(PerCodecError::new(format!(
-				"Missing mandatory IE multicast_session_activation_request_transfer"
-			)))?;
+			multicast_session_activation_request_transfer.ok_or(ThreeGppAsn1PerError::new(
+				format!("Missing mandatory IE multicast_session_activation_request_transfer"),
+			))?;
 		Ok(Self {
 			mbs_session_id,
 			multicast_session_activation_request_transfer,
@@ -15851,12 +17162,14 @@ impl MulticastSessionActivationRequest {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.mbs_session_id.encode(ie)?;
+		self.mbs_session_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 299, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -15871,7 +17184,8 @@ impl MulticastSessionActivationRequest {
 			false,
 			&self.multicast_session_activation_request_transfer,
 			false,
-		)?;
+		)
+		.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 304, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -15887,20 +17201,25 @@ impl MulticastSessionActivationRequest {
 
 impl PerCodec for MulticastSessionActivationRequest {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		MulticastSessionActivationRequest::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("MulticastSessionActivationRequest");
-			e
-		})
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		MulticastSessionActivationRequest::decode_inner(data).map_err(
+			|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("MulticastSessionActivationRequest");
+				e
+			},
+		)
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("MulticastSessionActivationRequest");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("MulticastSessionActivationRequest");
+				e
+			})
 	}
 }
 // MulticastSessionActivationResponse
@@ -15911,7 +17230,7 @@ pub struct MulticastSessionActivationResponse {
 }
 
 impl MulticastSessionActivationResponse {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -15925,11 +17244,16 @@ impl MulticastSessionActivationResponse {
 			match id {
 				299 => mbs_session_id = Some(MbsSessionId::decode(data)?),
 				19 => criticality_diagnostics = Some(CriticalityDiagnostics::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let mbs_session_id = mbs_session_id.ok_or(PerCodecError::new(format!(
+		let mbs_session_id = mbs_session_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE mbs_session_id"
 		)))?;
 		Ok(Self {
@@ -15940,12 +17264,14 @@ impl MulticastSessionActivationResponse {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.mbs_session_id.encode(ie)?;
+		self.mbs_session_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 299, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -15954,7 +17280,7 @@ impl MulticastSessionActivationResponse {
 
 		if let Some(x) = &self.criticality_diagnostics {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 19, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -15971,20 +17297,25 @@ impl MulticastSessionActivationResponse {
 
 impl PerCodec for MulticastSessionActivationResponse {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		MulticastSessionActivationResponse::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("MulticastSessionActivationResponse");
-			e
-		})
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		MulticastSessionActivationResponse::decode_inner(data).map_err(
+			|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("MulticastSessionActivationResponse");
+				e
+			},
+		)
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("MulticastSessionActivationResponse");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("MulticastSessionActivationResponse");
+				e
+			})
 	}
 }
 // MulticastSessionActivationFailure
@@ -15996,7 +17327,7 @@ pub struct MulticastSessionActivationFailure {
 }
 
 impl MulticastSessionActivationFailure {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -16012,14 +17343,21 @@ impl MulticastSessionActivationFailure {
 				299 => mbs_session_id = Some(MbsSessionId::decode(data)?),
 				15 => cause = Some(Cause::decode(data)?),
 				19 => criticality_diagnostics = Some(CriticalityDiagnostics::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let mbs_session_id = mbs_session_id.ok_or(PerCodecError::new(format!(
+		let mbs_session_id = mbs_session_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE mbs_session_id"
 		)))?;
-		let cause = cause.ok_or(PerCodecError::new(format!("Missing mandatory IE cause")))?;
+		let cause = cause.ok_or(ThreeGppAsn1PerError::new(format!(
+			"Missing mandatory IE cause"
+		)))?;
 		Ok(Self {
 			mbs_session_id,
 			cause,
@@ -16029,12 +17367,14 @@ impl MulticastSessionActivationFailure {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.mbs_session_id.encode(ie)?;
+		self.mbs_session_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 299, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -16042,7 +17382,7 @@ impl MulticastSessionActivationFailure {
 		num_ies += 1;
 
 		let ie = &mut Allocator::new_codec_data();
-		self.cause.encode(ie)?;
+		self.cause.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 15, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -16051,7 +17391,7 @@ impl MulticastSessionActivationFailure {
 
 		if let Some(x) = &self.criticality_diagnostics {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 19, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -16068,20 +17408,25 @@ impl MulticastSessionActivationFailure {
 
 impl PerCodec for MulticastSessionActivationFailure {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		MulticastSessionActivationFailure::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("MulticastSessionActivationFailure");
-			e
-		})
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		MulticastSessionActivationFailure::decode_inner(data).map_err(
+			|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("MulticastSessionActivationFailure");
+				e
+			},
+		)
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("MulticastSessionActivationFailure");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("MulticastSessionActivationFailure");
+				e
+			})
 	}
 }
 // MulticastSessionDeactivationRequest
@@ -16092,7 +17437,7 @@ pub struct MulticastSessionDeactivationRequest {
 }
 
 impl MulticastSessionDeactivationRequest {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -16109,17 +17454,22 @@ impl MulticastSessionDeactivationRequest {
 					multicast_session_deactivation_request_transfer =
 						Some(decode::decode_octetstring(data, None, None, false)?)
 				}
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let mbs_session_id = mbs_session_id.ok_or(PerCodecError::new(format!(
+		let mbs_session_id = mbs_session_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE mbs_session_id"
 		)))?;
 		let multicast_session_deactivation_request_transfer =
-			multicast_session_deactivation_request_transfer.ok_or(PerCodecError::new(format!(
-				"Missing mandatory IE multicast_session_deactivation_request_transfer"
-			)))?;
+			multicast_session_deactivation_request_transfer.ok_or(ThreeGppAsn1PerError::new(
+				format!("Missing mandatory IE multicast_session_deactivation_request_transfer"),
+			))?;
 		Ok(Self {
 			mbs_session_id,
 			multicast_session_deactivation_request_transfer,
@@ -16128,12 +17478,14 @@ impl MulticastSessionDeactivationRequest {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.mbs_session_id.encode(ie)?;
+		self.mbs_session_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 299, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -16148,7 +17500,8 @@ impl MulticastSessionDeactivationRequest {
 			false,
 			&self.multicast_session_deactivation_request_transfer,
 			false,
-		)?;
+		)
+		.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 305, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -16164,20 +17517,25 @@ impl MulticastSessionDeactivationRequest {
 
 impl PerCodec for MulticastSessionDeactivationRequest {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		MulticastSessionDeactivationRequest::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("MulticastSessionDeactivationRequest");
-			e
-		})
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		MulticastSessionDeactivationRequest::decode_inner(data).map_err(
+			|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("MulticastSessionDeactivationRequest");
+				e
+			},
+		)
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("MulticastSessionDeactivationRequest");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("MulticastSessionDeactivationRequest");
+				e
+			})
 	}
 }
 // MulticastSessionDeactivationResponse
@@ -16188,7 +17546,7 @@ pub struct MulticastSessionDeactivationResponse {
 }
 
 impl MulticastSessionDeactivationResponse {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -16202,11 +17560,16 @@ impl MulticastSessionDeactivationResponse {
 			match id {
 				299 => mbs_session_id = Some(MbsSessionId::decode(data)?),
 				19 => criticality_diagnostics = Some(CriticalityDiagnostics::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let mbs_session_id = mbs_session_id.ok_or(PerCodecError::new(format!(
+		let mbs_session_id = mbs_session_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE mbs_session_id"
 		)))?;
 		Ok(Self {
@@ -16217,12 +17580,14 @@ impl MulticastSessionDeactivationResponse {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.mbs_session_id.encode(ie)?;
+		self.mbs_session_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 299, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -16231,7 +17596,7 @@ impl MulticastSessionDeactivationResponse {
 
 		if let Some(x) = &self.criticality_diagnostics {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 19, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -16248,20 +17613,25 @@ impl MulticastSessionDeactivationResponse {
 
 impl PerCodec for MulticastSessionDeactivationResponse {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		MulticastSessionDeactivationResponse::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("MulticastSessionDeactivationResponse");
-			e
-		})
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		MulticastSessionDeactivationResponse::decode_inner(data).map_err(
+			|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("MulticastSessionDeactivationResponse");
+				e
+			},
+		)
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("MulticastSessionDeactivationResponse");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error
+					.push_context("MulticastSessionDeactivationResponse");
+				e
+			})
 	}
 }
 // MulticastSessionUpdateRequest
@@ -16273,7 +17643,7 @@ pub struct MulticastSessionUpdateRequest {
 }
 
 impl MulticastSessionUpdateRequest {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -16292,17 +17662,22 @@ impl MulticastSessionUpdateRequest {
 					multicast_session_update_request_transfer =
 						Some(decode::decode_octetstring(data, None, None, false)?)
 				}
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let mbs_session_id = mbs_session_id.ok_or(PerCodecError::new(format!(
+		let mbs_session_id = mbs_session_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE mbs_session_id"
 		)))?;
 		let multicast_session_update_request_transfer = multicast_session_update_request_transfer
-			.ok_or(PerCodecError::new(format!(
-			"Missing mandatory IE multicast_session_update_request_transfer"
-		)))?;
+			.ok_or(ThreeGppAsn1PerError::new(
+			format!("Missing mandatory IE multicast_session_update_request_transfer"),
+		))?;
 		Ok(Self {
 			mbs_session_id,
 			mbs_area_session_id,
@@ -16312,12 +17687,14 @@ impl MulticastSessionUpdateRequest {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.mbs_session_id.encode(ie)?;
+		self.mbs_session_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 299, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -16326,7 +17703,7 @@ impl MulticastSessionUpdateRequest {
 
 		if let Some(x) = &self.mbs_area_session_id {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 295, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -16342,7 +17719,8 @@ impl MulticastSessionUpdateRequest {
 			false,
 			&self.multicast_session_update_request_transfer,
 			false,
-		)?;
+		)
+		.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 306, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -16358,20 +17736,21 @@ impl MulticastSessionUpdateRequest {
 
 impl PerCodec for MulticastSessionUpdateRequest {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		MulticastSessionUpdateRequest::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("MulticastSessionUpdateRequest");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		MulticastSessionUpdateRequest::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("MulticastSessionUpdateRequest");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("MulticastSessionUpdateRequest");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("MulticastSessionUpdateRequest");
+				e
+			})
 	}
 }
 // MulticastSessionUpdateResponse
@@ -16383,7 +17762,7 @@ pub struct MulticastSessionUpdateResponse {
 }
 
 impl MulticastSessionUpdateResponse {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -16399,11 +17778,16 @@ impl MulticastSessionUpdateResponse {
 				299 => mbs_session_id = Some(MbsSessionId::decode(data)?),
 				295 => mbs_area_session_id = Some(MbsAreaSessionId::decode(data)?),
 				19 => criticality_diagnostics = Some(CriticalityDiagnostics::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let mbs_session_id = mbs_session_id.ok_or(PerCodecError::new(format!(
+		let mbs_session_id = mbs_session_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE mbs_session_id"
 		)))?;
 		Ok(Self {
@@ -16415,12 +17799,14 @@ impl MulticastSessionUpdateResponse {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.mbs_session_id.encode(ie)?;
+		self.mbs_session_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 299, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -16429,7 +17815,7 @@ impl MulticastSessionUpdateResponse {
 
 		if let Some(x) = &self.mbs_area_session_id {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 295, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -16439,7 +17825,7 @@ impl MulticastSessionUpdateResponse {
 
 		if let Some(x) = &self.criticality_diagnostics {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 19, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -16456,20 +17842,21 @@ impl MulticastSessionUpdateResponse {
 
 impl PerCodec for MulticastSessionUpdateResponse {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		MulticastSessionUpdateResponse::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("MulticastSessionUpdateResponse");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		MulticastSessionUpdateResponse::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("MulticastSessionUpdateResponse");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("MulticastSessionUpdateResponse");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("MulticastSessionUpdateResponse");
+				e
+			})
 	}
 }
 // MulticastSessionUpdateFailure
@@ -16482,7 +17869,7 @@ pub struct MulticastSessionUpdateFailure {
 }
 
 impl MulticastSessionUpdateFailure {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -16500,14 +17887,21 @@ impl MulticastSessionUpdateFailure {
 				295 => mbs_area_session_id = Some(MbsAreaSessionId::decode(data)?),
 				15 => cause = Some(Cause::decode(data)?),
 				19 => criticality_diagnostics = Some(CriticalityDiagnostics::decode(data)?),
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let mbs_session_id = mbs_session_id.ok_or(PerCodecError::new(format!(
+		let mbs_session_id = mbs_session_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE mbs_session_id"
 		)))?;
-		let cause = cause.ok_or(PerCodecError::new(format!("Missing mandatory IE cause")))?;
+		let cause = cause.ok_or(ThreeGppAsn1PerError::new(format!(
+			"Missing mandatory IE cause"
+		)))?;
 		Ok(Self {
 			mbs_session_id,
 			mbs_area_session_id,
@@ -16518,12 +17912,14 @@ impl MulticastSessionUpdateFailure {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.mbs_session_id.encode(ie)?;
+		self.mbs_session_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 299, false)?;
 		Criticality::Reject.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -16532,7 +17928,7 @@ impl MulticastSessionUpdateFailure {
 
 		if let Some(x) = &self.mbs_area_session_id {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 295, false)?;
 			Criticality::Reject.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -16541,7 +17937,7 @@ impl MulticastSessionUpdateFailure {
 		}
 
 		let ie = &mut Allocator::new_codec_data();
-		self.cause.encode(ie)?;
+		self.cause.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 15, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -16550,7 +17946,7 @@ impl MulticastSessionUpdateFailure {
 
 		if let Some(x) = &self.criticality_diagnostics {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 19, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -16567,20 +17963,21 @@ impl MulticastSessionUpdateFailure {
 
 impl PerCodec for MulticastSessionUpdateFailure {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		MulticastSessionUpdateFailure::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("MulticastSessionUpdateFailure");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		MulticastSessionUpdateFailure::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("MulticastSessionUpdateFailure");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("MulticastSessionUpdateFailure");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("MulticastSessionUpdateFailure");
+				e
+			})
 	}
 }
 // MulticastGroupPaging
@@ -16592,7 +17989,7 @@ pub struct MulticastGroupPaging {
 }
 
 impl MulticastGroupPaging {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let _ = decode::decode_sequence_header(data, true, 0)?;
 		let num_ies = decode::decode_length_determinent(data, Some(0), Some(65535), false)?;
 
@@ -16611,15 +18008,20 @@ impl MulticastGroupPaging {
 					multicast_group_paging_area_list =
 						Some(MulticastGroupPagingAreaList::decode(data)?)
 				}
-				x => return Err(PerCodecError::new(format!("Unrecognised IE type {}", x))),
+				x => {
+					return Err(ThreeGppAsn1PerError::new(format!(
+						"Unrecognised IE type {}",
+						x
+					)));
+				}
 			}
 			data.decode_align()?;
 		}
-		let mbs_session_id = mbs_session_id.ok_or(PerCodecError::new(format!(
+		let mbs_session_id = mbs_session_id.ok_or(ThreeGppAsn1PerError::new(format!(
 			"Missing mandatory IE mbs_session_id"
 		)))?;
 		let multicast_group_paging_area_list =
-			multicast_group_paging_area_list.ok_or(PerCodecError::new(format!(
+			multicast_group_paging_area_list.ok_or(ThreeGppAsn1PerError::new(format!(
 				"Missing mandatory IE multicast_group_paging_area_list"
 			)))?;
 		Ok(Self {
@@ -16631,12 +18033,14 @@ impl MulticastGroupPaging {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut num_ies = 0;
 		let ies = &mut Allocator::new_codec_data();
 
 		let ie = &mut Allocator::new_codec_data();
-		self.mbs_session_id.encode(ie)?;
+		self.mbs_session_id
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 299, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -16645,7 +18049,7 @@ impl MulticastGroupPaging {
 
 		if let Some(x) = &self.mbs_service_area {
 			let ie = &mut Allocator::new_codec_data();
-			x.encode(ie)?;
+			x.encode(ie).map_err(ThreeGppAsn1PerError::from)?;
 			encode::encode_integer(ies, Some(0), Some(65535), false, 298, false)?;
 			Criticality::Ignore.encode(ies)?;
 			encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -16654,7 +18058,9 @@ impl MulticastGroupPaging {
 		}
 
 		let ie = &mut Allocator::new_codec_data();
-		self.multicast_group_paging_area_list.encode(ie)?;
+		self.multicast_group_paging_area_list
+			.encode(ie)
+			.map_err(ThreeGppAsn1PerError::from)?;
 		encode::encode_integer(ies, Some(0), Some(65535), false, 307, false)?;
 		Criticality::Ignore.encode(ies)?;
 		encode::encode_length_determinent(ies, None, None, false, ie.length_in_bytes())?;
@@ -16670,19 +18076,20 @@ impl MulticastGroupPaging {
 
 impl PerCodec for MulticastGroupPaging {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		MulticastGroupPaging::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("MulticastGroupPaging");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		MulticastGroupPaging::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("MulticastGroupPaging");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("MulticastGroupPaging");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("MulticastGroupPaging");
+				e
+			})
 	}
 }

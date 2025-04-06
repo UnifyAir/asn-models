@@ -13,37 +13,39 @@ pub enum Criticality {
 }
 
 impl Criticality {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let (idx, extended) = decode::decode_enumerated(data, Some(0), Some(2), false)?;
 		if extended {
-			return Err(PerCodecError::new("Extended enum not implemented"));
+			return Err(ThreeGppAsn1PerError::new("Extended enum not implemented"));
 		}
-		Self::try_from(idx as u8).map_err(|_| PerCodecError::new("Unknown enum variant"))
+		Self::try_from(idx as u8).map_err(|_| ThreeGppAsn1PerError::new("Unknown enum variant"))
 	}
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		encode::encode_enumerated(data, Some(0), Some(2), false, *self as i128, false)
+			.map_err(ThreeGppAsn1PerError::from)
 	}
 }
 
 impl PerCodec for Criticality {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		Criticality::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("Criticality");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		Criticality::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("Criticality");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("Criticality");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("Criticality");
+				e
+			})
 	}
 }
 // TransportLayerAddress
@@ -51,38 +53,37 @@ impl PerCodec for Criticality {
 pub struct TransportLayerAddress(pub BitString);
 
 impl TransportLayerAddress {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		Ok(Self(decode::decode_bitstring(
-			data,
-			Some(1),
-			Some(160),
-			true,
-		)?))
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		Ok(Self(
+			decode::decode_bitstring(data, Some(1), Some(160), true)?.into(),
+		))
 	}
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		encode::encode_bitstring(data, Some(1), Some(160), true, &self.0, false)
+	) -> Result<(), ThreeGppAsn1PerError> {
+		encode::encode_bitstring(data, Some(1), Some(160), true, &self.0.inner(), false)
+			.map_err(ThreeGppAsn1PerError::from)
 	}
 }
 
 impl PerCodec for TransportLayerAddress {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		TransportLayerAddress::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("TransportLayerAddress");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		TransportLayerAddress::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("TransportLayerAddress");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("TransportLayerAddress");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("TransportLayerAddress");
+				e
+			})
 	}
 }
 // GtpTeid
@@ -98,7 +99,7 @@ impl Default for GtpTeid {
 	}
 }
 impl GtpTeid {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		Ok(Self(
 			decode::decode_octetstring(data, Some(4), Some(4), false)?
 				.try_into()
@@ -108,27 +109,29 @@ impl GtpTeid {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		encode::encode_octetstring(data, Some(4), Some(4), false, &(self.0).into(), false)
+			.map_err(ThreeGppAsn1PerError::from)
 	}
 }
 
 impl PerCodec for GtpTeid {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		GtpTeid::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("GtpTeid");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		GtpTeid::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("GtpTeid");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("GtpTeid");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("GtpTeid");
+				e
+			})
 	}
 }
 // GtpTunnel
@@ -139,7 +142,7 @@ pub struct GtpTunnel {
 }
 
 impl GtpTunnel {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let (optionals, _extensions_present) = decode::decode_sequence_header(data, true, 1)?;
 		let transport_layer_address = TransportLayerAddress::decode(data)?;
 		let gtp_teid = GtpTeid::decode(data)?;
@@ -166,13 +169,17 @@ impl GtpTunnel {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		let mut optionals = BitString::new();
 		optionals.push(false);
 
 		encode::encode_sequence_header(data, true, &optionals, false)?;
-		self.transport_layer_address.encode(data)?;
-		self.gtp_teid.encode(data)?;
+		self.transport_layer_address
+			.encode(data)
+			.map_err(ThreeGppAsn1PerError::from)?;
+		self.gtp_teid
+			.encode(data)
+			.map_err(ThreeGppAsn1PerError::from)?;
 
 		Ok(())
 	}
@@ -180,20 +187,21 @@ impl GtpTunnel {
 
 impl PerCodec for GtpTunnel {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		GtpTunnel::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("GtpTunnel");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		GtpTunnel::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("GtpTunnel");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("GtpTunnel");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("GtpTunnel");
+				e
+			})
 	}
 }
 // PduSessionId
@@ -201,7 +209,7 @@ impl PerCodec for GtpTunnel {
 pub struct PduSessionId(pub u8);
 
 impl PduSessionId {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		Ok(Self(
 			decode::decode_integer(data, Some(0), Some(255), false)?.0 as u8,
 		))
@@ -209,26 +217,28 @@ impl PduSessionId {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		encode::encode_integer(data, Some(0), Some(255), false, self.0 as i128, false)
+			.map_err(ThreeGppAsn1PerError::from)
 	}
 }
 
 impl PerCodec for PduSessionId {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		PduSessionId::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("PduSessionId");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		PduSessionId::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("PduSessionId");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("PduSessionId");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("PduSessionId");
+				e
+			})
 	}
 }

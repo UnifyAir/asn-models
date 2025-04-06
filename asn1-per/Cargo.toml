@@ -16,6 +16,8 @@ bitvec.workspace = true
 nonempty.workspace = true
 async-trait.workspace = true
 tracing.workspace = true
+valuable.workspace = true
+faster-hex.workspace = true
 
 [features]
 default = ["gnb"]

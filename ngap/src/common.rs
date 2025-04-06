@@ -13,37 +13,39 @@ pub enum Criticality {
 }
 
 impl Criticality {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let (idx, extended) = decode::decode_enumerated(data, Some(0), Some(2), false)?;
 		if extended {
-			return Err(PerCodecError::new("Extended enum not implemented"));
+			return Err(ThreeGppAsn1PerError::new("Extended enum not implemented"));
 		}
-		Self::try_from(idx as u8).map_err(|_| PerCodecError::new("Unknown enum variant"))
+		Self::try_from(idx as u8).map_err(|_| ThreeGppAsn1PerError::new("Unknown enum variant"))
 	}
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		encode::encode_enumerated(data, Some(0), Some(2), false, *self as i128, false)
+			.map_err(ThreeGppAsn1PerError::from)
 	}
 }
 
 impl PerCodec for Criticality {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		Criticality::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("Criticality");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		Criticality::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("Criticality");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("Criticality");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("Criticality");
+				e
+			})
 	}
 }
 // Presence
@@ -57,37 +59,39 @@ pub enum Presence {
 }
 
 impl Presence {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let (idx, extended) = decode::decode_enumerated(data, Some(0), Some(2), false)?;
 		if extended {
-			return Err(PerCodecError::new("Extended enum not implemented"));
+			return Err(ThreeGppAsn1PerError::new("Extended enum not implemented"));
 		}
-		Self::try_from(idx as u8).map_err(|_| PerCodecError::new("Unknown enum variant"))
+		Self::try_from(idx as u8).map_err(|_| ThreeGppAsn1PerError::new("Unknown enum variant"))
 	}
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		encode::encode_enumerated(data, Some(0), Some(2), false, *self as i128, false)
+			.map_err(ThreeGppAsn1PerError::from)
 	}
 }
 
 impl PerCodec for Presence {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		Presence::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("Presence");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		Presence::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("Presence");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("Presence");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("Presence");
+				e
+			})
 	}
 }
 // PrivateIeId
@@ -99,10 +103,12 @@ pub enum PrivateIeId {
 }
 
 impl PrivateIeId {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let (idx, extended) = decode::decode_choice_idx(data, 0, 1, false)?;
 		if extended {
-			return Err(PerCodecError::new("CHOICE additions not implemented"));
+			return Err(ThreeGppAsn1PerError::new(
+				"CHOICE additions not implemented",
+			));
 		}
 		match idx {
 			0 => Ok(Self::Local(
@@ -111,21 +117,23 @@ impl PrivateIeId {
 			1 => Ok(Self::Global(decode::decode_octetstring(
 				data, None, None, false,
 			)?)),
-			_ => Err(PerCodecError::new("Unknown choice idx")),
+			_ => Err(ThreeGppAsn1PerError::new("Unknown choice idx")),
 		}
 	}
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		match self {
 			Self::Local(x) => {
 				encode::encode_choice_idx(data, 0, 1, false, 0, false)?;
 				encode::encode_integer(data, Some(0), Some(65535), false, *x as i128, false)
+					.map_err(ThreeGppAsn1PerError::from)
 			}
 			Self::Global(x) => {
 				encode::encode_choice_idx(data, 0, 1, false, 1, false)?;
 				encode::encode_octetstring(data, None, None, false, &x, false)
+					.map_err(ThreeGppAsn1PerError::from)
 			}
 		}
 	}
@@ -133,20 +141,21 @@ impl PrivateIeId {
 
 impl PerCodec for PrivateIeId {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		PrivateIeId::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("PrivateIeId");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		PrivateIeId::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("PrivateIeId");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("PrivateIeId");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("PrivateIeId");
+				e
+			})
 	}
 }
 // ProcedureCode
@@ -154,7 +163,7 @@ impl PerCodec for PrivateIeId {
 pub struct ProcedureCode(pub u8);
 
 impl ProcedureCode {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		Ok(Self(
 			decode::decode_integer(data, Some(0), Some(255), false)?.0 as u8,
 		))
@@ -162,27 +171,29 @@ impl ProcedureCode {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		encode::encode_integer(data, Some(0), Some(255), false, self.0 as i128, false)
+			.map_err(ThreeGppAsn1PerError::from)
 	}
 }
 
 impl PerCodec for ProcedureCode {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		ProcedureCode::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("ProcedureCode");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		ProcedureCode::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("ProcedureCode");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("ProcedureCode");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("ProcedureCode");
+				e
+			})
 	}
 }
 // ProtocolExtensionId
@@ -190,7 +201,7 @@ impl PerCodec for ProcedureCode {
 pub struct ProtocolExtensionId(pub u16);
 
 impl ProtocolExtensionId {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		Ok(Self(
 			decode::decode_integer(data, Some(0), Some(65535), false)?.0 as u16,
 		))
@@ -198,27 +209,29 @@ impl ProtocolExtensionId {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		encode::encode_integer(data, Some(0), Some(65535), false, self.0 as i128, false)
+			.map_err(ThreeGppAsn1PerError::from)
 	}
 }
 
 impl PerCodec for ProtocolExtensionId {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		ProtocolExtensionId::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("ProtocolExtensionId");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		ProtocolExtensionId::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("ProtocolExtensionId");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("ProtocolExtensionId");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("ProtocolExtensionId");
+				e
+			})
 	}
 }
 // ProtocolIeId
@@ -226,7 +239,7 @@ impl PerCodec for ProtocolExtensionId {
 pub struct ProtocolIeId(pub u16);
 
 impl ProtocolIeId {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		Ok(Self(
 			decode::decode_integer(data, Some(0), Some(65535), false)?.0 as u16,
 		))
@@ -234,27 +247,29 @@ impl ProtocolIeId {
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		encode::encode_integer(data, Some(0), Some(65535), false, self.0 as i128, false)
+			.map_err(ThreeGppAsn1PerError::from)
 	}
 }
 
 impl PerCodec for ProtocolIeId {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		ProtocolIeId::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("ProtocolIeId");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		ProtocolIeId::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("ProtocolIeId");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("ProtocolIeId");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("ProtocolIeId");
+				e
+			})
 	}
 }
 // TriggeringMessage
@@ -268,36 +283,38 @@ pub enum TriggeringMessage {
 }
 
 impl TriggeringMessage {
-	fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
+	fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
 		let (idx, extended) = decode::decode_enumerated(data, Some(0), Some(2), false)?;
 		if extended {
-			return Err(PerCodecError::new("Extended enum not implemented"));
+			return Err(ThreeGppAsn1PerError::new("Extended enum not implemented"));
 		}
-		Self::try_from(idx as u8).map_err(|_| PerCodecError::new("Unknown enum variant"))
+		Self::try_from(idx as u8).map_err(|_| ThreeGppAsn1PerError::new("Unknown enum variant"))
 	}
 	fn encode_inner(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
+	) -> Result<(), ThreeGppAsn1PerError> {
 		encode::encode_enumerated(data, Some(0), Some(2), false, *self as i128, false)
+			.map_err(ThreeGppAsn1PerError::from)
 	}
 }
 
 impl PerCodec for TriggeringMessage {
 	type Allocator = Allocator;
-	fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {
-		TriggeringMessage::decode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("TriggeringMessage");
+	fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {
+		TriggeringMessage::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {
+			e.codec_error.push_context("TriggeringMessage");
 			e
 		})
 	}
 	fn encode(
 		&self,
 		data: &mut PerCodecData,
-	) -> Result<(), PerCodecError> {
-		self.encode_inner(data).map_err(|mut e: PerCodecError| {
-			e.push_context("TriggeringMessage");
-			e
-		})
+	) -> Result<(), ThreeGppAsn1PerError> {
+		self.encode_inner(data)
+			.map_err(|mut e: ThreeGppAsn1PerError| {
+				e.codec_error.push_context("TriggeringMessage");
+				e
+			})
 	}
 }
