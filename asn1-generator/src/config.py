@@ -2,7 +2,7 @@ config = {
     "ngap": [
         {
             "operation": "derive-macros",
-            "additional_traits": ["Eq" , "PartialEq", "Hash"],
+            "additional_traits": ["Eq" , "PartialEq", "Hash", "valuable::Valuable"],
             "asn1-fields": [
                 "GlobalRanNodeId",
                 "GlobalNgEnbId",

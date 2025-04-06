@@ -7,6 +7,7 @@ use async_trait::async_trait;
 use tracing::{debug, warn}; 
 use std::{fmt::Debug, future::Future, pin::Pin};
 use thiserror::Error;
+use crate::ThreeGppAsn1PerError;
 
 #[async_trait]
 pub trait Procedure {
@@ -16,11 +17,11 @@ pub trait Procedure {
     type Success;
     type Failure;
     #[cfg(feature = "gnb")]
-    fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError>;
+    fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError>;
     #[cfg(feature = "gnb")]
     fn decode_response(bytes: &[u8]) -> Result<Self::Success, RequestError<Self::Failure>>;
     #[cfg(feature = "amf")]
-    fn decode_request(bytes: &[u8]) -> Result<Self::Request, PerCodecError>;
+    fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError>;
     async fn call_provider<T: RequestProvider<Self>>(
         provider: &T,
         req: Self::Request,
@@ -33,9 +34,9 @@ pub trait Indication {
     type TopPdu: SerDes + Send + Sync + 'static;
     type Request: Send + Sync + 'static + Debug;
     #[cfg(feature = "gnb")]
-    fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError>;
+    fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError>;
     #[cfg(feature = "amf")]
-    fn decode_request(bytes: &[u8]) -> Result<Self::Request, PerCodecError>;
+    fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError>;
     async fn call_provider<T: IndicationHandler<Self>>(
         provider: &T,
         req: Self::Request,
@@ -58,6 +59,12 @@ impl<T> From<PerCodecError> for RequestError<T> {
     }
 }
 
+impl<T> From<ThreeGppAsn1PerError> for RequestError<T> {
+    fn from(e: ThreeGppAsn1PerError) -> Self {
+        RequestError::Other(format!("Codec error: {:?}", e.codec_error))
+    }
+}
+
 impl<T> From<RecvError> for RequestError<T> {
     fn from(e: RecvError) -> Self {
         RequestError::Other(format!("Channel recv error: {:?}", e))
@@ -69,6 +76,8 @@ impl<T> From<anyhow::Error> for RequestError<T> {
         RequestError::Other(format!("Transport error: {:?}", e))
     }
 }
+
+
 
 /// Trait representing the ability to handle a single procedure.
 #[async_trait]

@@ -183,22 +183,22 @@ encode::encode_integer({data}, Some(0), Some(65535), false, {type_info.code}, fa
         )
     if type_info.typ == "OctetString":
         if type_info.rust_type[0:3] == "Vec":
-            format_string = f"encode::encode_octetstring({{data}}, {type_info.constraints}, &{{value}}, false)"
+            format_string = f"encode::encode_octetstring({{data}}, {type_info.constraints}, &{{value}}, false).map_err(ThreeGppAsn1PerError::from)"
         else:
             assert type_info.rust_type[0:3] == "[u8"
-            format_string = f"encode::encode_octetstring({{data}}, {type_info.constraints}, &({{copy_type_deref}}{{value}}).into(), false)"
+            format_string = f"encode::encode_octetstring({{data}}, {type_info.constraints}, &({{copy_type_deref}}{{value}}).into(), false).map_err(ThreeGppAsn1PerError::from)"
     elif type_info.rust_type == "BitString":
-        format_string = f"encode::encode_bitstring({{data}}, {type_info.constraints}, &{{value}}, false)"
+        format_string = f"encode::encode_bitstring({{data}}, {type_info.constraints}, &{{value}}, false).map_err(ThreeGppAsn1PerError::from)"
     elif type_info.rust_type == "String":
-        format_string = f"encode::encode_{snake_case(type_info.typ)}({{data}}, {type_info.constraints}, &{{value}}, false)"
+        format_string = f"encode::encode_{snake_case(type_info.typ)}({{data}}, {type_info.constraints}, &{{value}}, false).map_err(ThreeGppAsn1PerError::from)"
     elif type_info.rust_type == "i128":
-        format_string = f"encode::encode_integer({{data}}, {type_info.constraints}, {{copy_type_deref}}{{value}}, false)"
+        format_string = f"encode::encode_integer({{data}}, {type_info.constraints}, {{copy_type_deref}}{{value}}, false).map_err(ThreeGppAsn1PerError::from)"
     elif is_non_i128_int_type(type_info.rust_type):
-        format_string = f"encode::encode_integer({{data}}, {type_info.constraints}, {{copy_type_deref}}{{value}} as i128, false)"
+        format_string = f"encode::encode_integer({{data}}, {type_info.constraints}, {{copy_type_deref}}{{value}} as i128, false).map_err(ThreeGppAsn1PerError::from)"
     elif type_info.rust_type == "bool":
-        format_string = f"encode::encode_bool({{data}}, {{copy_type_deref}}{{value}})"
+        format_string = f"encode::encode_bool({{data}}, {{copy_type_deref}}{{value}}).map_err(ThreeGppAsn1PerError::from)"
     else:
-        format_string = f"""{{value}}.encode({{data}})"""
+        format_string = f"""{{value}}.encode({{data}}).map_err(ThreeGppAsn1PerError::from)"""
 
     return lambda x, data="data", copy_type_deref="": format_string.format(
         value=x, data=data, copy_type_deref=copy_type_deref
@@ -394,7 +394,7 @@ class ChoiceFieldsFrom(Interpreter):
                     {type_info.code} => Ok(Self::{type_info.rust_type}({type_info.rust_type}::decode(data)?)),
 """
         self.fields_from += f"""\
-                    x => Err(PerCodecError::new(format!("Unrecognised IE type {{}}", x))),
+                    x => Err(ThreeGppAsn1PerError::new(format!("Unrecognised IE type {{}}", x))),
                 }};
                 data.decode_align()?;
                 result
@@ -418,7 +418,7 @@ class ChoiceFieldsFrom(Interpreter):
 
     def empty_sequence_field(self, tree):
         self.fields_from += f"""\
-            {self.field_index} => Err(PerCodecError::new("Choice extension container not implemented")),
+            {self.field_index} => Err(ThreeGppAsn1PerError::new("Choice extension container not implemented")),
 """
         self.field_index += 1
 
@@ -485,7 +485,7 @@ class IeFields(Interpreter):
 """
         self.num_mandatory_fields += 1
         self.mandatory += f"""\
-        let {name} = {name}.ok_or(PerCodecError::new(format!(
+        let {name} = {name}.ok_or(ThreeGppAsn1PerError::new(format!(
             "Missing mandatory IE {name}"
         )))?;
 """
@@ -559,7 +559,7 @@ class IeFieldsFrom(Interpreter):
         name = self.common(tree)
         self.num_mandatory_fields += 1
         self.mandatory += f"""\
-        let {name} = {name}.ok_or(PerCodecError::new(format!(
+        let {name} = {name}.ok_or(ThreeGppAsn1PerError::new(format!(
             "Missing mandatory IE {name}"
         )))?;
 """
@@ -570,12 +570,22 @@ class IeFieldsFrom(Interpreter):
 
 def additional_traits_from_config(name, config={}):
     # Check if the struct name is in the config
-    additional_traits = ""
+    additional_traits = []
     for op in config: 
             op_name = op.get('operation', '')
             traits = op.get('additional_traits', [])
             if op_name == 'derive-macros' and len(traits) > 0 and name in op.get('asn1-fields', []):
-               additional_traits = traits
+               additional_traits += traits
+
+    # Remove duplicates while preserving order
+    if additional_traits:
+        seen = set()
+        unique_traits = []
+        for trait in additional_traits:
+            if trait not in seen:
+                seen.add(trait)
+                unique_traits.append(trait)
+        additional_traits = unique_traits
     return additional_traits
 
 def is_non_i128_int_type(t):
@@ -693,11 +703,11 @@ class StructFieldsTo(Interpreter):
 XPER_CODEC_IMPL_FORMAT = """\
 impl PerCodec for {name} {{
     type Allocator = Allocator;
-    fn decode(data: &mut PerCodecData) -> Result<Self, PerCodecError> {{
-        {name}::decode_inner(data).map_err(|mut e: PerCodecError| {{e.push_context("{name}"); e}})
+    fn decode(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {{
+        {name}::decode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {{e.codec_error.push_context("{name}"); e}})
     }}
-    fn encode(&self, data: &mut PerCodecData) -> Result<(), PerCodecError> {{
-        self.encode_inner(data).map_err(|mut e: PerCodecError| {{e.push_context("{name}"); e}})
+    fn encode(&self, data: &mut PerCodecData) -> Result<(), ThreeGppAsn1PerError> {{
+        self.encode_inner(data).map_err(|mut e: ThreeGppAsn1PerError| {{e.codec_error.push_context("{name}"); e}})
     }}
 }}"""
 
@@ -787,16 +797,16 @@ pub enum UnsuccessfulOutcome {
         impl = (
             """
 impl {name} {{
-    fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {{
+    fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {{
         let (id, _ext) = decode::decode_integer(data, Some(0), Some(255), false)?;
         let _ = Criticality::decode(data)?;
         let _ = decode::decode_length_determinent(data, None, None, false)?;
         match id {{
 {decode_matches}\
-            x => return Err(PerCodecError::new(format!("Unrecognised procedure code {{}}", x)))
+            x => return Err(ThreeGppAsn1PerError::new(format!("Unrecognised procedure code {{}}", x)))
         }}
     }}
-    fn encode_inner(&self, data: &mut PerCodecData) -> Result<(), PerCodecError> {{
+    fn encode_inner(&self, data: &mut PerCodecData) -> Result<(), ThreeGppAsn1PerError> {{
         match self {{
 {encode_matches}\
         }}
@@ -846,12 +856,19 @@ class RustInterpreter(Interpreter):
         if p.initiating == "PrivateMessage":
             return
 
+        top_pdu = p.family[0] + p.family[1:4].lower() + "Pdu"
+        if self.top_level_enums is None:
+            self.outfile += f"""
+pub trait To{top_pdu} {{
+    fn to_pdu(self) -> {top_pdu};
+}}
+"""
         # Extend the top level enums (InitiatingMessage, SuccessfulOutcome and UnsuccessfulOutcome)
         # We output them at the end.
         self.top_level_enums = self.top_level_enums or TopLevelEnums()
         self.top_level_enums.add_procedure(p)
 
-        top_pdu = p.family[0] + p.family[1:4].lower() + "Pdu"
+        
 
         # Output a new struct that impls the Procedure trait.
         # The decode function depends on whether there is a successful and unsuccessful response defined.
@@ -893,7 +910,7 @@ impl Procedure for {p.name} {{
     }}
 
     #[cfg(feature = "gnb")]
-    fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {{
+    fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {{
         {top_pdu}::InitiatingMessage(InitiatingMessage::{p.initiating}(r)).into_bytes()
     }}
 
@@ -906,14 +923,13 @@ impl Procedure for {p.name} {{
             _ => Err(RequestError::Other("Unexpected pdu contents".to_string())),
         }}
     }}
-}}
 
     #[cfg(feature = "amf")]
-    fn decode_request(bytes: &[u8]) -> Result<Self::Request, PerCodecError> {{
+    fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {{
         let response_pdu = Self::TopPdu::from_bytes(bytes)?;
         match response_pdu {{
             {top_pdu}::InitiatingMessage(InitiatingMessage::{p.initiating}(x)) => Ok(x),
-            _ => Err(PerCodecError::new("Unexpected pdu contents")),
+            _ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
         }}
     }}
 
@@ -1024,17 +1040,17 @@ pub enum {name} {{
 }}
 
 impl {name} {{
-    fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {{
+    fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {{
         let (idx, extended) = decode::decode_choice_idx(data, 0, {fields_from_interpreter.field_index - 1}, {bool_to_rust(field_interpreter.extensible)})?;
         if extended {{
-            return Err(PerCodecError::new("CHOICE additions not implemented"))
+            return Err(ThreeGppAsn1PerError::new("CHOICE additions not implemented"))
         }}
         match idx {{
 {fields_from_interpreter.fields_from}\
-            _ => Err(PerCodecError::new("Unknown choice idx"))
+            _ => Err(ThreeGppAsn1PerError::new("Unknown choice idx"))
         }}
     }}
-    fn encode_inner(&self, data: &mut PerCodecData) -> Result<(), PerCodecError> {{
+    fn encode_inner(&self, data: &mut PerCodecData) -> Result<(), ThreeGppAsn1PerError> {{
         match self {{
 {fields_to_interpreter.fields_to}\
         }}
@@ -1075,10 +1091,10 @@ impl {name} {{
 pub struct {name}(pub {inner.rust_type});
 {default_impl}
 impl {name} {{
-    fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {{
+    fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {{
         Ok(Self({decode_expression(tree.children[1])}))
     }}
-    fn encode_inner(&self, data: &mut PerCodecData) -> Result<(), PerCodecError> {{
+    fn encode_inner(&self, data: &mut PerCodecData) -> Result<(), ThreeGppAsn1PerError> {{
         {encode_expression_fn(tree.children[1])("self.0")}
     }}
 }}
@@ -1132,7 +1148,7 @@ pub struct {name} {{
 }}
 
 impl {orig_name} {{
-    fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {{"""
+    fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {{"""
 
         if is_sequence:
             self.outfile += f"""
@@ -1148,7 +1164,7 @@ impl {orig_name} {{
             let _ = decode::decode_length_determinent(data, None, None, false)?;
             match id {{
 {fields_from.matches}\
-                x => return Err(PerCodecError::new(format!("Unrecognised IE type {{}}", x)))
+                x => return Err(ThreeGppAsn1PerError::new(format!("Unrecognised IE type {{}}", x)))
             }}\
 {decode_align}
         }}
@@ -1157,7 +1173,7 @@ impl {orig_name} {{
 {fields_from.self_fields}\
         }})
     }}
-    fn encode_inner(&self, data: &mut PerCodecData) -> Result<(), PerCodecError> {{
+    fn encode_inner(&self, data: &mut PerCodecData) -> Result<(), ThreeGppAsn1PerError> {{
         let {mut}num_ies = 0;
         let ies = &mut Allocator::new_codec_data();
 {fields.fields_to}"""
@@ -1219,14 +1235,14 @@ pub struct {name} {{
 }}
 
 impl {orig_name} {{
-    fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {{
+    fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {{
         let ({optionals_var}, _extensions_present) = decode::decode_sequence_header(data, {bool_to_rust(field_interpreter.extensible)}, {num_optionals})?;
 {fields_from_interpreter.fields_from}
         Ok(Self {{
 {fields_from_interpreter.self_fields}\
         }})
     }}
-    fn encode_inner(&self, data: &mut PerCodecData) -> Result<(), PerCodecError> {{\
+    fn encode_inner(&self, data: &mut PerCodecData) -> Result<(), ThreeGppAsn1PerError> {{\
 {fields_to_interpreter.extension_ies_fields_to}
 {fields_to_interpreter.optional_bitfield}
         encode::encode_sequence_header(data, {bool_to_rust(field_interpreter.extensible)}, &optionals, false)?;
