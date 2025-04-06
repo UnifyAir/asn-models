@@ -130,7 +130,7 @@ def decode_expression(tree):
             assert type_info.rust_type[0:3] == "[u8"
             return f"decode::decode_octetstring(data, {type_info.constraints})?.try_into().unwrap()"
     elif type_info.typ == "BitString":
-        return f"decode::decode_bitstring(data, {type_info.constraints})?"
+        return f"decode::decode_bitstring(data, {type_info.constraints})?.into()"
     elif type_info.rust_type == "String":
         return f"decode::decode_{snake_case(type_info.typ)}(data, {type_info.constraints})?"
     elif type_info.typ == "i128":
@@ -188,7 +188,7 @@ encode::encode_integer({data}, Some(0), Some(65535), false, {type_info.code}, fa
             assert type_info.rust_type[0:3] == "[u8"
             format_string = f"encode::encode_octetstring({{data}}, {type_info.constraints}, &({{copy_type_deref}}{{value}}).into(), false).map_err(ThreeGppAsn1PerError::from)"
     elif type_info.rust_type == "BitString":
-        format_string = f"encode::encode_bitstring({{data}}, {type_info.constraints}, &{{value}}, false).map_err(ThreeGppAsn1PerError::from)"
+        format_string = f"encode::encode_bitstring({{data}}, {type_info.constraints}, &{{value}}.inner(), false).map_err(ThreeGppAsn1PerError::from)"
     elif type_info.rust_type == "String":
         format_string = f"encode::encode_{snake_case(type_info.typ)}({{data}}, {type_info.constraints}, &{{value}}, false).map_err(ThreeGppAsn1PerError::from)"
     elif type_info.rust_type == "i128":
