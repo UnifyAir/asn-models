@@ -932,7 +932,37 @@ impl Procedure for {p.name} {{
             _ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
         }}
     }}
+}}
+"""
+        print(p.__dict__)
+        if p.initiating is not None:
+            self.outfile += f"""
+impl To{top_pdu} for {p.initiating} {{
+    #[inline(always)]
+    fn to_pdu(self) -> {top_pdu} {{
+        {top_pdu}::InitiatingMessage(InitiatingMessage::{p.initiating}(self))
+    }}
+}}
+"""
 
+        if p.successful is not None:
+            self.outfile += f"""
+impl To{top_pdu} for {p.successful} {{
+    #[inline(always)]
+    fn to_pdu(self) -> {top_pdu} {{
+        {top_pdu}::SuccessfulOutcome(SuccessfulOutcome::{p.successful}(self))
+    }}
+}}
+"""
+
+        if p.unsuccessful is not None:
+            self.outfile += f"""
+impl To{top_pdu} for {p.unsuccessful} {{
+    #[inline(always)]
+    fn to_pdu(self) -> {top_pdu} {{
+        {top_pdu}::UnsuccessfulOutcome(UnsuccessfulOutcome::{p.unsuccessful}(self))
+    }}
+}}
 """
 
     def output_indication(self, p):
@@ -954,17 +984,23 @@ impl Indication for {p.name} {{
         <T as IndicationHandler<{p.name}>>::handle(provider, req).await;
     }}
 
-    fn encode_request(r: Self::Request) -> Result<Vec<u8>, PerCodecError> {{
+    fn encode_request(r: Self::Request) -> Result<Vec<u8>, ThreeGppAsn1PerError> {{
         {top_pdu}::InitiatingMessage(InitiatingMessage::{p.initiating}(r)).into_bytes()
     }}
 
     #[cfg(feature = "amf")]
-    fn decode_request(bytes: &[u8]) -> Result<Self::Request, PerCodecError> {{
+    fn decode_request(bytes: &[u8]) -> Result<Self::Request, ThreeGppAsn1PerError> {{
         let response_pdu = Self::TopPdu::from_bytes(bytes)?;
         match response_pdu {{
             {top_pdu}::InitiatingMessage(InitiatingMessage::{p.initiating}(x)) => Ok(x),
-            _ => Err(PerCodecError::new("Unexpected pdu contents")),
+            _ => Err(ThreeGppAsn1PerError::new("Unexpected pdu contents")),
         }}
+    }}
+}}
+
+impl To{top_pdu} for {p.initiating} {{
+    fn to_pdu(self) -> {top_pdu} {{
+        {top_pdu}::InitiatingMessage(InitiatingMessage::{p.initiating}(self))
     }}
 }}
 """
@@ -993,15 +1029,15 @@ pub enum {name} {{
 }}
 
 impl {name} {{
-    fn decode_inner(data: &mut PerCodecData) -> Result<Self, PerCodecError> {{
+    fn decode_inner(data: &mut PerCodecData) -> Result<Self, ThreeGppAsn1PerError> {{
         let (idx, extended) = decode::decode_enumerated(data, Some(0), Some({field_interpreter.variants - 1}), {bool_to_rust(field_interpreter.extensible)})?;
         if extended {{
-            return Err(PerCodecError::new("Extended enum not implemented"));
+            return Err(ThreeGppAsn1PerError::new("Extended enum not implemented"));
         }}
-        Self::try_from(idx as u8).map_err(|_| PerCodecError::new("Unknown enum variant"))
+        Self::try_from(idx as u8).map_err(|_| ThreeGppAsn1PerError::new("Unknown enum variant"))
     }}
-    fn encode_inner(&self, data: &mut PerCodecData) -> Result<(), PerCodecError> {{
-        encode::encode_enumerated(data, Some(0), Some({field_interpreter.variants - 1}), {bool_to_rust(field_interpreter.extensible)}, *self as i128, false)
+    fn encode_inner(&self, data: &mut PerCodecData) -> Result<(), ThreeGppAsn1PerError> {{
+        encode::encode_enumerated(data, Some(0), Some({field_interpreter.variants - 1}), {bool_to_rust(field_interpreter.extensible)}, *self as i128, false).map_err(ThreeGppAsn1PerError::from)
     }}
 }}
 
