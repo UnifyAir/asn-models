@@ -1,5 +1,5 @@
 use asn1_per::SerDes;
-use ngap::NgapPdu;
+use ngap::{NgapPdu, PduSessionResourceSetupRequestTransfer};
 
 pub fn get_ng_setup_request() -> Vec<u8> {
 	vec![
@@ -125,6 +125,14 @@ pub fn get_pdu_session_resource_setup_response() -> Vec<u8> {
 	]
 }
 
+
+pub fn get_pdu_session_resource_setup_request_transfer_element() -> Vec<u8> {
+	vec![
+		0x0, 0x0, 0x3, 0x0, 0x8b, 0x0, 0xa, 0x1, 0xf0, 0xa, 0x64, 0xc8, 0x3, 0x0, 0x0, 0x0, 0x1,
+		0x0, 0x86, 0x0, 0x1, 0x0, 0x0, 0x88, 0x0, 0x7, 0x0, 0x0, 0x0, 0x0, 0x9, 0x38, 0x0,
+	]
+}
+
 pub fn encode_decode_bytes<T>(payload: &[u8]) -> Vec<u8>
 where
 	T: SerDes + std::fmt::Debug,
@@ -217,3 +225,11 @@ fn test_pdu_session_resource_setup_response() {
 	let bytes = encode_decode_bytes::<NgapPdu>(payload.as_ref());
 	assert_eq!(payload, bytes);
 }
+
+#[test]
+fn test_pdu_session_resource_setup_request_transfer_element() {
+	let payload = get_pdu_session_resource_setup_request_transfer_element();
+	let bytes = encode_decode_bytes::<PduSessionResourceSetupRequestTransfer>(payload.as_ref());
+	assert_eq!(payload, bytes);
+}
+
