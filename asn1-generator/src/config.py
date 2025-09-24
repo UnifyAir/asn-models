@@ -25,6 +25,7 @@ config = {
             "additional_traits": ["Eq", "PartialEq"],
             "asn1-fields": [
                 "FiveGSTmsi"
+                "FiveGTmsi",
             ],
         },
     ]
