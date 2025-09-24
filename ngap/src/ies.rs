@@ -14512,7 +14512,7 @@ impl PerCodec for FiveGProSePc5FlowBitRates {
 	}
 }
 // FiveGSTmsi
-#[derive(Clone, Debug, smart_default::SmartDefault)]
+#[derive(Clone, Debug, smart_default::SmartDefault, Eq, PartialEq)]
 pub struct FiveGSTmsi {
 	pub amf_set_id: AmfSetId,
 	pub amf_pointer: AmfPointer,
@@ -14588,7 +14588,7 @@ impl PerCodec for FiveGSTmsi {
 	}
 }
 // FiveGTmsi
-#[derive(Clone, Debug)]
+#[derive(Clone, Eq, PartialEq, Debug)]
 pub struct FiveGTmsi(pub [u8; 4]);
 impl Default for FiveGTmsi {
 	fn default() -> FiveGTmsi {

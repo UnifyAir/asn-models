@@ -24,7 +24,7 @@ config = {
             "operation": "derive-macros",
             "additional_traits": ["Eq", "PartialEq"],
             "asn1-fields": [
-                "FiveGSTmsi"
+                "FiveGSTmsi",
                 "FiveGTmsi",
             ],
         },
