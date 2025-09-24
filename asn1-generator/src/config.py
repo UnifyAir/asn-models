@@ -22,7 +22,7 @@ config = {
         },
         {
             "operation": "derive-macros",
-            "additional_traits": ["Eq", "PartialEq"],
+            "additional_traits": ["Eq", "PartialEq", "Hash"],
             "asn1-fields": [
                 "FiveGSTmsi",
                 "FiveGTmsi",
